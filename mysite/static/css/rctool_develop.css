@@ -1,0 +1,57 @@
+.rc-chart-container {
+    width: 100%;
+    height: 45vh;
+}
+
+
+/* TABLE STYLING */
+
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+.tab a {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 9px 13.5px;
+  transition: 0.3s;
+}
+
+.tab a:hover {
+  background-color: #ddd;
+}
+
+.tab a.active {
+  background-color: #ccc;
+}
+  
+.tabcontent {
+    display: none;
+    padding: 3px 6px;
+    border: 1px solid #ccc;
+    border-top: none;
+  }
+
+.tabcontent {
+    animation: fadeEffect 1s; /* Fading effect takes 1 second */
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  
+  
+/* Go from zero to full opacity */
+@keyframes fadeEffect {
+    from {opacity: 0;}
+    to {opacity: 1;}
+  }

@@ -1,0 +1,14 @@
+<table class="table">
+    <tr class="table-header">
+      {% for header in headings %}
+        <th class="table-cell">{{ header }}</th>
+      {% endfor %}
+    </tr>
+    {% for row in table_data %}
+    <tr class="table-row">
+      {% for cell in row %}
+        <td class="table-cell">{{ cell }}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+</table>

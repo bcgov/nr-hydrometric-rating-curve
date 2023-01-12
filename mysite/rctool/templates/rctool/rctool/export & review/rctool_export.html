@@ -1,0 +1,89 @@
+{% extends 'rctool/base.html' %}
+{% load static %}
+
+
+{% block content %}
+</br>
+<div class="container">
+    <div class="tab-bar-container">
+        <ul class="tab-bar-list">
+            <li class="tab-bar-item"><a href="{% url 'rctool_import' 0 %}">import</a></li>
+            <li class="tab-bar-item"><a href="#">develop</a></li>
+            <li class="tab-bar-item-current"><a href="{% url 'rctool_export_initialize' %}">export</a></li>
+        </ul>
+    </div>
+
+    <div class="container" style="background-color: #FFFFFF;">
+        <div class="row justify-content-md-center" style="padding: 40px;">
+            <div class="col-11 col-lg-10 col-xl-9">
+                <div class="card">
+
+                    <h5 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF;">Export Data</h5>
+                    <div class="card-body py-4" style="width: 60%; margin: auto;">
+                        <div syle="flex: 1">
+                            <form method="post" id="export-form" action="./output" target="_blank">
+                                <div class="form-group">
+                                    {% csrf_token %}
+                                    <label for="export_filetype" class="form-label">export type *</label>
+                                    {{form.export_filetype}}
+                                    <label for="export_filename" class="form-label" style="margin-top:15px;">file name *</label>
+                                    {{form.export_filename}}
+
+                                    <div id="toggle-export-div" style="display: none;">
+                                        <label class="form-label" style="margin-top:15px;">station name</label>
+                                        {{form.export_station_name}}
+                                        <label class="form-label" style="margin-top:15px;">applicable date range for rating curve</label>
+                                        <div style="display: flex;">
+                                            <div style="margin-right:5px;">
+                                                {{form.export_date_applic_init}}
+                                            </div>
+                                            <div style="margin-left:5px;">
+                                                {{form.export_date_applic_final}}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" id="table_dict-to-output" name="table_dict-to-output" value="{{ table_dict }}">
+                                    <input type="hidden" id="rc_data-to-output" name="rc_data-to-output" value="{{ rc_data }}">
+                                    <input type="hidden" id="adjust_seg-to-output" name="adjust_seg-to-output" value="{{ adjust_seg }}">
+                                    <input type="hidden" id="breakpoint1-to-output" name="breakpoint1-to-output" value="{{ breakpoint1 }}">
+                                    <input type="hidden" id="fielddatacsv-to-output" name="fielddatacsv-to-output" value="{{ fielddatacsv }}">
+                                    <input type="hidden" id="rc_output" name="rc_output" value="{{ rc_output }}">
+                                    
+                                </div>
+                                <p class="text-small">* required</p>
+                                <div class="form-group">
+                                    <button class="btn btn-secondary btn-block" type="submit" href="{% url 'rctool_export_output' %}">submit</button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // SHOW USER INPUTS IF EXPOR PDF SELECTED
+    function toggleExportForm(toggleFormVal) {
+        console.log(toggleFormVal);
+        var toggleDiv = document.getElementById("toggle-export-div");
+        
+        toggleDiv.style.display = 'block';
+                if (toggleFormVal === "session settings") {
+                    toggleDiv.style.display = "none";
+                } else {
+                    toggleDiv.style.display = "block";
+            };
+    };
+
+    
+</script>
+{% endblock %}

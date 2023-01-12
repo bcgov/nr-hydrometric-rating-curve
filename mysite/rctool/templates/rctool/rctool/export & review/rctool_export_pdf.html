@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>PDF output</title>
+        <style type="text/css">
+            body {
+                font-weight: 200;
+                font-size: 14px;
+            }
+            .header {
+                font-size: 20px;
+                font-weight: 100;
+                text-align: center;
+                color: #007cae;
+            }
+            .title {
+                font-size: 22px;
+                font-weight: 100;
+               /* text-align: right;*/
+               padding: 10px 20px 0px 20px;  
+            }
+            .title span {
+                color: #007cae;
+            }
+            .details {
+                padding: 10px 20px 0px 20px;
+                text-align: left !important;
+                /*margin-left: 40%;*/
+            }
+            .hrItem {
+                border: none;
+                height: 1px;
+                /* Set the hr color */
+                color: #333; /* old IE */
+                background-color: #fff; /* Modern Browsers */
+            }
+            .pdf-header-title {
+                color:#003466;
+            }
+            .pdf-section-heading-text {
+                color: #475D71;
+                margin: 0px;
+            }
+            .pdf-info-label {
+                color: 	#686868;
+                font-weight: bold;
+                font-size:12.5px;
+                margin-right: 15px;
+            }
+            .pdf-info-text {
+                color: 	#686868;
+                font-size:12.5px;
+                margin: 0px;
+            }
+            .table {
+                border-spacing: 0;
+                font-style: sans-serif;
+                line-height: 8px;
+            }
+            tr:nth-child(even) {
+                background-color: #F5F5F5;
+            }
+            .table-header {
+                text-align: left;
+                font-size: 13px;
+                color: #FFFFFF;
+                background-color: #758fa8;
+                padding: 2.5px;
+            }
+            .table-cell {
+                padding: 2px;
+                font-size: 12px;
+                color: 	#686868;
+            }
+            
+        </style>
+    </head>
+    <body>
+        <h2 class='pdf-header-title'>Rating Curve Output Summary</h2>
+        <h6 class="pdf-section-heading-text">Project Info</h6>
+        <p class="pdf-info-text">date created (utc): {{ current_time }}</p>
+        {% if stname %}
+            <p class="pdf-info-text">location: {{ stname }}</p>
+        {% endif %}
+        {% if app_period_start and app_period_end %}
+            <p class="pdf-info-text">period of applicability: {{ app_period_start }} to {{ app_period_end }}</p>
+        {% endif %}
+        <br>
+
+        <h6 class="pdf-section-heading-text">Model Figures</h6>
+        <div style="width:700px; margin:0px;">
+            <img src="data:image/png;base64,{{ rc_img }}'" alt="rating curve chart">
+        </div>
+        <div style="width:700px; margin:0px;">
+            <img src="data:image/png;base64,{{ res_img }}'" alt="percent error chart">
+        </div>
+        <br>
+        <br>
+        <h6 class="pdf-section-heading-text">Model Parameters</h6>
+        <table class="table">
+            <tr class="table-header">
+                <th class="table-header">segment</th>
+                <th class="table-header">equation</th>
+                <th class="table-header">stage range (m)</th>
+                <th class="table-header">RMSE</th>
+            </tr>
+            <tr class="table-row">
+                <td class="table-cell">{{rc.parameters.0.label}}</td>
+                <td class="table-cell">Q = {{rc.parameters.0.const}} ( H {{offsets_val.0}} )<sup>{{rc.parameters.0.exp}}</sup></td>
+                <td class="table-cell">{{rc.parameters.0.seg_bounds.0.0}} , {{rc.parameters.0.seg_bounds.1.0}}</td>
+                <td class="table-cell">{{rc.parameters.0.rmse}}</td>
+                </td>
+            </tr>
+            {% if rc.parameters.1 %}
+            <tr class="table-row">
+                <td class="table-cell">{{rc.parameters.1.label}}</td>
+                <td class="table-cell">Q = {{rc.parameters.1.const}}( H {{offsets_val.1}})<sup>{{rc.parameters.1.exp}}</sup></td>
+                <td class="table-cell">{{rc.parameters.1.seg_bounds.0.0}} , {{rc.parameters.1.seg_bounds.1.0}}</td>
+                <td class="table-cell">{{rc.parameters.1.rmse}}</td>
+                </td>
+            </tr>
+            {% endif %}
+        </table>
+        <br>
+
+
+        <h6 class="pdf-section-heading-text">Model Inputs</h6>
+        <table class="table" id="fieldtable">
+            <tr class="table-header">
+                {% for header in field_table.headings %}
+                    {% if header == 'toggle_point' %}
+                        <th class="table-header">use point</th>
+                    {% else %}
+                        <th class="table-header">{{ header }}</th>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% for row in field_table.data %}
+                <tr class="table-row">
+                    {% for cell in row %}
+                        <td class="table-cell">{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>

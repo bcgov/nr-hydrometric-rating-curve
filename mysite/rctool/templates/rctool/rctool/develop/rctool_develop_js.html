@@ -1,0 +1,1163 @@
+{% load static %}
+{% load custom_tags %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.2.3/dist/chartjs-plugin-dragdata.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.1/chartjs-plugin-zoom.min.js"></script>
+
+<script>
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    A) INITIALIZE  & COLLECT DATA FROM VIEW
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    var residualData = {{ rc.data|safe }};
+    var rcData = {{ rc.data|safe }};
+    var rcParam = {{ rc.parameters|safe }};
+    var offsetData = {{ offsets|safe }};
+    var nSegData = {{ n_seg|safe }};
+    var toggleBreakPointVal = {{ toggle_breakpoint|safe }};
+    var toggleWeightedFitVal = {{ toggle_weighted_fit|safe }};
+    var maxOffset = {{ max_offset|safe }};
+    var rcDict = {};
+    var fielddatacsv = JSON.parse( ' {{ fielddatacsv|safe }} ' );
+    var compareCurveCount = 0;
+
+    var axisFormat = 'logarithmic';
+
+
+    // update form variables
+    updateFormVariables()
+
+    // uncheck table and autofit settings check boxes according to newly loaded table:
+    uncheckTableFields()
+    document.getElementById("toggle_weighted_fit").checked = toggleWeightedFitVal;
+    try {
+        document.getElementById("toggle_breakpoint").checked = toggleBreakPointVal;
+        }
+    catch(e) {
+        // continue...
+    }
+
+
+    // A.1 ADD AUTOFITTED BREAKPOINT VALUE TO INPUT SETTNGS FIELD
+    if (nSegData == 2) {
+        const autofittedBreakPoint = rcParam[0]['seg_bounds'][1][0].toFixed(3);
+        document.getElementById("breakpoint1").value = autofittedBreakPoint;
+    };
+    
+    // A.2 SHOW STATUS AND CHECK EXPONENT
+
+    // function displayStatus(statusText) {
+    //     document.getElementById("status-box").style.display = "block";
+    //     document.getElementById('status-text').innerHTML = statusText
+    //     setTimeout(
+    //         function() 
+    //         {
+    //             $("#status-box").fadeOut(1500);
+    //         }, 4000);
+    // };
+    // displayStatus('<strong>status:</strong> autofitted new rating curve...');
+    checkExponent()
+
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    B) PROCESSES DATA, DEFINE & APPLY FUNCTIONS
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    B.0) USER INPUT - ADJUST RATING CURVE POINT
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    // DATA FOR TESTING : WILL REMOVE
+    // var testSegmentBounds = {
+    //     segment1: [[0.075, 0.23],[3.3, 0.695]],
+    //     segment2: [[3.3, 0.695], [50, 1.5]]
+    // };
+    // var testOffsets = [0.1, 0.1];
+    
+    function updateFormVariables(){
+        // update form variables
+        $('#fieldData_datetime').val(Object.values(fielddatacsv.datetime))
+        $('#fieldData_comments').val(Object.values(fielddatacsv.comments)) 
+        $('#fieldData_uncertainty').val(Object.values(fielddatacsv.uncertainty))
+        $('#fieldData_stage').val(Object.values(fielddatacsv.stage))  
+        $('#fieldData_discharge').val(Object.values(fielddatacsv.discharge))
+        $('#fieldData_active').val(Object.values(fielddatacsv.toggle_point))
+        
+        $('#fieldData_datetime_out').val(Object.values(fielddatacsv.datetime))
+        $('#fieldData_comments_out').val(Object.values(fielddatacsv.comments))  
+        $('#fieldData_uncertainty_out').val(Object.values(fielddatacsv.uncertainty))
+        $('#fieldData_stage_out').val(Object.values(fielddatacsv.stage)) 
+        $('#fieldData_discharge_out').val(Object.values(fielddatacsv.discharge))
+        $('#fieldData_active_out').val(Object.values(fielddatacsv.toggle_point))
+        //$('#rc_out').val(Object.entries(rcDict))
+    };
+
+    function uncheckTableFields(){
+        // set initial check boxes as they are defined in the table:
+        var rows = document.getElementById("fieldtable").rows;
+        for (let i = 1; i < rows.length; i++) {
+            // count starts after header
+            var _row = rows[i];
+            var isunchecked = fielddatacsv.toggle_point[i - 1].replace(/\s/g, "").localeCompare("unchecked");
+
+            if (isunchecked == 0){
+                // if the fielddatacsv array states that this toggle should be unchecked (equal is 0)
+                for(j = 0; j < _row.childElementCount; j++){
+                    var _cell = _row.cells[j]
+                    // check if table cell content is 'unchecked', trimming (replacing) white space
+                    var toggle_state = _row.cells[j].childNodes[0]['checked']
+                    if (toggle_state == true) {
+                        // next cell should be checkbox and can be set to checked
+                        _row.cells[j].childNodes[0]['checked'] = false;
+                    }
+                }
+            }
+        }
+    }
+
+    function adjustSeg(segmentBounds, offsets) {
+
+        // INPUTS:
+            // segmentBounds: dictionary where keys are segmentName and values are segmentData
+                // segmentName: formatted 'segmentn' where n is the segment number starting at 1
+                // segmentData: list of boundary points of each segment, formatted [[Stage[0], Discharge[0]], [Stage[-1], Discharge[-1]]]
+            // offsets: list of offsets
+        // OUTPUTS:
+            // rcData and rcParam
+
+
+
+        var idx = 0;
+        for (const [segmentName, segmentData] of Object.entries(segmentBounds)) {
+
+            // 1. UNPACK NEW SEGMENT NODES AND OTHER PARAMETERS
+            const offset = offsets[idx];
+            const lnh1 = Math.log(segmentData[0][0] - offset),
+            lnh2 = Math.log(segmentData[1][0] - offset),
+            lnQ1 = Math.log(segmentData[0][1]),
+            lnQ2 = Math.log(segmentData[1][1]);
+            
+            // 2. CALCULATE NEW RATING CURVE SEGMENT PARAMETERS
+            const slope = (lnQ2 - lnQ1) / (lnh2 - lnh1);
+            const intercept = lnQ2 - (slope * lnh2);
+            const C = Math.exp(intercept);
+
+            // 3. UPDATE RC DATA & RC PARAMETERS
+            // 3.1 Get filtered field data within segment bounds (used with to calculate RMSE and residuals)
+            var rawFieldData = rcData[0]['data'];
+            var fieldDataFiltered = rawFieldData.filter(item => ( item[0] >= segmentData[0][0] && item[0] <= segmentData[1][0]));
+
+
+            // 3.2 Calculate model data from new rc equation, collect and prepaire output
+            var stage = fieldDataFiltered.map( item => (item[0]));
+            var oldQ = fieldDataFiltered.map( item => (item[1])); 
+            var newQ = stage.map(s => C * (s - offset) ** slope);
+            // Calculate statistical parameters; residuals
+            var newResiduals = fieldDataFiltered.map(item => ( 100 * (C * (item[0] - offset) ** slope - item[1]) / item[1] ) );
+
+            // Collect and prepaire output
+            var newSegData = [];
+            for (let t = 0; t < newQ.length; t++) {
+                newSegData.push([stage[t], newQ[t], newResiduals[t]]);
+            };
+
+            // Calculate statistical parameters; RMSE
+            var sumSquaredCumulative = 0;
+            for (var v = 0; v < newQ.length; v++) {
+                var currSumSquared = (newQ[v] - oldQ[v]) ** 2;
+                sumSquaredCumulative = sumSquaredCumulative + currSumSquared;
+            };
+            rmse = Math.sqrt( (sumSquaredCumulative/ newQ.length) );
+
+
+            // sort list by stage (index)
+            newSegData.sort(function(a,b) {
+                return a[0]-b[0]
+            });
+
+            // 3.3 Update residualData
+            residualData[idx+1].data = newSegData;
+            // add boundary points to segment data (for plotting on rcChart)
+            newSegData.unshift([segmentData[0][0], segmentData[0][1],  0]);
+            newSegData.push([segmentData[1][0], segmentData[1][1], 0]);
+            // 3.4 Update rcData & rcParam variables
+            rcData[idx+1].data = newSegData;
+            rcParam[idx].const = C;
+            rcParam[idx].exp = slope;
+            rcParam[idx].offset = offset; // TODO REMOVE IF THIS HAS ALREADY BEEN UPDATED
+            //rcParam[idx].rmse = '-'; // TODO CALCULATE THIS
+            rcParam[idx].seg_bounds = [[segmentData[0][0], segmentData[0][1]], [segmentData[1][0], segmentData[1][1]]];
+            rcDict = {'data':rcData, 'parameters':rcParam};
+
+
+            // 3.5 Update HTML equation parameters and user input fields
+            var segNumStr = String(idx + 1);
+            document.getElementById('segment' + segNumStr + '-const').innerHTML = C.toFixed(4);
+            document.getElementById('segment' + segNumStr + '-exp').innerHTML = slope.toFixed(4);
+            document.getElementById('table1-segment' + segNumStr + '-const').innerHTML = C.toFixed(4);
+            document.getElementById('table1-segment' + segNumStr + '-exp').innerHTML = slope.toFixed(4);
+            document.getElementById('table1-segment' + segNumStr + '-rmse').innerHTML = rmse.toFixed(3);
+            document.getElementById('table2-segment' + segNumStr + '-const').innerHTML = C.toFixed(4);
+            document.getElementById('table2-segment' + segNumStr + '-offset').innerHTML = JSON.parse(JSON.stringify(offset.toFixed(3)));
+            document.getElementById('table2-segment' + segNumStr + '-exp').innerHTML = slope.toFixed(4);
+            document.getElementById("endpointSeg1H0").value = rcParam[0].seg_bounds[0][0].toFixed(3);
+            // only round the first point if greater than 0.005, otherwise it was rounding to 0 and the plot bends / looks funny
+            if (rcParam[0].seg_bounds[0][0] < 0.005) {
+                document.getElementById("endpointSeg1Q0").value = rcParam[0].seg_bounds[0][1].toFixed(5);
+            } else {
+                document.getElementById("endpointSeg1Q0").value = rcParam[0].seg_bounds[0][1].toFixed(3);
+            };
+            document.getElementById("endpointSeg1H1").value = rcParam[0].seg_bounds[1][0].toFixed(3);
+            document.getElementById("endpointSeg1Q1").value = rcParam[0].seg_bounds[1][1].toFixed(3);
+            document.getElementById("table2-endpoint-Seg1H0").innerHTML = rcParam[0].seg_bounds[0][0].toFixed(3);
+            document.getElementById("table2-endpoint-Seg1H1").innerHTML = rcParam[0].seg_bounds[1][0].toFixed(3);
+            document.getElementById("rc_out").value = JSON.stringify(rcDict);
+
+            // Fix formatting issue with offset 1 in rating equation
+            var offset_val = JSON.parse(JSON.stringify(Math.abs(offset.toFixed(3))));
+            if (offset < 0 ) {
+                document.getElementById('segment' + segNumStr + '-offset').innerHTML = ' + ' + offset_val;
+                document.getElementById('table1-segment' + segNumStr + '-offset').innerHTML = ' + ' + offset_val;
+            } else {
+                document.getElementById('segment' + segNumStr + '-offset').innerHTML = ' - ' + offset_val;
+                document.getElementById('table1-segment' + segNumStr + '-offset').innerHTML = ' - ' + offset_val;
+            };
+
+            if (rcParam.length == 2) {
+                document.getElementById("endpointSeg2H0").value = rcParam[1].seg_bounds[0][0].toFixed(3);
+                document.getElementById("endpointSeg2Q0").value = rcParam[1].seg_bounds[0][1].toFixed(3);
+                document.getElementById("endpointSeg2H1").value = rcParam[1].seg_bounds[1][0].toFixed(3);
+                document.getElementById("endpointSeg2Q1").value = rcParam[1].seg_bounds[1][1].toFixed(3);
+                document.getElementById("breakpoint1").value = rcParam[1].seg_bounds[0][0].toFixed(3);
+                document.getElementById("table2-endpoint-Seg2H0").innerHTML = rcParam[1].seg_bounds[0][0].toFixed(3);
+                document.getElementById("table2-endpoint-Seg2H1").innerHTML = rcParam[1].seg_bounds[1][0].toFixed(3);
+            };
+
+            // update residual chart
+            updateResidualChart(newSegData, idx)
+
+            idx++;
+
+        };
+
+                        
+        rcDict = {'data':rcData, 'parameters':rcParam}
+        
+        // update form variables
+        updateFormVariables()
+        
+        // TOBIAS: update rcChart with new rcData
+        updateChartFromGlobal()
+
+        // update max bounds
+        updateMaxBounds(rcParam);
+
+        // check if exponent in realistic rang
+        checkExponent();
+
+        // update status
+        // displayStatus('<strong>status: </strong> manual adjustment applied...')
+
+    };
+
+    function updateChartFromGlobal(){
+        // loop through all data segments:
+        for (let dataIdx in Object.keys(rcData)) {
+            this_data = rcData[dataIdx]
+            // loop through all chart elements:
+            for (var chartIdx in Object.keys(rcChart.data.datasets)) {
+                this_chart = rcChart.data.datasets[chartIdx]
+                if (this_chart.label == this_data.label){
+                    // dont continue if this is field data, no need to redraw:
+                    if (this_data.label == 'field'){continue}
+                    // update data in rcChart
+                    if (this_chart.type == 'scatter'){
+                        var startPoint = this_data.data[0]
+                        var endPoint = this_data.data.slice(-1)[0]
+                        // TODO: find why we have to sort this
+                        if (startPoint[0] < endPoint[0]){
+                            this_chart.data[0].x = startPoint[1]
+                            this_chart.data[0].y = startPoint[0]
+                            this_chart.data[1].x = endPoint[1]
+                            this_chart.data[1].y = endPoint[0]
+                        } else {
+                            this_chart.data[0].x = endPoint[1]
+                            this_chart.data[0].y = endPoint[0]
+                            this_chart.data[1].x = startPoint[1]
+                            this_chart.data[1].y = startPoint[0]
+                        }
+                    }
+                }
+            }
+        }
+        updateChartSegments()
+
+        // redraw chart with updated lines
+        rcChart.update();
+    }
+
+    function updateChartSegments(){
+        // get all chart indices
+        var datasetIndices = Object.keys(rcChart.data.datasets)
+        
+        // find which scatter plot belongs to a line plot
+        var bound_idx = 0
+        var chart_idx_lookup = [];
+        for (var idx in datasetIndices) {
+            if (rcChart.data.datasets[idx].label != 'field' && rcChart.data.datasets[idx].label != 'field inactive' && rcChart.data.datasets[idx].type === 'scatter'){
+                // this is an rc scatter curve, store these bounds:
+                bound_idx = bound_idx + 1;
+                
+                // save which lineidx matches this rc dataset index
+                chart_idx_lookup.push([parseInt(idx), idx - 1])
+            }
+        }
+
+        // iterate through other lines that have to be updated:
+        rc_trueidx = 0
+        for  (let [rc_idx, l_idx] of chart_idx_lookup) {
+            data_line = rcChart.data.datasets[l_idx].data;
+            
+            offset_thisline = offsetData[rc_trueidx]
+            param = rcDict.parameters[rc_trueidx]
+
+            // create an array that will be used to calculate the line point positions
+            const arr = [];
+            for (let i = 0.05; i < 1; i += 0.05)
+                arr.push(i);
+            
+            // define the start and end points of the line
+            start_pt = data_line[0];
+            end_pt = data_line[data_line.length - 1];
+
+            // calculate the points in between start and end:
+            // e.g. Q = 4.67783 * ( H - 0)^3.79273 
+            // which is X = const * ( Y - offset)^ exponent
+            var data_line_new_y          = arr.map((num) => (offset_thisline + start_pt.y + num * (end_pt.y-start_pt.y)) );
+            var data_line_new_x          = data_line_new_y.map((num) => param.const * (num - offset_thisline) ** param.exp)
+            // var data_line_new_x          = data_line_new_y.map((num) => 4.67783 * num ** 3.79273)
+
+            var data_line_new_pt = []
+            // add start point to line
+            data_line_new_pt.push(start_pt)
+            // add calculated middle points
+            data_line_new_x.forEach((x_val, index) => {
+                const y_val = data_line_new_y[index];          
+                
+                // add this point if it is between pre-defined start and endpoint      
+                if ((x_val < end_pt.x) && x_val > start_pt.x) {
+                    data_line_new_pt.push({x: x_val, y: y_val});
+                }
+                });
+            // add end point
+            data_line_new_pt.push(end_pt)
+
+            // update chart elements for line:
+            rcChart.data.datasets[l_idx].data = data_line_new_pt;
+            rc_trueidx ++;
+        }
+    }
+
+
+
+    function updateResidualChart(newResData, r_idx) {
+        var newResidualChartData = newResData.map(item => ({ x: item[2], y: item[0] })).slice(1,-1);
+        residualChart.data.datasets[r_idx].data = newResidualChartData;
+        residualChart.update();
+
+    };
+
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    B.1) USER INPUT - HIDE / USE DATA POINTS
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    // PLEASE NOTE: - PAGE RELOADS IF USER HITS ENTER
+    //              - There is a custom tag that reformats the table data, we dont need this I'll take it out
+
+    function togglePoint(idx, checked) {
+        var rowIndex = idx
+
+        if (checked == true){
+            // set point to checked now
+            fielddatacsv.toggle_point[idx] = 'checked';
+        } else {
+            // set point to unchecked now
+            fielddatacsv.toggle_point[idx] = 'unchecked';
+        }
+        
+        // redraw field data in the plot, but do not call autofit (it will update when the user hits that button)
+        var datasetIndices = Object.keys(rcChart.data.datasets)
+        var fieldIdx = null;
+        var fieldInactiveIdx = null;
+
+        // find indexes of field and inactive field datasets:
+        for (var didx in datasetIndices) {
+            if (rcChart.data.datasets[didx].label == 'field' && rcChart.data.datasets[didx].type === 'scatter'){
+                fieldIdx = didx;
+            }
+            if (rcChart.data.datasets[didx].label == 'field inactive'  && rcChart.data.datasets[didx].type === 'scatter'){
+                fieldInactiveIdx = didx;
+            }
+        }
+        
+        // create an Object of all field data that can be filtered by active and appended to the rcChart
+        var dataArray = Object.keys(fielddatacsv.toggle_point).map((id, index) => {
+            return {
+                id: id,
+                x: Object.values(fielddatacsv.discharge)[index],
+                y: Object.values(fielddatacsv.stage)[index],
+                active: Object.values(fielddatacsv.toggle_point)[index]
+            }
+        });
+        
+    
+        // filter out which data is active/inactive
+        var fieldDataActive = dataArray.filter(data => data.active == 'checked')
+        var fieldDataInActive = dataArray.filter(data => data.active == 'unchecked')
+        
+        // remove the active attribute
+        fieldDataActive.forEach(object => { 
+            delete object['active']; 
+            delete object['id']; 
+        });
+        fieldDataInActive.forEach(object => { 
+            delete object['active']; 
+            delete object['id']; 
+        });
+
+        // update data in the chart objects directly:
+        rcChart.data.datasets[fieldIdx].data = fieldDataActive;
+        rcChart.data.datasets[fieldInactiveIdx].data = fieldDataInActive;
+        
+        // redraw data
+        // save previous animation duration
+        var animation_duration = rcChart.options.animation.duration;
+        // temporarily set it to 0
+        rcChart.options.animation.duration = 0;
+
+        // update plot
+        rcChart.update();        
+        // reset animation duration
+        rcChart.options.animation.duration = animation_duration;
+
+        // update form variables
+        updateFormVariables()
+    }
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    B.2) USER INPUT - ENDPOINTS
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    function setEndpoints(segEP, pointEP, coordEP, valueEP) {
+        
+        // 1. COLLECT AND INITIATE PARAMETERS
+        if (rcParam.length == 2) {
+            var newSegBounds = [rcParam[0].seg_bounds, rcParam[1].seg_bounds];
+        } else {
+            var newSegBounds = [rcParam[0].seg_bounds];
+        };
+
+        // 2. UPDATE NEW BOUNDS AND DICT
+        newSegBounds[parseInt(segEP)][parseInt(pointEP)][parseInt(coordEP)] = parseFloat(valueEP);
+
+        var newSegBoundsDict = {};
+        if (rcParam.length == 2) {
+            // catch if a breakpoint has been changed and if so what specific breakpoint
+            if (segEP == 0 && pointEP==1) {
+                // if segment 1 changed, make segment 2 startpoint = segment 1 endpoint
+                newSegBounds[1][0] = newSegBounds[0][1];
+            };
+            if (segEP == 1 && pointEP==0) {
+                // if segment 2 changed, make segment 1 endpoint = segment 2 startpoint
+                newSegBounds[0][1] = newSegBounds[1][0];
+            };
+            // update the dictionary 
+            newSegBoundsDict['segment1'] = [newSegBounds[0][0], newSegBounds[0][1]];
+            newSegBoundsDict['segment2'] = [newSegBounds[1][0], newSegBounds[1][1]];
+
+        } else {
+            newSegBoundsDict['segment1'] = [newSegBounds[0][0], newSegBounds[0][1]];
+        };
+
+        // 3. ADJUST FIT
+        adjustSeg(newSegBoundsDict, offsetData);
+    };
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    B.3) USER INPUT - OFFSET
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    function setOffset(segment, value, maxOffset) {
+        // 1. COLLECT AND INITIATE PARAMETERS
+        offsetData[segment] = parseFloat(value);
+        maxStage = parseFloat(maxOffset);
+
+        
+        if ( offsetData[0] >= maxStage || offsetData[1] >= maxStage ) {
+            var warningDict = {'error_title': 'Warning', 'error_text': 'The specified offset has exceeded the maximum allowable offset (lowest stage value). Can not fit curve.'}
+            updateWarningMessage(warningDict)
+
+            // dont proceed with rating calculation, will crash due to high offset
+            return
+
+        } else {
+            var warningDict = {'error_title': '', 'error_text': 'no warning'};
+            updateWarningMessage(warningDict);
+        };
+
+        // 2. CREATE SEGMENT BOUNDS DICTIONARY
+        var segBoundsDict = {};
+        for (const [segmentName, segmentData] of Object.entries(rcParam)) {
+            var segNm = 'segment' + String(segmentName);
+            segBoundsDict[segNm] = segmentData['seg_bounds'];
+            };
+
+        // 3. EDIT DICTIONARY WITH NEW POINTS
+        // if first segment is changed, calculate new endpoints for first segment, seg2startpoint = seg1endpoint, seg2endpoint = old seg2endpoint
+
+        if (segment == 0) {
+            const const1 = rcParam[0]['const'];
+            const exp1 = rcParam[0]['exp'];
+            const offset1 = offsetData[0];
+            // calculate new segment 1 endpoints
+            if (offsetData[0] > rcParam[0]['seg_bounds'][0][0] && offsetData[0] < maxStage) {
+                // make lowest stage of the rating curve the 
+                // var seg1startH = (maxStage - offsetData[0]) * (1/2) + (offsetData[0]);
+                var seg1startH = maxStage;
+            } else if (offsetData[0] > rcParam[0]['seg_bounds'][0][0] && offsetData[0] == maxStage) {
+                var seg1startH = maxStage;
+            } else  {
+                var seg1startH = rcParam[0]['seg_bounds'][0][0];
+            };
+
+
+            const seg1endH = rcParam[0]['seg_bounds'][1][0];
+            const seg1startQ = const1 * ( seg1startH - offset1 ) ** exp1;
+            const seg1endQ = const1 * ( seg1endH - offset1 ) ** exp1;
+
+            segBoundsDict['segment0'] = [[seg1startH , seg1startQ ], [seg1endH , seg1endQ]];
+
+            if (rcParam.length > 1) {
+                const seg2endH = rcParam[1]['seg_bounds'][1][0];
+                const seg2endQ = rcParam[1]['seg_bounds'][1][1];
+                segBoundsDict['segment1'] = [[seg1endH , seg1endQ ], [seg2endH , seg2endQ ]]
+            }
+        } else if (segment == 1) {
+            const const2 = rcParam[1]['const'];
+            const exp2 = rcParam[1]['exp'];
+            const offset2 = offsetData[1];
+            // calculate new segment 1 endpoints
+            const seg2startH = rcParam[1]['seg_bounds'][0][0];
+            const seg2endH = rcParam[1]['seg_bounds'][1][0];
+            const seg2startQ = const2 * ( seg2startH - offset2 ) ** exp2;
+            const seg2endQ = const2 * ( seg2endH - offset2 ) ** exp2;
+            segBoundsDict['segment1'] = [[seg2startH , seg2startQ ], [seg2endH , seg2endQ]];
+
+            const seg1startH = rcParam[0]['seg_bounds'][0][0];
+            const seg1startQ = rcParam[0]['seg_bounds'][0][1];
+            segBoundsDict['segment0'] = [[seg1startH , seg1startQ ], [seg2startH , seg2startQ]];
+        }; 
+        
+        // 4. APPLY NEW PARAMETERS TO ADJUST SEGMENT FUNCTION
+        adjustSeg(segBoundsDict, offsetData);
+        };
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    B.4) USER INPUT - BREAKPOINT
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    function setBreakpoint1(setBreakpointValue) {
+
+        // if no second segement, end function
+        if ( rcParam.length <= 1 ) {            
+            return
+        };
+
+        // Initialize / Get inputs
+        var newBreakpointH = parseFloat(setBreakpointValue);
+        var segBoundsDict = {};
+        var currSegBounds = [rcParam[0].seg_bounds, rcParam[1].seg_bounds];
+
+        // calculate stage for new breakpoint (Q)
+        var currC = rcParam[0].const;
+        var currSlope = rcParam[0].exp;
+        var currOffset = rcParam[0].offset;
+        var newBreakpointQ = rcParam[0].const * ( newBreakpointH - rcParam[0].offset ) ** rcParam[0].exp;
+
+        // Update new bounds
+        segBoundsDict['segment1'] = [currSegBounds[0][0], [newBreakpointH, newBreakpointQ]];
+        segBoundsDict['segment2'] = [[newBreakpointH, newBreakpointQ], currSegBounds[1][1]];
+
+        // Adjust fit
+        adjustSeg(segBoundsDict, offsetData);
+
+
+    };
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    B.5) USER INPUT - ADD / REMOVE SEGMENT
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    function addRemoveSeg(nChange) {
+        nSegData = nSegData + nChange;
+        
+        // Set maximum and minimum value
+        if (nSegData > 2) {
+            nSegData = 2;
+        };
+        if (nSegData < 1) {
+            nSegData = 1;
+        };
+
+        // Update field
+        document.getElementById("n-seg").value = nSegData;
+
+    };
+
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    B.6) USER INPUT - TOGGLE AXIS FORMAT
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    function toggleAxisFormat(checked) {
+        if (checked) {
+            axisFormat = 'logarithmic';
+        }
+        else {
+            axisFormat = 'linear';
+        };
+
+        rcChart.options.scales = {
+                x: {
+                    type: axisFormat,
+                    title: {
+                        display: true,
+                        text: 'discharge (m\u00B3/s)'
+                    },
+                    // beginAtZero: true
+                },
+                y: {
+                    type: axisFormat,
+                    title: {
+                        display: true,
+                        text: 'stage (m)'
+                    },
+                    // beginAtZero: true
+                },
+        };
+
+        rcChart.update();
+
+    };
+
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    B.7) USER INPUT - ADD COMPARISON CURVE
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    function addCompareCurve() {
+
+        // 0. Check if there is already a compare curve, if so stop
+        if (compareCurveCount >= 1) {
+            return
+        };
+
+        // 1. Collect user inputs
+        var compLabel = document.getElementById('compareLabel').value;
+        var compConst = parseFloat(document.getElementById('compareConst').value);
+        var compExp = parseFloat(document.getElementById('compareExp').value);
+        var compOffset = parseFloat(document.getElementById('compareOffset').value);
+        var compStartBounds = parseFloat(document.getElementById('compareStartBounds').value);
+        var compEndBounds = parseFloat(document.getElementById('compareEndBounds').value);
+
+        // 2. Calculate H and Q from user input parameters
+        var compH = [];
+        for (var i = compStartBounds; i <= compEndBounds; i += 0.001) {
+            compH.push(i);
+        };
+        compH.push(compEndBounds);
+
+        var compData = compH.map((H) => [H, compConst * (H - compOffset) ** compExp, 0]);
+
+        // 3. Prepaire output
+        var compRcData = [{'label':compLabel, 'data':compData}]
+        var compChartData = compRcData[0]['data'].map(item => ({ x: item[1], y: item[0] }))
+
+        compChartData
+
+        // 4. If data is calculated, plot
+        if (compChartData.length > 1) {
+            addrcPlot(compChartData, compLabel, '#FFD97D');
+            compareCurveCount++
+        };
+
+    };
+
+
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    C) OUTPUT COMPONENTS (charts and table)
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    /*-----------------------------------------------------------------------------------------------------------------------------------------------
+    C.1) RATING CURVE CHART
+    ------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    // GET MAXIMUM BOUNDS FOR CHART UPON INITIALIZATION
+
+    function getMaxQ(rcParam) {
+        if (rcParam.length == 2) {
+            var plotMaxQ = rcParam[1].seg_bounds[1][1] * 1.5;
+        } else {
+            var plotMaxQ = rcParam[0].seg_bounds[1][1] * 1.5;
+        };
+        return plotMaxQ;
+    };
+
+    function getMaxH(rcParam) {
+        if (rcParam.length == 2) {
+            var plotMaxH = rcParam[1].seg_bounds[1][0].toFixed(3) * 1.15;
+        } else {
+            var plotMaxH = rcParam[0].seg_bounds[1][0].toFixed(3) * 1.15;
+        };
+        return plotMaxH;
+    };
+
+    // FUNCTION FOR UPDATING MAX BOUNDS
+    function updateMaxBounds(rcParam) {
+        rcChart.options.scales = {
+                x: {
+                    type: axisFormat,
+                    title: {
+                        display: true,
+                        text: 'discharge (m\u00B3/s)'
+                    },
+                    // beginAtZero: true,
+                    max: getMaxQ(rcParam),
+                },
+                y: {
+                    type: axisFormat,
+                    title: {
+                        display: true,
+                        text: 'stage (m)',
+                    },
+                    // beginAtZero: true,
+                    max: getMaxH(rcParam),
+                }
+            }
+        rcChart.update();
+    };
+
+
+    // STYLING PARAMETERS
+    var pallet = ['#9ec1a3', '#fe5f55', '#003466', '#FFD97D', '#9bc1bc', '#002A5C', '#bdd5ea', '#9ec1a3', '#ffa400', '#89d2a3', '#c08497', '#4281a4', '#aa7bc3', '#8daa91', '#60D394', '#EE6055', '#FFD97D', '#AAF683', '#FF9B85'];
+
+
+    // RATING CURVE CHART
+    var rcChart = new Chart(document.getElementById('rcChart'), {
+        type: 'scatter',
+        data: {}, // will be added later
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: axisFormat,
+                    title: {
+                        display: true,
+                        text: 'discharge (m\u00B3/s)'
+                    },
+                    // beginAtZero: true,
+                    max: getMaxQ(rcParam),
+                },
+                y: {
+                    type: axisFormat,
+                    title: {
+                        display: true,
+                        text: 'stage (m)',
+                    },
+                    // beginAtZero: true,
+                    max: getMaxH(rcParam),
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        filter: function (legendItem, data) {
+                            var dataset = data.datasets[legendItem.datasetIndex];
+                            if (dataset.type=="scatter") {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    },
+                },
+                // using the plugin https://github.com/chrispahm/chartjs-plugin-dragdata
+                dragData: {
+                    round: 3, // rounds the values to n decimal places 
+                    showTooltip: true, // show the tooltip while dragging [default = true]
+                    dragX: true, // also enable dragging along the x-axis this solely works for continous, numerical x-axis scales (no categories or dates)!
+                    onDragStart: function(e, datasetIndex) {
+                        var dataset = rcChart.data.datasets[datasetIndex];
+
+                        if (dataset.label === 'field') {
+                            // prevent dragging
+                            return false
+                        }
+                        
+                        // hide interpolation line for current RC curve:
+                        var datasetLabel = dataset.label
+                        var datasetIndices = Object.keys(rcChart.data.datasets)
+                        for (var idx in datasetIndices) {
+                            if (rcChart.data.datasets[idx].label === datasetLabel && rcChart.data.datasets[idx].type === 'line'){
+                                lineIdx = idx;
+                            }
+                        }
+                        rcChart.data.datasets[lineIdx].hidden = true;
+                    },
+                    onDrag: function(e, datasetIndex, index, value) {
+                        var dataset = rcChart.data.datasets[datasetIndex];
+
+                        // you may control the range in which datapoints are allowed to be
+                        // dragged by returning `false` in this callback
+                        // restrict drag values:
+                        if (value.x < 1) return false 
+                        if (value.y < 0) return false
+                    },
+                    onDragEnd: function(e, datasetIndex, index, value) {
+                        var dataset = rcChart.data.datasets[datasetIndex];
+                        // you may use this callback to store the final datapoint value
+                        // (after dragging) in a database, or update other UI elements that
+                        // dependent on it
+                        var datasetLabel = dataset.label
+
+                        // all dataset indeces to check iteratively in the next steps
+                        var datasetIndices = Object.keys(rcChart.data.datasets)
+                        
+                        // find which matching datasets there are:
+                        for (var idx in datasetIndices) {
+                            if (rcChart.data.datasets[idx].label != datasetLabel &&  rcChart.data.datasets[idx].label != 'field'  &&  rcChart.data.datasets[idx].label != 'field inactive' && rcChart.data.datasets[idx].type === 'scatter'){
+                                var dataset_otherrc = rcChart.data.datasets[idx]
+                                
+                                if (index == 0){
+                                    // this was a rc change on lower value
+                                    // check if this other RC is exactly 2 layers below the changed one (as there are 2 layers created per RC), meaning it might have a common point:
+                                    if (idx == datasetIndex - 2){
+                                        // adjust common point in the other rc
+                                        dataset_otherrc.data[1].y = value.y
+                                        dataset_otherrc.data[1].x = value.x
+
+                                        // update breakpoint field
+                                        document.getElementById("breakpoint1").value = value.y;
+                                    }
+                                } else {
+                                    // this was a rc change on upper value
+                                    // check if this other RC was created after the current one, meaning it might have a common point:
+                                    if (idx == datasetIndex + 2){
+                                        // adjust common point in the other rc
+                                        dataset_otherrc.data[0].y = value.y
+                                        dataset_otherrc.data[0].x = value.x
+                                        
+                                        // update breakpoint field
+                                        document.getElementById("breakpoint1").value = value.y;
+                                    }
+                                }
+
+                            }
+                        }
+                        // get bounds from chart rc
+                        var bound_idx = 0
+                        var segBoundsDict_new = {}
+                        var chart_idx_lookup = [];
+                        for (var idx in datasetIndices) {
+                            if (rcChart.data.datasets[idx].label != 'field' && rcChart.data.datasets[idx].label != 'field inactive' && rcChart.data.datasets[idx].type === 'scatter'){
+                                // this is an rc scatter curve, store these bounds:
+                                segBoundsDict_new[bound_idx] =  [[rcChart.data.datasets[idx].data[0].y, rcChart.data.datasets[idx].data[0].x],[rcChart.data.datasets[idx].data[1].y, rcChart.data.datasets[idx].data[1].x]];
+                                bound_idx = bound_idx + 1;
+
+                                // save which lineidx matches this rc dataset index
+                                chart_idx_lookup.push([parseInt(idx), idx - 1])
+                            }
+                        }
+                        
+                        // adjust rating curve segments to fit through new points:
+                        adjustSeg(segBoundsDict_new, offsetData);
+                        
+                        // unhide interpolation line for current RC curve:
+                        rcChart.data.datasets[lineIdx].hidden = false;
+
+                        // redraw chart with updated lines
+                        rcChart.update();
+                    },
+                }
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: true,
+                // filter out the rating curve fit from the tooltips
+                filter: function (tooltipItem, data) {
+                    var dataset = data.datasets[tooltipItem.datasetIndex];
+                    if (dataset.type=="scatter") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+        }
+    });
+
+    // Function for adding another plot
+    function addrcPlot(dataArray, currentLabel, colorLabel) {
+        var startPoint = dataArray[0]
+        var endPoint = dataArray.slice(-1)[0]
+        
+        // plotting data array as line
+        rcChart.data.datasets.push({
+            type: 'line',
+            label: currentLabel,
+            data: dataArray,
+            fill: false,
+            borderColor: colorLabel,
+            backgroundColor: colorLabel,
+            borderWidth: 2.75,
+            pointRadius: 0,
+            pointHitRadius: 0,
+        });
+        // just plotting start and endpoints
+        rcChart.data.datasets.push({
+            type: 'scatter',
+            label: currentLabel,
+            data: [startPoint,endPoint],
+            fill: false,
+            lineTension: 0,
+            borderColor: colorLabel,
+            backgroundColor: colorLabel,
+            borderWidth: 2.75,
+            pointRadius: 2.75,
+            pointHitRadius: 2.75,
+        });
+        rcChart.update();
+    }
+    // Iterate and add all other data to chart
+    for (let i = 1; i < rcData.length; i++) {
+        var currentLabel = rcData[i]['label']
+        var colorLabel = pallet[i]
+        var dataArray = rcData[i]['data'].map( item => ({x: item[1], y: item[0]}) )
+        addrcPlot(dataArray, currentLabel, colorLabel)
+    };
+
+    // add field data plot later (so it's in the background)
+    var currentLabel = rcData[0]['label']
+    var colorLabel = pallet[0]
+    var dataArray = rcData[0]['data'].map( item => ({x: item[1], y: item[0]}) )
+    rcChart.data.datasets.push({
+        type: 'scatter',
+        label: currentLabel,
+        data: dataArray,
+        fill: false,
+        lineTension: 0.2,
+        borderColor: colorLabel,
+        backgroundColor: colorLabel,
+        borderWidth: 2.75,
+        pointRadius: 2.75,
+        pointHitRadius: 0,
+    });    
+
+    
+    // add inactive field data
+    var currentLabel = 'field inactive'
+    var colorLabel = '#ae2029'
+    rcChart.data.datasets.push({
+        type: 'scatter',
+        label: currentLabel,
+        fill: false,
+        lineTension: 0.2,
+        borderColor: colorLabel,
+        backgroundColor: colorLabel,
+        borderWidth: 2.75,
+        pointRadius: 2.75,
+        pointHitRadius: 0,
+    });    
+    rcChart.update();
+
+    // MAKE SURE SCALE HAS BEEN UPDATED
+    updateMaxBounds(rcParam);
+
+    /*-----------------------------------------------------------------------------------------------------------------------------------------------
+    C.2) REGRESSION RESIDUAL CHART
+    ------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    var residualLabel = residualData[1]['label'];
+    var residualChartData = residualData[1]['data'].map(item => ({ x: item[2], y: item[0]})).slice(1, -1); // Residual data is in the 2nd position, raw H data is 0 position of rc.data
+
+    var residualChart = new Chart(document.getElementById('residualChart'), {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: residualLabel,
+                data: residualChartData,
+                fill: false,
+                lineTension: 0.2,
+                borderColor: pallet[1],
+                backgroundColor: pallet[1],
+                borderWidth: 2.75,
+                pointRadius: 2.75,
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Q rated vs Q field (% change)'
+                    },
+                    beginAtZero: false
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'stage (m)'
+                    },
+                    beginAtZero: false
+                }
+                
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: true
+            },
+        }
+    });
+
+    // Function for adding another plot
+    function addResidualPlot(residualData, residualLabel, colorLabel) {
+        residualChart.data.datasets.push({
+            type: 'scatter',
+            label: residualLabel,
+            data: residualChartData,
+            fill: false,
+            lineTension: 0.2,
+            borderColor: colorLabel,
+            backgroundColor: colorLabel,
+            borderWidth: 2.75,
+            pointRadius: 2.75,
+        });
+        residualChart.update();
+    };
+
+    // Iterate and add all other data to chart
+    for (let i = 2; i < residualData.length; i++) {
+        var residualLabel = residualData[i]['label']
+        var colorLabel = pallet[i]
+        var residualChartData = residualData[i]['data'].map(item => ({ x: item[2], y: item[0] })).slice(1, -1);
+        addResidualPlot(residualData, residualLabel, colorLabel)
+    };
+
+
+    /*-----------------------------------------------------------------------------------------------------------------------------------------------
+    C.3) SUMMARY TABLE
+    ------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    function openTable(evt, tableName) {
+        // Declare all variables
+        var i, tabcontent, tablinks;
+        // Get all elements with class="tabcontent" and hide them
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        // Get all elements with class="tablinks" and remove the class "active"
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        // Show the current tab, and add an "active" class to the button that opened the tab
+        document.getElementById(tableName).style.display = "block";
+        evt.currentTarget.className += " active";
+        };
+
+    // Get the element with id="defaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+
+
+    /*-----------------------------------------------------------------------------------------------------------------------------------------------
+    C.4) FORMS
+    ------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    // Pass data to export page
+    function passToExport() {
+        if (confirm('Warning. Cannot return back to develop page after exiting. Would you like to continue?')) {
+            document.getElementById('to-export-btn').click();
+        };
+    };
+
+    /*-----------------------------------------------------------------------------------------------------------------------------------------------
+    C.5) UPDATE WARNING MESSAGE
+    ------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    function checkExponent() {
+        // update warning message
+        if ( rcParam[0]['exp'] > 4) {
+            var warningDict = {'error_title': 'Warning', 'error_text': 'Exponent is too high. Warning triggered when exponent exceeds 4'};
+            updateWarningMessage(warningDict);
+        } else if ( rcParam[0]['exp'] < 1) {
+            var warningDict = {'error_title': 'Warning', 'error_text': 'Exponent is too low. Warning triggered when exponent is below 1'};
+            updateWarningMessage(warningDict);
+        } else {
+            var warningDict = {'error_title': 'Warning', 'error_text': 'no warning'};
+            updateWarningMessage(warningDict);
+        };
+        if (rcParam.length > 1) {
+            if ( rcParam[0]['exp'] > 4 || rcParam[1]['exp'] > 4) {
+                var warningDict = {'error_title': 'Warning', 'error_text': 'Exponent is too high. Warning triggered when exponent exceeds 4'};
+                updateWarningMessage(warningDict);
+            } else if ( rcParam[0]['exp'] < 1 || rcParam[1]['exp'] < 1 ) {
+                var warningDict = {'error_title': 'Warning', 'error_text': 'Exponent is too low. Warning triggered when exponent is below 1'};
+                updateWarningMessage(warningDict);
+            } else {
+                var warningDict = {'error_title': 'Warning', 'error_text': 'no warning'};
+                updateWarningMessage(warningDict);
+            };
+        };
+    };
+
+
+    function updateWarningMessage(warningDict) {
+
+        var toggleDiv = document.getElementById("warning-message-div");
+        
+        if (warningDict['error_text'] === "no warning") {
+            toggleDiv.style.display = "none";
+        } else {
+            toggleDiv.style.display = "block";
+            document.getElementById('error-title').innerHTML = warningDict['error_title'];
+            document.getElementById('error-text').innerHTML = warningDict['error_text'];
+        };
+    };
+
+
+    // TOGGLE AUTOFIT SETTINGS
+    function toggleAutofitSettings() {
+        document.getElementById('autofit-settings').style.display = 'block';
+        document.getElementById('autofit-settings-link').style.display = 'none';
+    };
+    // document.getElementById('toggle_breakpoint').checked = false;
+    // document.getElementById('toggle_breakpoint').checked = false;
+
+
+    // TOGGLE BREAKPOINT INPUT FIELD
+    function toggleBreakpointField() {
+        document.getElementById('enter-breakpoint-field').style.display = 'flex';
+        document.getElementById('autofit-breakpoint-checkbox').style.display = 'flex';
+        document.getElementById('adding-segment-link').style.display = 'none';
+    };
+
+
+
+</script>

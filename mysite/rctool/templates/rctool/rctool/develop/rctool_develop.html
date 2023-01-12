@@ -1,0 +1,238 @@
+{% extends 'rctool/base.html' %}
+{% load custom_tags %}
+{% load static %}
+
+
+
+
+
+{% block content %}
+</br>
+
+<div class="container">
+    <div class="tab-bar-container" style="display:flex;">
+        <ul class="tab-bar-list" style="flex:1">
+            <li class="tab-bar-item"><a href="{% url 'rctool_import' 0 %}">import</a></li>
+            <li class="tab-bar-item-current"><a href="#">develop</a></li>
+            <li class="tab-bar-item" id="export-tab"><a href="#" onclick="passToExport()">export</a></li>
+        </ul>
+        <!-- <p id="status-text" class="text-small" style="text-align:right; color:#9ec1a3;"></p> -->
+        {% if filename %}
+            <div class="tab-bar-filename-title">
+                <div style="display:flex; margin:0; padding:0;">
+                    <p style="color:grey; font-size:12px; font-weight:700; margin-right:5px; margin-bottom:0">filename: </p>
+                    <p style="color:grey; font-size:12px; margin-bottom:0">{{ filename|safe }}</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="container" style="background-color: #FFFFFF;">
+        
+        <div id="warning-message-div" style="display:none;">
+            <div class="row" style="padding: 10px 10px 0px 10px;">
+                <div class="col-12" style="padding: 10px 10px 0px 10px">
+                    <div class="card" style="background-color:#ae2029; padding: 0px;" id="side-panel-card">
+                        <div class="card-body" style="padding:10px 20px 0px 20px;">
+                            <strong id='error-title' style="color:#FFFFFF">
+                                {% if sidepanel_message %}
+                                    {{sidepanel_message.error_title|safe}}
+                                {% endif %}
+                            </strong><br>
+                            <p id='error-text' style="color:#F5F5F5; font-size:12.5px;">
+                                {% if sidepanel_message %}
+                                    {{sidepanel_message.error_text|safe}}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row" style="padding: 10px 10px 0px 10px;">
+            <div class="col" style="padding: 10px;">
+                <div class="card" id="input-settings-card">
+                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:13.5px; padding-top:7px;">Input Settings</h6>
+                    <div class="card-body" style="display: flex; padding-bottom:15px;">
+                        {% include 'rctool/rctool/develop/develop_input_settings.html' %}
+                    </div>
+                </div>
+            </div>
+
+            {% if messages %}
+                <div class="col-8" style="padding: 10px;">
+                    <div class="card">
+                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:13.5px; padding-top:7px;">Error</h6>
+                        <div class="card-body py-4" style="display: flex;">
+                            {% for message in messages %}
+                            <div>
+                                <strong class="error-text">Error autofitting rating curve.</strong><br>
+                                <p>{{message|safe}}<p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="col-8" style="padding: 10px;">
+                    <div class="card" id="rcchart-card">
+                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:13.5px; padding-top:7px;">Rating Curve</h6>
+
+                        <div class="card-body" style="margin:15px 0px 0px 0px; padding-bottom:0px;">
+                            <div class="rc-chart-container">
+                                <canvas id="rcChart">
+                                </canvas>
+                            </div>
+                            <div style="display: flex; justify-content: flex-end;">
+                                <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" checked="checked" onchange="toggleAxisFormat(this.checked)">
+                                <label for='toggle_axis_format'><p class="text-small">logarithmic axis</p></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+            {% endif %}
+
+        </div>
+    
+        <div class="row" style="padding: 0px 10px 10px 10px;">
+
+            <div class="col-4" style="padding: 10px;">
+                {% if not messages %}
+                    <div class="card" id="regression-residuals-card">
+                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:13.5px; padding-top:7px;">Rating Error</h6>
+                        <div class="card-body py-4">
+                            <div class="rc-chart-container">
+                                {% if rc.data %}
+                                    <canvas id="residualChart">
+                                    </canvas>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-8" style="padding: 10px;">
+                <div class="card" id="summary-card">
+                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:13.5px; padding-top:7px;">Summary</h6>
+                    {% include 'rctool/rctool/develop/develop_table.html' %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div style="display: none;"></div>
+    <form method="POST" action="../export/initialize" id="pass-develop-to-export-form">
+        {% csrf_token %}
+            <input type="hidden" id="n-seg_out" name="n-seg" value="{{ n_seg }}">
+            <input type="hidden" id="fieldData_stage_out" name="fieldData_stage" value="">
+            <input type="hidden" id="fieldData_discharge_out" name="fieldData_discharge" value="">
+            <input type="hidden" id="fieldData_active_out" name="fieldData_active" value="">
+            <input type="hidden" id="fieldData_datetime_out" name="fieldData_datetime" value=""> 
+            <input type="hidden" id="fieldData_comments_out" name="fieldData_comments" value="">
+            <input type="hidden" id="fieldData_uncertainty_out" name="fieldData_uncertainty" value="">
+            <input type="hidden" id="rc_out" name="rc_out" value="{{ rc }}">
+            <input type="hidden" id="filename_out" name="filename_out" value="{{ filename }}">
+            <button type="submit" onclick="location.href='{% url 'rctool_export_initialize' %}'" name='to-export-btn' id='to-export-btn' onkeydown="return event.key != 'Enter';" hidden></button>
+    </form>
+</div>
+
+
+{% include 'rctool/rctool/develop/rctool_develop_js.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+/* -------------------------------------------------------------------------------------------------------------------------------------------
+WALKTHROUGH
+----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+// Initialize
+
+try {
+    var developTourStatusID = {{ develop_tour_request_status_id|safe }};
+}
+catch(err) {
+    var developTourStatusID = 0;
+};
+
+
+// configure tour steps
+var developTour = new Tour({
+    backdrop: true,
+    delay: 750,
+    backdropPadding: 10,
+    onEnd: function (tour) {
+            developTourStatus = false;
+            },
+    steps: [
+        {
+            element: "#rcchart-card",
+            title: "Develop Walkthrough",
+            content: "Upon initialization, many different combinations of rating curves are automatically developed and the best fit (lowest RMSE) is chosen. To edit this curve, try dragging any endpoint. Change the axis scale using the checkbox below."
+        },
+        {
+            element: "#regression-residuals-card",
+            title: "Develop Walkthrough",
+            content: "To review the rating model fit, the percent change between field measured discharge and the rating model predicted discharge is calculated. These values should be kept as low as possible with an even distribution of points scattered about the vertical axis at 0."
+        },
+        {
+            element: "#summary-card",
+            title: "Develop Walkthrough",
+            content: "The summary panel displays all raw field data, rating curve parameters, and allows users to plot another curve for comparison. Try turning different field measured points on and off, then autofit a new segment. A reference curve can be added in the compare tab."
+        },
+        {
+            element: "#input-settings-card",
+            title: "Develop Walkthrough",
+            content: "More manual adjustments can be made in the input settings panel. The 'autofit new rating curve' button generates the best fit with any specified offsets or breakpoint."
+        },
+        {
+            element: "#offset1-panel",
+            title: "Develop Walkthrough",
+            content: "Initially entering an offset will calculate a new curve using the existing coefficient and exponent. This specified offset will also be applied to the autofit. The maxmimum allowable offset value is the minimum stage from the current dataset."
+        },
+        {
+            element: "#add-seg-link",
+            title: "Develop Walkthrough",
+            content: "To add another segment to the rating curve, select here."
+        },
+        {
+            element: "#enter-breakpoint-field",
+            title: "Develop Walkthrough",
+            content: "Initially, the breakpoint is autofitted with the lowest RMSE. Try entering a new breakpoint to manually adjust the segments. This specified breakpoint will also be applied to the autofit if it is within the range of the field measured stage values."
+        },
+        {
+            element: "#autofit-settings-link",
+            title: "Develop Walkthrough",
+            content: "Additional autofit settings such as applying a weighted fit or optimizing a new breakpoint can be found here."
+        },
+        {
+            element: "#export-tab",
+            title: "Develop Walkthrough",
+            content: "When you are done developing your rating curve, click here to export results and save current session."
+        }
+    ]});
+
+    if (developTourStatusID == 1) {
+        var developTourStatus = true;
+        developTour.init();
+        developTour.start(developTourStatus);
+        developTour.restart();
+    } else {
+        var developTourStatus = false;
+    };
+
+    
+</script>
+{% endblock %}
+
+
+
+

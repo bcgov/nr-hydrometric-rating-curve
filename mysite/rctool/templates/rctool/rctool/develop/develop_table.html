@@ -1,0 +1,149 @@
+{% load static %}
+{% load custom_tags %}
+
+
+
+<div class="tab">
+    <a class="tablinks" onclick="openTable(event, 'field')" id="defaultOpen">field</a>
+    <a class="tablinks" onclick="openTable(event, 'rating')">rating</a>
+    <a class="tablinks" onclick="openTable(event, 'compare')">compare</a>
+</div>
+  
+<div id="field" class="tabcontent">
+    <div class="card-body py-4" style="display: flex;">
+        <table class="table" id="fieldtable">
+            <tr class="table-header">
+              {% for header in table_dict.headings %}
+                {% if forloop.counter0 != 5 %}
+                    <th class="table-cell">{{ header }}</th>
+                {% endif %}
+              {% endfor %}
+              <th class="table-cell">use point</th>
+            </tr>
+            {% for row in table_dict.data %}
+            <tr class="table-row">
+              {% for cell in row %}
+                {% if forloop.counter0 != 5 %}
+                    <td class="table-cell">{{ cell }} </td>
+                {% endif %}
+              {% endfor %}
+              <td><input type="checkbox" id="toggle_data_point" name="toggle_data_point" checked="checked" onchange="togglePoint('{{ forloop.counter0 }}', this.checked)"></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+  
+<div id="rating" class="tabcontent">
+    <div class="card-body py-4" style="display: flex;">
+        {% if rc.parameters %}
+            <table class="table">
+                <tr class="table-header">
+                    <th class="table-cell">segment</th>
+                    <th class="table-cell">equation</th>
+                    <th class="table-cell">RMSE</th>
+                </tr>
+                <tr class="table-row">
+                    <td class="table-cell"><p id="table1-segment1-label">{{rc.parameters.0.label}}</p></td>
+                    <td class="table-cell" style="display:flex;">Q = <p id="table1-segment1-const">{{rc.parameters.0.const}}</p>( H <p id="table1-segment1-offset">{{offsets_val.0}}</p> ) <sup><p id="table1-segment1-exp">{{rc.parameters.0.exp}}</p></sup></td>
+                    <td class="table-cell"><p id="table1-segment1-rmse">{{rc.parameters.0.rmse}}</p></td>
+                    <td class="table-cell">
+                    </td>
+                </tr>
+                {% if rc.parameters.1 %}
+                <tr class="table-row">
+                    <td class="table-cell"><p id="table1-segment2-label">{{rc.parameters.1.label}}</p></td>
+                    <td class="table-cell" style="display:flex;">Q = <p id="table1-segment2-const">{{rc.parameters.1.const}}</p>( H <p id="table1-segment2-offset">{{offsets_val.1}}</p> )<sup><p id="table1-segment2-exp">{{rc.parameters.1.exp}}</p></sup></td>
+                    <td class="table-cell"><p id="table1-segment2-rmse">{{rc.parameters.1.rmse}}</p></td>
+                    <td class="table-cell">
+                    </td>
+                </tr>
+                {% endif %}
+            </table>
+        {% else %}
+        <p>Please set offset and select generate curve</p>
+        {% endif %}
+    </div>
+</div>
+  
+<div id="compare" class="tabcontent">
+    <div class="card-body py-4">
+        <table class="table">
+            <tr class="table-header">
+                <th class="table-cell">segment</th>
+                <th class="table-cell">coefficient</th>
+                <th class="table-cell">exponent</th>
+                <th class="table-cell">offset</th>
+                <th class="table-cell">start point</th>
+                <th class="table-cell">end point</th>
+                <th class="table-cell"><p style="color:#9ec1a3">add curve</p></th>
+                <!-- <th class="table-cell">edit rating</th> -->
+            </tr>
+            {% if rc.parameters %}
+                <tr class="table-row">
+                    <td class="table-cell"><p id="table2-segment1-label">{{rc.parameters.0.label}}</p></td>
+                    <td class="table-cell"><p id="table2-segment1-const">{{rc.parameters.0.const}}</p></td>
+                    <td class="table-cell"><p id="table2-segment1-exp">{{rc.parameters.0.exp}}</p></td>
+                    <td class="table-cell"><p id="table2-segment1-offset">{{rc.parameters.0.offset}}</p></td>
+                    <td class="table-cell"><p id="table2-endpoint-Seg1H0">{{rc.parameters.0.seg_bounds.0.0}}</p></td>
+                    <td class="table-cell"><p id="table2-endpoint-Seg1H1">{{rc.parameters.0.seg_bounds.1.0}}</p></td>
+                    <td class="table-cell"><p></p></td>
+                </tr>
+            {% endif %}
+            {% if rc.parameters.1 %}
+                <tr class="table-row">
+                    <td class="table-cell"><p id="table2-segment2-label">{{rc.parameters.1.label}}</p></td>
+                    <td class="table-cell"><p id="table2-segment2-const">{{rc.parameters.1.const}}</p></td>
+                    <td class="table-cell"><p id="table2-segment2-exp">{{rc.parameters.1.exp}}</p></td>
+                    <td class="table-cell"><p id="table2-segment2-offset"> {{rc.parameters.1.offset}}</p></td>
+                    <td class="table-cell"><p id="table2-endpoint-Seg2H0">{{rc.parameters.1.seg_bounds.0.0}}</p></td>
+                    <td class="table-cell"><p id="table2-endpoint-Seg2H1">{{rc.parameters.1.seg_bounds.1.0}}</p></td>
+                    <td class="table-cell"><p></p></td>
+                </tr>
+            {% endif %}
+            <tr class="table-row">
+                <td class="table-cell">
+                    <div style="width: 40px;">
+                        <input type="text" class="form-control form-control-sm" name="compareLabel" id="compareLabel" style="font-size: 12px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    </div>
+                </td>
+                <td class="table-cell">
+                    <div style="width: 40px;">
+                        <input type="number" step="0.01" class="form-control form-control-sm" name="compareConst" id="compareConst" style="font-size: 12px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    </div>
+                </td>
+                <td class="table-cell">
+                    <div style="width: 40px;">
+                        <input type="number" step="0.01" class="form-control form-control-sm" name="compareExp" id="compareExp" style="font-size: 12px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    </div>
+                </td>
+                <td class="table-cell">
+                    <div style="width: 40px;">
+                        <input type="number" step="0.01" class="form-control form-control-sm" name="compareOffset" id="compareOffset" style="font-size: 12px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    </div>
+                </td>
+                <td class="table-cell">
+                    <div style="width: 40px;">
+                        <input type="number" step="0.01" class="form-control form-control-sm" name="compareStartBounds" id="compareStartBounds" style="font-size: 12px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    </div>
+                </td>
+                <td class="table-cell">
+                    <div style="width: 40px;">
+                        <input type="number" step="0.01" class="form-control form-control-sm" name="compareEndBounds" id="compareEndBounds" style="font-size: 12px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    </div>
+                </td>
+                <td class="table-cell">
+                    <button class="btn btn-success btn-sm" type="submit" href="#" onclick="addCompareCurve()" style="background-color: #9ec1a3 !important; border-color: #FFFFFF; width: 40px;" onkeydown="return event.key != 'Enter';"> + </button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+<!--
+<script>
+    // Get the element with id="defaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+</script>
+-->

@@ -1,0 +1,37 @@
+{% extends 'rctool/base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+    <div class="container">
+        <div class="row justify-content-md-center" style="padding: 40px;">
+            <div class="col-11 col-lg-10 col-xl-10">
+                <div class="card">
+
+                    <div class="card-body py-4" style="width: 65%; margin: auto;">
+                        <H2 style="color:#003466; font-family:sans-serif; font-weight:bold; margin: 20px; text-align: center;">Welcome</H2>
+                        <div style="margin-bottom: 25px;">
+                            <p style="color:grey;">
+                                A hydrometric rating curve describes the mathematical relationship between stage and discharge. This platform
+                                allows users to upload any stage and discharge datasets, develop and optimize rating models as well as
+                                save and compare results from previous sessions. Please follow the links below to get started.
+                            </p>
+                        </div>
+                        <div class='import-button-container' style="display: flex; margin-bottom:30px;">
+                            <div style="flex:1; margin-right:10px;">
+                                <a class='btn btn-primary btn-block' style="background-color: #758fa8 !important; border-color: #FFFFFF;" href="{% url 'rctool_import' 1 %}">take a tour</a>
+                            </div>
+                            <div style='flex:1; margin-left:10px;'>
+                                <a class="btn btn-primary btn-block" style="background-color: #6c747e !important; border-color: #FFFFFF;" href="{% url 'rctool_import' 0 %}">new session</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+{% endblock %}

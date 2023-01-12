@@ -1,0 +1,181 @@
+{% extends 'rctool/base.html' %}
+{% load static %}
+
+
+{% block content %}
+</br>
+<div class="container">
+    <div class="tab-bar-container">
+        <ul class="tab-bar-list">
+            <li class="tab-bar-item-current"><a href="{% url 'rctool_import' 0 %}">import</a></li>
+            <li class="tab-bar-item" style="pointer-events: none;"><a href="#">develop</a></li>
+            <li class="tab-bar-item" style="pointer-events: none;"><a href="#">export</a></li>
+        </ul>
+    </div>
+
+    <div class="container" style="background-color: #FFFFFF;">
+        <div class="row justify-content-md-center" style="padding: 40px;">
+            <div div class="col-12 col-lg-11 col-xl-11">
+                <div class="card">
+
+                    <h5 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF;">Import Data</h5>
+                    <div class="card-body py-4" style="display: flex;">
+                    
+                        <div class="card-body-left">
+                            <form method="POST" id="import-data-form" enctype="multipart/form-data">
+                                <div class="form-group">
+                                    {% csrf_token %}
+                                    <label class="form-label">import</label><br>
+                                    <select class="form-control" id="input-session-type" name="input-session-type" onChange="toggleInputForm(this.value)">
+                                        <option value="new-session" selected>new data</option>
+                                        <option value="previous-session">previous session</option>
+                                    </select>
+                                    <div id="toggle-div">
+                                        <label for="header row" class="form-label" style="margin-top: 15px">header row number</label>
+                                        {{form.header_row}}
+                                    </div>
+                                    <br>
+                                    {{form.csv_upload}}
+                                </div>
+                                <br>
+                                <div class="form-group">
+                                    <button class="btn btn-primary btn-block" style="background-color: #6c747e !important; border-color: #FFFFFF;" type="submit" id="enter-data-button" value="submit">load</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card-body-right">
+                            {% if not table_data %}
+                                <p id="input-instructions">
+                                    Please upload in csv format with the specific column names and format specified below.
+                                </p>
+                                <div id="example-data" style="display:block">
+                                    <table class="table">
+                                        <tr class="table-header">
+                                            <th class="table-cell">datetime</th>
+                                            <th class="table-cell">discharge</th>
+                                            <th class="table-cell">stage</th>
+                                            <th class="table-cell">uncertainty</th>
+                                            <th class="table-cell">comments</th>
+                                        </tr>
+                                        <tr class="table-row">
+                                            <td class="table-cell">YYYY-MM-DD HH:MM</td>
+                                            <td class="table-cell">number</td>
+                                            <td class="table-cell">number</td>
+                                            <td class="table-cell">decimal fraction (optional)</td>
+                                            <td class="table-cell">text (optional)</td>
+                                        </tr>
+                                        <tr class="table-row">
+                                            <td class="table-cell">YYYY-MM-DD HH:MM</td>
+                                            <td class="table-cell">number</td>
+                                            <td class="table-cell">number</td>
+                                            <td class="table-cell">decimal fraction (optional)</td>
+                                            <td class="table-cell">text (optional)</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            {% endif %}
+                            {% if messages %}
+                            {% for message in messages %}
+                            <div>
+                                <strong class="error-text">{{message|safe}}</strong>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                            {% if table_data %}
+                            {% include 'rctool/components/table.html' %}
+                            <br>
+                            <div class='import-button-container' style="display: flex;">
+                                <div style="flex:1; margin-right:10px;">
+                                    <form method="POST" action="../../develop/initialize" id="import-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" id="pass-filename-to-develop" name="pass-filename-to-develop" value="{{ filename }}">
+                                        <input type="hidden" id="pass-field-to-develop" name="pass-field-to-develop" value="{{ raw_field_data }}">
+                                        <input type="hidden" id="pass-tour-status-to-develop" name="pass-tour-status-to-develop" value="{{ tour_request_id }}">
+                                        <button class='btn btn-success btn-block' id="submit-import" type="submit" onclick="location.href='{% url 'rctool_develop_initialize' %}'" name='savebtn' style="background-color: #8FBC8F !important; border-color: #FFFFFF;">next</button>
+                                    </form>
+                                </div>
+                                <div style='flex:1; margin-left:10px;'>
+                                    <a class="btn btn-danger btn-block" href="{% url 'rctool_import' 0 %}" style="background-color: #cc3333 !important; border-color: #cc3333;">cancel</a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+    <script>
+
+        function toggleInputForm(toggleFormVal) {
+            console.log(toggleFormVal);
+            var toggleDiv = document.getElementById("toggle-div");
+                if (toggleFormVal === "new-session") {
+                    document.getElementById('example-data').style.display = "block";
+                    toggleDiv.style.display = "block";
+                    document.getElementById("input-instructions").innerHTML = "Please upload in csv format with column names; 'datetime', 'discharge', 'stage', 'uncertainty', and 'comments'"
+                } else {
+                    toggleDiv.style.display = "none";
+                    document.getElementById('example-data').style.display = "none";
+                    document.getElementById("input-instructions").innerHTML = "Please upload .dat file from previous session."
+                    document.getElementById("import-data-form").action = '../../develop/initialize'
+            };
+
+        };
+
+        // APP WALKTHROUGH
+
+        // Check if user selected tour
+        var importTourStatusID = {{ tour_request_id|safe }};
+        if (importTourStatusID == 1) {
+            var importTourStatus = true;
+        } else {
+            var importTourStatus = false;
+        };
+
+        console.log('importTourStatus', importTourStatus)
+        
+
+        // configure tour steps
+        var importTour = new Tour({
+            onEnd: function (tour) {
+                importTourStatus = false;
+                //document.getElementById("pass-tour-status-to-develop").value = 0;
+                //console.log('document.getElementById("pass-tour-status-to-develop").value ', document.getElementById("pass-tour-status-to-develop"))
+            },
+            steps: [
+                {
+                    element: "#input-session-type",
+                    title: "Import Walkthrough",
+                    content: "To begin, a previous session or data from a new session can be uploaded. This step can be skipped for this tour since a sample dataset has already been uploaded."
+                },
+                {
+                    element: "#form-header-row",
+                    title: "Import Walkthrough",
+                    content: "Field data can be uploaded using a csv file with column names specified on the right. When importing data, select which row has these column headings. If uncertainty data is uploaded, missing values will be filled in as 0.5 (5 %)."
+                },
+                {
+                    element: "#enter-data-button",
+                    title: "Import Walkthrough",
+                    content: "To continue this tour with the sample data, please select submit below and then save."
+                }
+            ]
+        });
+        
+
+        if (importTourStatus == true) {
+            importTour.init();
+            importTour.start(importTourStatus);
+            importTour.restart();
+        };
+
+    </script>
+
+{% endblock %}

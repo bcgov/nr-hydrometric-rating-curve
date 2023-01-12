@@ -1,0 +1,136 @@
+
+<form method="POST" action="." id="rcform">
+    {% csrf_token %}
+    <p style="color: #003466; margin-bottom: 3px; font-size:13.5px; font-weight:500;">segment 1</p>
+    <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
+        <div style="flex: 1; margin-right: 10px;">
+            <p class="text-medium">end points:</p>
+        </div>
+        <div style="flex: 3;">
+            <div style="display:flex">
+                <input type="number" step="any" class="form-control form-control-sm" name="endpointSeg1H0" id="endpointSeg1H0" placeholder="H1" value="{{rc.parameters.0.seg_bounds.0.0}}" onchange="setEndpoints(0, 0, 0, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="initial stage">
+                <input type="number" step="any" class="form-control form-control-sm" name="endpointSeg1Q0" id="endpointSeg1Q0" placeholder="Q1" value="{{rc.parameters.0.seg_bounds.0.1}}" onchange="setEndpoints(0, 0, 1, this.value)" onkeydown="return event.key != 'Enter';" style="margin-right: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="initial discharge">
+                <input type="number" step="any" class="form-control form-control-sm" name="endpointSeg1H1" id="endpointSeg1H1" placeholder="H2" value="{{rc.parameters.0.seg_bounds.1.0}}" onchange="setEndpoints(0, 1, 0, this.value)" onkeydown="return event.key != 'Enter';" style="margin-left: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="final stage">
+                <input type="number" step="any" class="form-control form-control-sm" name="endpointSeg1Q1" id="endpointSeg1Q1" placeholder="Q2" value="{{rc.parameters.0.seg_bounds.1.1}}" onchange="setEndpoints(0, 1, 1, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="final discharge">
+            </div>
+        </div>
+    </div>
+    <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;" id="offset1-panel">
+        <div style="flex: 1; margin-right: 10px;">
+            <p class="text-medium">offset:</p>
+        </div>
+        <div style="flex: 3;">
+            <input type="number" step="any" max="{{ max_offset }}" class="form-control form-control-sm" name="offset1" id="offset1" value="{{ offsets.0 }}" onchange="setOffset(0, this.value, '{{ max_offset }}')" style="font-size:12px;" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="segment 1 offset" required>
+        </div>
+    </div>
+    <div style="display: flex; width: 100%; margin: 20px 0px 5px 0px;">
+        <div style="flex: 1; margin-right: 10px;">
+            <p class="text-medium">equation:</p>
+        </div>
+        <div style="flex: 3;">
+            <div style="display:flex; font-size:12.5px; color:#696969;">
+                Q = <p id="segment1-const">{{rc.parameters.0.const}}</p>
+                    ( H <p id="segment1-offset">{{offsets_val.0}}</p>)
+                <sup><p id="segment1-exp">{{rc.parameters.0.exp}}</p></sup>
+            </div>
+        </div>
+    </div>
+
+    <!--
+    {% if n_seg <= 1 %}
+    <div id="adding-segment-link" style="display:flex; margin:0px 0px 10px 0px;">
+        <a class="add-seg-link" href="#" onclick="toggleBreakpointField()">(+) add segment</a>
+    </div>
+    {% endif %}
+    <div id="enter-breakpoint-field" style="display:none; width: 100%; margin-top: 0px">
+        <div style="flex: 1; margin-right: 10px;">
+            <p class="text-medium">breakpoint:</p>
+        </div>
+        <div style="flex: 3;">
+            <input type="number" step="any" class="form-control form-control-sm" name="breakpoint1" id="breakpoint1" value="{{ breakpoint1 }}" onchange="setBreakpoint1(this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;">
+        </div>
+    </div>
+    -->
+
+    {% if n_seg <= 1 %}
+        <button type="submit" id="add-seg-link" class="add-seg-link" href="{% url 'rctool_develop_autofit' %}" onclick="addRemoveSeg(1)" onkeydown="return event.key != 'Enter';">(+) add segment</button>
+    {% endif %}
+
+    <input type="hidden" id="n-seg" name="n-seg" value="{{ n_seg }}" onkeydown="return event.key != 'Enter';">
+    <input type="hidden" id="filename" name="filename" value="{{ filename|safe }}" onkeydown="return event.key != 'Enter';">
+    <input type="hidden" id="fieldData_stage" name="fieldData_stage" value="" onkeydown="return event.key != 'Enter';">
+    <input type="hidden" id="fieldData_discharge" name="fieldData_discharge" value="" onkeydown="return event.key != 'Enter';">
+    <input type="hidden" id="fieldData_active" name="fieldData_active" value="" onkeydown="return event.key != 'Enter';">
+    <input type="hidden" id="fieldData_datetime" name="fieldData_datetime" value="" onkeydown="return event.key != 'Enter';">  
+    <input type="hidden" id="fieldData_comments" name="fieldData_comments" value="" onkeydown="return event.key != 'Enter';">
+    <input type="hidden" id="fieldData_uncertainty" name="fieldData_uncertainty" value="" onkeydown="return event.key != 'Enter';">
+    <input type="hidden" id="pass-tour-status-to-develop" name="pass-tour-status-to-develop" value="{{ develop_tour_request_status_id }}" onkeydown="return event.key != 'Enter';">
+    {% if n_seg > 1 %}
+        <div id="enter-breakpoint-field" style="display:flex; width: 100%; margin-top: 0px">
+            <div style="flex: 1; margin-right: 10px;">
+                <p class="text-medium">breakpoint:</p>
+            </div>
+            <div style="flex: 3;">
+                <input type="number" step="any" class="form-control form-control-sm" name="breakpoint1" id="breakpoint1" value="{{ breakpoint1 }}" max="{{ breakpoint_max }}" min="{{ breakpoint_min }}" onchange="setBreakpoint1(this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="breakpoint">
+            </div>
+        </div>
+        <br>
+        <p style="color: #003466; margin-bottom: 3px; font-size: 13.5px; font-weight:500;">segment 2</p>
+        <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
+            <div style="flex: 1; margin-right: 10px;">
+                <p class="text-medium">end points:</p>
+            </div>
+            <div style="flex: 3;">
+                <div style="display:flex">
+                    <input type="number" step="any" class="form-control form-control-sm" name="endpointSeg2H0" id="endpointSeg2H0" placeholder="H1" value="{{rc.parameters.1.seg_bounds.0.0}}" onchange="setEndpoints(1, 0, 0, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="initial stage">
+                    <input type="number" step="any" class="form-control form-control-sm" name="endpointSeg2Q0" id="endpointSeg2Q0" placeholder="Q1" value="{{rc.parameters.1.seg_bounds.0.1}}" onchange="setEndpoints(1, 0, 1, this.value)" onkeydown="return event.key != 'Enter';" style="margin-right: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="initial discharge">
+                    <input type="number" step="any" class="form-control form-control-sm" name="endpointSeg2H1" id="endpointSeg2H1" placeholder="H2" value="{{rc.parameters.1.seg_bounds.1.0}}" onchange="setEndpoints(1, 1, 0, this.value)" onkeydown="return event.key != 'Enter';" style="margin-left: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="final stage">
+                    <input type="number" step="any" class="form-control form-control-sm" name="endpointSeg2Q1" id="endpointSeg2Q1" placeholder="Q2" value="{{rc.parameters.1.seg_bounds.1.1}}" onchange="setEndpoints(1, 1, 1, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="final discharge">
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
+            <div style="flex: 1; margin-right: 10px;">
+                <p class="text-medium">offset:</p>
+            </div>
+            <div style="flex: 3;">
+                <input type="number" step="any" max="{{ max_offset }}" class="form-control form-control-sm" name="offset2" id="offset2" value="{{ offsets.1 }}" onchange="setOffset(1, this.value, '{{ max_offset }}')" onkeydown="return event.key != 'Enter';" href="#" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="segment 2 offset" required>
+            </div>
+        </div>
+        <div style="display: flex; width: 100%; margin: 20px 0px 0px 0px;">
+            <div style="flex: 1; margin-right: 10px;">
+                <p class="text-medium">equation:</p>
+            </div>
+            <div style = " flex: 3;">
+                <div style="display:flex; font-size:12.5px; color:#696969;">
+                    Q = <p id="segment2-const">{{rc.parameters.1.const}}</p>
+                        ( H <p id="segment2-offset">{{offsets_val.1}}</p>)
+                    <sup><p id="segment2-exp">{{rc.parameters.1.exp}}</p></sup>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="remove-seg-link" href="{% url 'rctool_develop_autofit' %}" onclick="addRemoveSeg(-1)" onkeydown="return event.key != 'Enter';">(-) remove segment</button>
+    {% endif %}
+    <br>
+    <br>
+    <div id="autofit-settings-link" style="display:flex; margin:0px 0px 10px 0px;">
+        <i class="fa fa-cog" aria-hidden="true" style="color: #A9A9A9; margin-right:4px;"></i>
+        <a class="autofit-settings-text" href="#" onclick="toggleAutofitSettings()"> autofit settings</a>
+    </div>
+    <div id="autofit-settings" style="display:none;">
+        {% if n_seg > 1 %}
+            <div id='autofit-breakpoint-checkbox' style="display:flex; margin:0px; padding:0px;">
+                <input type="checkbox" id="toggle_breakpoint" name="toggle_breakpoint" onchange="" style="margin:0px; padding:0px;">
+                <label><p class="text-small margin-left:3px; padding-left:3px"> autofit new breakpoint</p></label>
+            </div>
+        {% endif %}
+        <div style="display: flex; margin:0px; padding:0px;">
+            <input type="checkbox" id="toggle_weighted_fit" name="toggle_weighted_fit" onchange="" style="margin:0px; padding:0px;">
+            <label><p class="text-small margin-left:3px; padding-left:3px;"> autofit with weighted uncertainty</p></label>
+        </div>
+    </div>
+    <div class="d-grid gap-2">
+        <button class="btn btn-secondary btn-block" type="submit" href="{% url 'rctool_develop_autofit' %}" onkeydown="return event.key != 'Enter';">autofit new rating curve</button>
+    </div>
+
+</form>
