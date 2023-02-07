@@ -17,7 +17,7 @@ from .forms import import_rc_data, develop_rc, export_rc_data
 from .functions.fit_linear_model import fit_linear_model
 from json import dumps, loads
 import json
-from rctool_frontend.utils import render_to_pdf
+from rctool.utils import render_to_pdf
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
