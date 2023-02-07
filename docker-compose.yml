@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./staticfiles:/static
+    restart: always
+    depends_on:
+      - web
+    logging:
+      options:
+        max-size: 10m
+  web:
+    build: .
+    command: sh -c "python manage.py makemigrations --noinput &&
+                    python manage.py migrate --noinput &&
+                    python manage.py collectstatic --noinput &&
+                    gunicorn --bind=:${WEB_PORT_INTERNAL} --workers=${GUNICORN_WORKERS} --log-level=info --limit-request-line=${GUNICORN_LIMIT_REQ_LINE} --limit-request-field_size=${GUNICORN_LIMIT_REQ_FIELDSIZE} --timeout=${GUNICORN_TIMEOUT} rctool_frontend.wsgi:application"
+    volumes:
+      - .:/app
+      - ./static:/static
+    ports:
+      - "${WEB_PORT_INTERNAL}:${WEB_PORT_INTERNAL}"
+    env_file:
+      - .env
+    restart: always 
+    logging:
+      options:
+        max-size: 10m
