@@ -5,7 +5,7 @@ description: |
 spec:
   - name: PIA
     status: PIA_STATUS_HERE
-    last-updated: '2023-01-12T21:45:17.346Z'
+    last-updated: "2023-01-12T21:45:17.346Z"
   - name: STRA
     status: STRA_STATUS_HERE
-    last-updated: '2023-01-12T21:45:17.346Z'
+    last-updated: "2023-01-12T21:45:17.346Z"

@@ -1,0 +1,62 @@
+---
+version: "3.8"
+
+services:
+  database:
+    build:
+      context: database
+    container_name: database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: default
+      POSTGRES_DB: default
+    hostname: database
+    restart: always
+    user: postgres
+    volumes:
+      - /pgdata
+
+  backend:
+    container_name: backend
+    entrypoint:
+      - "sh"
+      - "-c"
+      - "npm i && npm run start"
+    environment:
+      NODE_ENV: development
+      POSTGRESQL_HOST: database
+      POSTGRESQL_USER: postgres
+      POSTGRESQL_PASSWORD: default
+      POSTGRESQL_DATABASE: default
+    hostname: backend
+    image: registry.access.redhat.com/ubi8/nodejs-18-minimal
+    links:
+      - database
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./backend:/app:z
+      - /app/node_modules
+    user: root
+    working_dir: "/app"
+
+  frontend:
+    container_name: frontend
+    entrypoint:
+      - "sh"
+      - "-c"
+      - "chown -R root . && npm ci && npm run dev"
+    environment:
+      NODE_ENV: development
+      BACKEND_URL: backend
+    hostname: frontend
+    image: registry.access.redhat.com/ubi8/nodejs-18-minimal
+    links:
+      - backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app:z
+      - /app/node_modules
+    user: root
+    working_dir: "/app"
