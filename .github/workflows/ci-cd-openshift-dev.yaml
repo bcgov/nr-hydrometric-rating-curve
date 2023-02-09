@@ -26,9 +26,9 @@ jobs:
       packages: write
     strategy:
       matrix:
-        package: [ mysite ]
+        package: [ frontend ]
         include:
-          - package: mysite
+          - package: frontend
             triggers: ('*')
 
     steps:
