@@ -1,0 +1,54 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "autodiscover": true,
+  "autodiscoverFilter": "bcgov/nr-quickstart-typescript",
+  "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
+  "configMigration": true,
+  "configWarningReuseIssue": true,
+  "onboarding": false,
+  "packageRules": [
+    {
+      "dependencyDashboardApproval": true,
+      "matchManagers": [
+        "npm"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "lockFileMaintenance"
+      ],
+      "addLabels": [
+        "dependencies",
+        "javascript"
+      ],
+      "prConcurrentLimit": 5,
+      "groupName": "npm all non-major dependencies",
+      "groupSlug": "npm all-minor-patch"
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "addLabels": [
+        "dependencies"
+      ],
+      "groupName": "github actions all non-major dependencies",
+      "groupSlug": "github actions all-minor-patch"
+    },
+    {
+      "matchManagers": [
+        "dockerfile",
+        "docker-compose"
+      ],
+      "enabled": false
+    }
+  ],
+  "platform": "github",
+  "username": "renovate-release"
+}
