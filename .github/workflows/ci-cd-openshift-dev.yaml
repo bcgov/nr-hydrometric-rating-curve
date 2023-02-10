@@ -58,7 +58,7 @@ jobs:
             overwrite: true
 
     steps:
-      - uses: bcgov-nr/action-deployer-openshift@v0.1.0
+      - uses: bcgov-nr/action-deployer-openshift@v1.0.1
         with:
           environment: dev
           file: ${{ matrix.file }}
