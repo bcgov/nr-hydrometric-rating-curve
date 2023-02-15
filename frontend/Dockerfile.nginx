@@ -31,13 +31,13 @@ COPY --from=BUILDER /app/staticfiles /static
 COPY --from=BUILDER /app/nginx.conf /app/nginx.conf
 COPY start_nginx.sh /app/start_nginx.sh
 ## add permissions for nginx user
-RUN chown -R nginx:nginx /app && chmod -R 755 /app && \
-        chown -R nginx:nginx /var/cache/nginx && \
-        chown -R nginx:nginx /var/log/nginx && \
-        chown -R nginx:nginx /etc/nginx/conf.d && \
-        chown -R nginx:nginx /etc/nginx/nginx.conf
+RUN chown -R nginx:nginx /app && chmod -R 777 /app && \
+        chown -R nginx:nginx /var/cache/nginx && chmod -R 777 /var/cache/nginx && \
+        chown -R nginx:nginx /var/log/nginx && chmod -R 777 /var/log/nginx && \
+        chown -R nginx:nginx /etc/nginx/conf.d && chmod -R 777 /etc/nginx/conf.d && \
+        chown -R nginx:nginx /etc/nginx/nginx.conf && chmod -R 777 /etc/nginx/nginx.conf
 RUN touch /var/run/nginx.pid && \
-        chown -R nginx:nginx /var/run/nginx.pid
+        chown -R nginx:nginx /var/run/nginx.pid && chmod -R 777 /var/run/nginx.pid
 
 USER nginx
 CMD ["sh", "-c", "/app/start_nginx.sh"]
