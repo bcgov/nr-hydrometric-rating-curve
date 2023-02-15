@@ -73,11 +73,11 @@ jobs:
         name: [frontend, rctool]
         include:
           - name: frontend
-            file: frontend/openshift.deploy.yml
+            file: frontend/openshift.nginx.deploy.yml
             overwrite: true
             parameters: -p MIN_REPLICAS=1 -p MAX_REPLICAS=1
           - name: rctool
-            file: frontend/openshift.nginx.deploy.yml
+            file: frontend/openshift.deploy.yml
             overwrite: true
             parameters: -p MIN_REPLICAS=1 -p MAX_REPLICAS=1
     steps:
