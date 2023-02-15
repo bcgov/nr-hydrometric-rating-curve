@@ -29,11 +29,14 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PATH="/venv/bin:$PATH"
-
+COPY . /app
+COPY start_app.sh /app/start_app.sh
 # create and switch to the app user
+RUN  chmod -R 777 /app
 RUN useradd -m rctool
 USER rctool
 
 # copy project
 COPY --from=BUILDER /venv /venv
-COPY . ./app/
+
+CMD ["sh", "-c", "/app/start_app.sh"]
