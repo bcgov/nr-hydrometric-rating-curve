@@ -9,7 +9,7 @@ parameters:
     value: nr-hydrometric-rating-curve
   - name: COMPONENT
     description: Component name
-    value: rctool
+    value: frontend
   - name: ZONE
     description: Deployment zone, e.g. pr-### or prod
     required: true
@@ -19,13 +19,13 @@ parameters:
   - name: DOMAIN
     value: apps.silver.devops.gov.bc.ca
   - name: CPU_REQUEST
-    value: "100m"
+    value: "20m"
   - name: MEMORY_REQUEST
-    value: "250Mi"
+    value: "50Mi"
   - name: CPU_LIMIT
-    value: "250m"
+    value: "75m"
   - name: MEMORY_LIMIT
-    value: "500Mi"
+    value: "250Mi"
   - name: MIN_REPLICAS
     description: The minimum amount of replicas for the horizontal pod autoscaler.
     value: "3"
@@ -37,21 +37,8 @@ parameters:
     value: ghcr.io
   - name: PROMOTE
     description: Image (namespace/name:tag) to promote/import
-    value: bcgov/nr-hydrometric-rating-curve/rctool:prod
-  - name: SECRET_KEY
-    description: Secret KEY
-    from: "[a-zA-Z0-9]{32}"
-    generate: expression
+    value: bcgov/nr-hydrometric-rating-curve/nginx:prod
 objects:
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: ${NAME}-${ZONE}-rctool
-      labels:
-        app: ${NAME}-${ZONE}
-    stringData:
-      SECRET_KEY: ${SECRET_KEY}
-
   - apiVersion: v1
     kind: ImageStream
     metadata:
@@ -101,25 +88,8 @@ objects:
               imagePullPolicy: Always
               name: ${NAME}
               env:
-                - name: WEB_PORT_INTERNAL
-                  value: "3000"
-                - name: ALLOWED_HOSTS
-                  value: "*"
-                - name: DEBUG
-                  value: "False"
-                - name: GUNICORN_WORKERS
-                  value: "2"
-                - name: GUNICORN_LIMIT_REQ_LINE
-                  value: "4094"
-                - name: GUNICORN_LIMIT_REQ_FIELDSIZE
-                  value: "8190"
-                - name: GUNICORN_TIMEOUT
-                  value: "1800"
-                - name: SECRET_KEY
-                  valueFrom:
-                    secretKeyRef:
-                      name: "${NAME}-${ZONE}-rctool"
-                      key: SECRET_KEY
+                - name: BACKEND_URL
+                  value: http://${NAME}-${ZONE}-rctool
               ports:
                 - containerPort: 3000
                   protocol: TCP
@@ -163,7 +133,23 @@ objects:
           targetPort: 3000
       selector:
         deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
-
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      labels:
+        app: ${NAME}-${ZONE}
+      name: ${NAME}-${ZONE}-${COMPONENT}
+    spec:
+      host: ${NAME}-${ZONE}-${COMPONENT}.${DOMAIN}
+      port:
+        targetPort: 3000-tcp
+      to:
+        kind: Service
+        name: ${NAME}-${ZONE}-${COMPONENT}
+        weight: 100
+      tls:
+        termination: edge
+        insecureEdgeTerminationPolicy: Redirect
   - apiVersion: autoscaling/v2
     kind: HorizontalPodAutoscaler
     metadata:

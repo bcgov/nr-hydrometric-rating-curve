@@ -41,15 +41,23 @@ jobs:
       packages: write
     strategy:
       matrix:
-        package: [frontend]
+        package: [frontend,rctool]
         include:
           - package: frontend
             triggers: ('frontend/')
+            build_file: ./frontend/Dockerfile.nginx
+            build_context: ./frontend
+          - package: rctool
+            triggers: ('frontend/')
+            build_file: ./frontend/Dockerfile.app
+            build_context: ./frontend
     steps:
       - uses: actions/checkout@v3
-      - uses: bcgov-nr/action-builder-ghcr@v1.0.0
+      - uses: bcgov-nr/action-builder-ghcr@v1.1.0
         with:
           package: ${{ matrix.package }}
+          build_file: ${{ matrix.build_file }}
+          build_context: ${{ matrix.build_context }}
           tag: ${{ github.event.number }}
           tag_fallback: test
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -62,12 +70,16 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        name: [frontend]
+        name: [frontend, rctool]
         include:
           - name: frontend
+            file: frontend/openshift.nginx.deploy.yml
+            overwrite: true
+            parameters: -p MIN_REPLICAS=1 -p MAX_REPLICAS=1
+          - name: rctool
             file: frontend/openshift.deploy.yml
             overwrite: true
-            parameters: -p MIN_REPLICAS=1 -p MAX_REPLICAS=2
+            parameters: -p MIN_REPLICAS=1 -p MAX_REPLICAS=1
     steps:
       - uses: bcgov-nr/action-deployer-openshift@v1.0.1
         with:

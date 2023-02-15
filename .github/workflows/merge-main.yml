@@ -45,9 +45,12 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        name: [frontend]
+        name: [frontend,rctool]
         include:
           - name: frontend
+            file: frontend/openshift.deploy.nginx.yml
+            overwrite: true
+          - name: rctool
             file: frontend/openshift.deploy.yml
             overwrite: true
     steps:

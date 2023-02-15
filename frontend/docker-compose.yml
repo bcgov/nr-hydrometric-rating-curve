@@ -2,32 +2,30 @@ version: "3.9"
 
 services:
   nginx:
-    image: nginx:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    image: hr-curve-nginx:latest
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./staticfiles:/static
-    restart: always
+    restart: unless-stopped
+    env_file:
+      - .env
     depends_on:
       - web
     logging:
       options:
         max-size: 10m
   web:
-    build: .    
-    command: sh -c "python manage.py makemigrations --noinput &&
-                    python manage.py migrate --noinput &&
-                    python manage.py collectstatic --noinput &&
-                    gunicorn --bind=:${WEB_PORT_INTERNAL} --workers=${GUNICORN_WORKERS} --log-level=info --limit-request-line=${GUNICORN_LIMIT_REQ_LINE} --limit-request-field_size=${GUNICORN_LIMIT_REQ_FIELDSIZE} --timeout=${GUNICORN_TIMEOUT} rctool_project.wsgi:application"
-    volumes:
-      - .:/app
-      - ./staticfiles:/staticfiles
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    image: hr-curve:latest
     ports:
       - "${WEB_PORT_INTERNAL}:${WEB_PORT_INTERNAL}"
     env_file:
       - .env
-    restart: always 
+    restart: unless-stopped
     logging:
       options:
         max-size: 10m
