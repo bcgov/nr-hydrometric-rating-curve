@@ -45,11 +45,11 @@ jobs:
         include:
           - package: frontend
             triggers: ('frontend/')
-            build_file: Dockerfile.nginx
+            build_file: ./frontend/Dockerfile.nginx
             build_context: ./frontend
           - package: rctool
             triggers: ('frontend/')
-            build_file: Dockerfile.app
+            build_file: ./frontend/Dockerfile.app
             build_context: ./frontend
     steps:
       - uses: actions/checkout@v3
