@@ -104,9 +104,9 @@ objects:
                 - name: WEB_PORT_INTERNAL
                   value: "3000"
                 - name: ALLOWED_HOSTS
-                  value: ${NAME}-${ZONE}-frontend.${DOMAIN}
+                  value: "${NAME}-${ZONE}-frontend.${DOMAIN}"
                 - name: DEBUG
-                  value: False
+                  value: "False"
                 - name: GUNICORN_WORKERS
                   value: "2"
                 - name: GUNICORN_LIMIT_REQ_LINE
@@ -118,7 +118,7 @@ objects:
                 - name: SECRET_KEY
                   valueFrom:
                     secretKeyRef:
-                      name: ${NAME}-${ZONE}-rctool
+                      name: "${NAME}-${ZONE}-rctool"
                       key: SECRET_KEY
               ports:
                 - containerPort: 3000
