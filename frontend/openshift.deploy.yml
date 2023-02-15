@@ -102,19 +102,19 @@ objects:
               name: ${NAME}
               env:
                 - name: WEB_PORT_INTERNAL
-                  value: 3000
+                  value: "3000"
                 - name: ALLOWED_HOSTS
                   value: ${NAME}-${ZONE}-frontend.${DOMAIN}
                 - name: DEBUG
                   value: False
                 - name: GUNICORN_WORKERS
-                  value: 2
+                  value: "2"
                 - name: GUNICORN_LIMIT_REQ_LINE
-                  value: 4094
+                  value: "4094"
                 - name: GUNICORN_LIMIT_REQ_FIELDSIZE
-                  value: 8190
+                  value: "8190"
                 - name: GUNICORN_TIMEOUT
-                  value: 1800
+                  value: "1800"
                 - name: SECRET_KEY
                   valueFrom:
                     secretKeyRef:
