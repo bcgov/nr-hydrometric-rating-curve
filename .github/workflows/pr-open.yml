@@ -28,7 +28,7 @@ jobs:
             Thanks for the PR!
 
             Any successful deployments (not always required) will be available below.
-            [Backend](https://${{ env.PREFIX }}-backend.${{ env.DOMAIN }}/) available
+            # [Backend](https://${{ env.PREFIX }}-backend.${{ env.DOMAIN }}/) available
             [Frontend](https://${{ env.PREFIX }}-frontend.${{ env.DOMAIN }}/) available
 
             Once merged, code will be promoted and handed off to following workflow run.
@@ -41,19 +41,23 @@ jobs:
       packages: write
     strategy:
       matrix:
-        package: [backend, database, frontend]
+        package: [frontend,rctool]
         include:
-          - package: backend
-            triggers: ('backend/')
-          - package: database
-            triggers: ('database/')
           - package: frontend
             triggers: ('frontend/')
+            build_file: ./frontend/Dockerfile.nginx
+            build_context: ./frontend
+          - package: rctool
+            triggers: ('frontend/')
+            build_file: ./frontend/Dockerfile.app
+            build_context: ./frontend
     steps:
       - uses: actions/checkout@v3
-      - uses: bcgov-nr/action-builder-ghcr@v1.0.0
+      - uses: bcgov-nr/action-builder-ghcr@v1.1.0
         with:
           package: ${{ matrix.package }}
+          build_file: ${{ matrix.build_file }}
+          build_context: ${{ matrix.build_context }}
           tag: ${{ github.event.number }}
           tag_fallback: test
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -66,24 +70,18 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        name: [backend, database, init, frontend]
+        name: [frontend, rctool]
         include:
-          - name: backend
-            file: backend/openshift.deploy.yml
-            overwrite: true
-            parameters: -p MIN_REPLICAS=1 -p MAX_REPLICAS=2
-          - name: database
-            file: database/openshift.deploy.yml
-            overwrite: false
           - name: frontend
+            file: frontend/openshift.nginx.deploy.yml
+            overwrite: true
+            parameters: -p MIN_REPLICAS=1 -p MAX_REPLICAS=1
+          - name: rctool
             file: frontend/openshift.deploy.yml
             overwrite: true
-            parameters: -p MIN_REPLICAS=1 -p MAX_REPLICAS=2
-          - name: init
-            file: common/openshift.init.yml
-            overwrite: false
+            parameters: -p MIN_REPLICAS=1 -p MAX_REPLICAS=1
     steps:
-      - uses: bcgov-nr/action-deployer-openshift@v1.0.1
+      - uses: bcgov-nr/action-deployer-openshift@v1.0.2
         with:
           file: ${{ matrix.file }}
           oc_namespace: ${{ secrets.OC_NAMESPACE }}

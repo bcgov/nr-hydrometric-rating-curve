@@ -6,10 +6,10 @@ labels:
 parameters:
   - name: NAME
     description: Module name
-    value: nr-quickstart-typescript
+    value: nr-hydrometric-rating-curve
   - name: COMPONENT
     description: Component name
-    value: backend
+    value: frontend
   - name: ZONE
     description: Deployment zone, e.g. pr-### or prod
     required: true
@@ -19,25 +19,25 @@ parameters:
   - name: DOMAIN
     value: apps.silver.devops.gov.bc.ca
   - name: CPU_REQUEST
-    value: "25m"
+    value: "10m"
   - name: MEMORY_REQUEST
-    value: "50Mi"
+    value: "20Mi"
   - name: CPU_LIMIT
-    value: "75m"
+    value: "30m"
   - name: MEMORY_LIMIT
-    value: "150Mi"
+    value: "60Mi"
   - name: MIN_REPLICAS
     description: The minimum amount of replicas for the horizontal pod autoscaler.
-    value: "3"
+    value: "1"
   - name: MAX_REPLICAS
     description: The maximum amount of replicas for the horizontal pod autoscaler.
-    value: "5"
+    value: "1"
   - name: REGISTRY
     description: Container registry to import from (internal is image-registry.openshift-image-registry.svc:5000)
     value: ghcr.io
   - name: PROMOTE
     description: Image (namespace/name:tag) to promote/import
-    value: bcgov/nr-quickstart-typescript/backend:prod
+    value: bcgov/nr-hydrometric-rating-curve/nginx:prod
 objects:
   - apiVersion: v1
     kind: ImageStream
@@ -88,23 +88,8 @@ objects:
               imagePullPolicy: Always
               name: ${NAME}
               env:
-                - name: POSTGRESQL_HOST
-                  value: ${NAME}-${ZONE}-database
-                - name: POSTGRESQL_DATABASE
-                  valueFrom:
-                    secretKeyRef:
-                      name: ${NAME}-${ZONE}-database
-                      key: database-name
-                - name: POSTGRESQL_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: ${NAME}-${ZONE}-database
-                      key: database-password
-                - name: POSTGRESQL_USER
-                  valueFrom:
-                    secretKeyRef:
-                      name: ${NAME}-${ZONE}-database
-                      key: database-user
+                - name: BACKEND_URL
+                  value: http://${NAME}-${ZONE}-rctool
               ports:
                 - containerPort: 3000
                   protocol: TCP
@@ -117,22 +102,23 @@ objects:
                   memory: ${MEMORY_LIMIT}
               readinessProbe:
                 httpGet:
-                  path: /
+                  path: /rctool
                   port: 3000
                   scheme: HTTP
                 initialDelaySeconds: 60
-                periodSeconds: 15
-                timeoutSeconds: 5
+                periodSeconds: 10
+                timeoutSeconds: 3
+                failureThreshold: 30
               livenessProbe:
                 successThreshold: 1
-                failureThreshold: 3
+                failureThreshold: 5
                 httpGet:
-                  path: /
+                  path: /rctool
                   port: 3000
                   scheme: HTTP
-                initialDelaySeconds: 60
-                periodSeconds: 30
-                timeoutSeconds: 5
+                initialDelaySeconds: 90
+                periodSeconds: 60
+                timeoutSeconds: 10
   - apiVersion: v1
     kind: Service
     metadata:
