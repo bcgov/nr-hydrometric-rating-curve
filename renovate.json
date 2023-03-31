@@ -3,7 +3,7 @@
     "config:base"
   ],
   "autodiscover": true,
-  "autodiscoverFilter": "bcgov/nr-quickstart-typescript",
+  "autodiscoverFilter": "bcgov/nr-hydrometric-rating-curve",
   "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
   "configMigration": true,
   "configWarningReuseIssue": true,

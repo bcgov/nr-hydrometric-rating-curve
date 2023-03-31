@@ -26,7 +26,7 @@ jobs:
   #       dir: [frontend]
   #       include:
   #         - dir: frontend
-  #           sonar_projectKey: bcgov_nr-quickstart-typescript_frontend
+  #           sonar_projectKey: bcgov_nr-hydrometric-rating-curve_frontend
   #           token: SONAR_TOKEN_FRONTEND
   #   steps:
   #     - uses: bcgov-nr/action-test-and-analyse@v0.0.1
