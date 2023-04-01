@@ -120,6 +120,9 @@ objects:
                     secretKeyRef:
                       name: "${NAME}-${ZONE}-rctool"
                       key: SECRET_KEY
+                - name: CSRF_TRUSTED_ORIGINS
+                  value: 'https://*.apps.silver.devops.gov.bc.ca,https://*.apps.silver.devops.gov.bc.ca'
+
               ports:
                 - containerPort: 3000
                   protocol: TCP
