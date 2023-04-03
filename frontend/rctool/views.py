@@ -1,22 +1,16 @@
-from calendar import c
-from cmath import exp
-from selectors import EpollSelector
 import os
 import pandas as pd
 import numpy as np
 import csv
 import ast
 import math
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseRedirect
-from django.contrib.auth.decorators import permission_required
+from django.shortcuts import render
+from django.http import HttpResponse
 from django.contrib import messages
 from django.urls import reverse
 from django.template.loader import get_template
-from .forms import import_rc_data, develop_rc, export_rc_data
+from .forms import import_rc_data, export_rc_data
 from .functions.fit_linear_model import fit_linear_model
-from json import dumps, loads
-import json
 from rctool.utils import render_to_pdf
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -151,7 +145,7 @@ def autofit_data(
     n_seg=None,
     weighted=None,
     adjust_seg=None,
-    *args
+    *args,
 ):
     # Initialize and filter
     sidepanel_message = None
@@ -875,7 +869,11 @@ def rctool_export_output(request):
 
         if export_form.is_valid():
             ftype = export_form.cleaned_data["export_filetype"]
-            fname = export_form.cleaned_data["export_filename"]
+            fname = (
+                export_form.cleaned_data["export_filename"]
+                .replace(" ", "_")
+                .replace("'", "")
+            )
             if export_form.cleaned_data["export_station_name"]:
                 stname = export_form.cleaned_data["export_station_name"]
                 context["stname"] = stname
@@ -1052,10 +1050,10 @@ def rctool_export_output(request):
                         "rctool/rctool/export & review/rctool_export_pdf.html", context
                     )
                     response = HttpResponse(pdf, content_type="application/pdf")
-                    content = "inline; filename=%s" % (fname)
+                    content = f"inline; filename={fname}.pdf"
                     download = request.GET.get("download")
                     if download:
-                        content = "attachment; filename='%s.pdf'" % (fname)
+                        content = "attachment; filename={fname}.pdf"
                     response["Content-Disposition"] = content
 
                     return response
