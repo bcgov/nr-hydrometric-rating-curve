@@ -52,7 +52,7 @@ jobs:
             build_file: ./frontend/Dockerfile.app
             build_context: ./frontend
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: bcgov-nr/action-builder-ghcr@v1.1.2
         with:
           package: ${{ matrix.package }}
