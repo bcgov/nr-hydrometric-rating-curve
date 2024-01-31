@@ -1,41 +1,8 @@
 {% load static %}
 {% load custom_tags %}
-
-
-
-<div class="tab">
-    <a class="tablinks" onclick="openTable(event, 'field')" id="defaultOpen">field</a>
-    <a class="tablinks" onclick="openTable(event, 'rating')">rating</a>
-    <a class="tablinks" onclick="openTable(event, 'compare')">compare</a>
-</div>
   
-<div id="field" class="tabcontent">
-    <div class="card-body py-4" style="display: flex;">
-        <table class="table" id="fieldtable">
-            <tr class="table-header">
-              {% for header in table_dict.headings %}
-                {% if forloop.counter0 != 5 %}
-                    <th class="table-cell">{{ header }}</th>
-                {% endif %}
-              {% endfor %}
-              <th class="table-cell">use point</th>
-            </tr>
-            {% for row in table_dict.data %}
-            <tr class="table-row">
-              {% for cell in row %}
-                {% if forloop.counter0 != 5 %}
-                    <td class="table-cell">{{ cell }} </td>
-                {% endif %}
-              {% endfor %}
-              <td><input type="checkbox" id="toggle_data_point" name="toggle_data_point" checked="checked" onchange="togglePoint('{{ forloop.counter0 }}', this.checked)"></td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-</div>
-  
-<div id="rating" class="tabcontent">
-    <div class="card-body py-4" style="display: flex;">
+<!-- <div id="rating" class="tabcontent">
+    <div class="card-body px-4 py-2" style="display: flex;">
         {% if rc.parameters %}
             <table class="table">
                 <tr class="table-header">
@@ -64,10 +31,10 @@
         <p>Please set offset and select generate curve</p>
         {% endif %}
     </div>
-</div>
+</div> -->
   
 <div id="compare" class="tabcontent">
-    <div class="card-body py-4">
+    <div class="card-body px-4 py-2">
         <table class="table">
             <tr class="table-header">
                 <th class="table-cell">segment</th>
@@ -76,6 +43,7 @@
                 <th class="table-cell">offset</th>
                 <th class="table-cell">start point</th>
                 <th class="table-cell">end point</th>
+                <th class="table-cell">RMSE</th>
                 <th class="table-cell"><p style="color:#9ec1a3">add curve</p></th>
                 <!-- <th class="table-cell">edit rating</th> -->
             </tr>
@@ -87,6 +55,7 @@
                     <td class="table-cell"><p id="table2-segment1-offset">{{rc.parameters.0.offset}}</p></td>
                     <td class="table-cell"><p id="table2-endpoint-Seg1H0">{{rc.parameters.0.seg_bounds.0.0}}</p></td>
                     <td class="table-cell"><p id="table2-endpoint-Seg1H1">{{rc.parameters.0.seg_bounds.1.0}}</p></td>
+                    <td class="table-cell"><p id="table1-segment1-rmse">{{rc.parameters.0.rmse}}</p></td>
                     <td class="table-cell"><p></p></td>
                 </tr>
             {% endif %}
@@ -98,6 +67,7 @@
                     <td class="table-cell"><p id="table2-segment2-offset"> {{rc.parameters.1.offset}}</p></td>
                     <td class="table-cell"><p id="table2-endpoint-Seg2H0">{{rc.parameters.1.seg_bounds.0.0}}</p></td>
                     <td class="table-cell"><p id="table2-endpoint-Seg2H1">{{rc.parameters.1.seg_bounds.1.0}}</p></td>
+                    <td class="table-cell"><p id="table1-segment2-rmse">{{rc.parameters.1.rmse}}</p></td>
                     <td class="table-cell"><p></p></td>
                 </tr>
             {% endif %}
@@ -133,17 +103,14 @@
                     </div>
                 </td>
                 <td class="table-cell">
+                    <div style="width: 40px;">
+                        <p></p>
+                    </div>
+                </td>
+                <td class="table-cell">
                     <button class="btn btn-success btn-sm" type="submit" href="#" onclick="addCompareCurve()" style="background-color: #9ec1a3 !important; border-color: #FFFFFF; width: 40px;" onkeydown="return event.key != 'Enter';"> + </button>
                 </td>
             </tr>
         </table>
     </div>
 </div>
-
-
-<!--
-<script>
-    // Get the element with id="defaultOpen" and click on it
-    document.getElementById("defaultOpen").click();
-</script>
--->

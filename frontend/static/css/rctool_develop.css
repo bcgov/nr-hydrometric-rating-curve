@@ -32,8 +32,7 @@
 }
   
 .tabcontent {
-    display: none;
-    padding: 3px 6px;
+    padding: 0px 6px;
     border: 1px solid #ccc;
     border-top: none;
   }
