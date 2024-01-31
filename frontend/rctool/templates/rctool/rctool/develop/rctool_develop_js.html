@@ -754,7 +754,9 @@
 
     // STYLING PARAMETERS
     var pallet = ['#9ec1a3', '#fe5f55', '#003466', '#FFD97D', '#9bc1bc', '#002A5C', '#bdd5ea', '#9ec1a3', '#ffa400', '#89d2a3', '#c08497', '#4281a4', '#aa7bc3', '#8daa91', '#60D394', '#EE6055', '#FFD97D', '#AAF683', '#FF9B85'];
+    Chart.defaults.font.size = 11.5;
 
+    // var pallet = ['#009E73', '#D55E00', '#003466', '#FFD97D', '#9bc1bc', '#002A5C', '#bdd5ea', '#9ec1a3', '#ffa400', '#89d2a3', '#c08497', '#4281a4', '#aa7bc3', '#8daa91', '#60D394', '#EE6055', '#FFD97D', '#AAF683', '#FF9B85'];
 
     // RATING CURVE CHART
     var rcChart = new Chart(document.getElementById('rcChart'), {
@@ -1061,33 +1063,7 @@
 
 
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
-    C.3) SUMMARY TABLE
-    ------------------------------------------------------------------------------------------------------------------------------------------------*/
-
-    function openTable(evt, tableName) {
-        // Declare all variables
-        var i, tabcontent, tablinks;
-        // Get all elements with class="tabcontent" and hide them
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-        }
-        // Get all elements with class="tablinks" and remove the class "active"
-        tablinks = document.getElementsByClassName("tablinks");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
-        // Show the current tab, and add an "active" class to the button that opened the tab
-        document.getElementById(tableName).style.display = "block";
-        evt.currentTarget.className += " active";
-        };
-
-    // Get the element with id="defaultOpen" and click on it
-    document.getElementById("defaultOpen").click();
-
-
-    /*-----------------------------------------------------------------------------------------------------------------------------------------------
-    C.4) FORMS
+    C.3) FORMS
     ------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     // Pass data to export page
@@ -1098,7 +1074,7 @@
     };
 
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
-    C.5) UPDATE WARNING MESSAGE
+    C.4) UPDATE WARNING MESSAGE
     ------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     function checkExponent() {
