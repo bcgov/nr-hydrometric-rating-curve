@@ -34,7 +34,7 @@
 
     var axisFormat = 'logarithmic';
 
-    let interpolation_points = 100;
+    let interpolation_points = 1000;
 
     // update form variables
     updateFormVariables()
@@ -627,8 +627,101 @@
     ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
     function toggleAxisFormat(checked) {
+
         if (checked) {
-            axisFormat = 'logarithmic';
+            console.log('exponent:' + rcParam[0].exp)
+
+            let exponent = rcParam[0].exp;
+
+            function logBase(n) {
+                Math.log(n) / Math.log(rcParam[0].exp);
+            }
+
+
+            // define new logarithmic scale based on this exponent
+            class LogBaseAxis extends Chart.Scale {
+                constructor(cfg) {
+                    super(cfg);
+                    this._startValue = undefined;
+                    this._valueRange = 0;
+                }
+
+                parse(raw, index) {
+                    const value = Chart.LinearScale.prototype.parse.apply(this, [raw, index]);
+                    return isFinite(value) && value > 0 ? value : null;
+                }
+
+                determineDataLimits() {
+                    const {
+                    min,
+                    max
+                    } = this.getMinMax(true);
+                    this.min = isFinite(min) ? Math.max(0, min) : null;
+                    this.max = isFinite(max) ? Math.max(0, max) : null;
+                }
+
+                buildTicks() {
+
+                    const ticks = [];
+                    console.log('min:' + this.min)
+                    console.log('max:' + this.max)
+
+                    let power = Math.floor(Math.log((this.min || 1)) / Math.log(rcParam[0].exp));
+                    let maxPower = Math.ceil(Math.log((this.max || 2)) / Math.log(rcParam[0].exp));
+
+                    console.log('power:' + power)
+                    console.log('maxPower:' + maxPower)
+
+                    console.log('power2' + Math.floor(Math.log2(this.min || 1)))
+                    console.log('maxPower2' + Math.ceil(Math.log2(this.max || 2)))
+
+                    while (power <= maxPower) {
+                        console.log('power:' + power)
+                        ticks.push({
+                            value: Math.pow(exponent, power)
+                        });
+                        power += 1;
+                    }
+
+                    this.min = ticks[0].value;
+                    this.max = ticks[ticks.length - 1].value;
+                    return ticks;
+                }
+
+                /**
+                    * @protected
+                    */
+                configure() {
+                    const start = this.min;
+
+                    super.configure();
+
+                    this._startValue = Math.log(start) / Math.log(rcParam[0].exp);
+                    this._valueRange = Math.log(this.max) / Math.log(rcParam[0].exp) - Math.log(start) / Math.log(rcParam[0].exp);
+                }
+
+                getPixelForValue(value) {
+                    if (value === undefined || value === 0) {
+                    value = this.min;
+                    }
+
+                    return this.getPixelForDecimal(value === this.min ? 0 :
+                    (Math.log(value) / Math.log(rcParam[0].exp) - this._startValue) / this._valueRange);
+                }
+
+                getValueForPixel(pixel) {
+                    const decimal = this.getDecimalForPixel(pixel);
+                    return Math.pow(rcParam[0].exp, this._startValue + decimal * this._valueRange);
+                }
+            }
+
+            LogBaseAxis.id = 'logBase';
+            LogBaseAxis.defaults = {};
+
+            Chart.register(LogBaseAxis);
+
+            axisFormat = 'logBase';
+
         }
         else {
             axisFormat = 'linear';
@@ -637,6 +730,8 @@
         rcChart.options.scales = {
                 x: {
                     type: axisFormat,
+                    clip: false,
+                    offset: true,
                     title: {
                         display: true,
                         text: 'discharge (m\u00B3/s)'
@@ -645,6 +740,7 @@
                 },
                 y: {
                     type: axisFormat,
+                    clip: false,
                     title: {
                         display: true,
                         text: 'stage (m)'
