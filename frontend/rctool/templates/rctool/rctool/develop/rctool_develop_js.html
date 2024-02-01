@@ -1,8 +1,18 @@
 {% load static %} {% load custom_tags %}
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"
+    integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3ZSTk7kajkaj4D292NLuduDCO1c/NT8Id+jE58KYLKT7hXnbtryGmMg=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.2.3/dist/chartjs-plugin-dragdata.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.1/chartjs-plugin-zoom.min.js"></script>
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"
+    integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+></script>
 
 <script>
 
@@ -24,6 +34,7 @@
 
     var axisFormat = 'logarithmic';
 
+    let interpolation_points = 100;
 
     // update form variables
     updateFormVariables()
@@ -117,7 +128,6 @@
     }
 
     function adjustSeg(segmentBounds, offsets) {
-
         // INPUTS:
             // segmentBounds: dictionary where keys are segmentName and values are segmentData
                 // segmentName: formatted 'segmentn' where n is the segment number starting at 1
@@ -202,7 +212,6 @@
             document.getElementById('table2-segment' + segNumStr + '-offset').innerHTML = JSON.parse(JSON.stringify(offset.toFixed(3)));
             document.getElementById('table2-segment' + segNumStr + '-exp').innerHTML = slope.toFixed(4);
             document.getElementById("endpointSeg1H0").value = rcParam[0].seg_bounds[0][0].toFixed(3);
-            console.log(rcParam[0].seg_bounds[0][0])
             // only round the first point if greater than 0.005, otherwise it was rounding to 0 and the plot bends / looks funny
             if (rcParam[0].seg_bounds[0][0] < 0.005) {
                 document.getElementById("endpointSeg1Q0").value = rcParam[0].seg_bounds[0][1].toFixed(5);
@@ -248,7 +257,7 @@
         // update form variables
         updateFormVariables()
 
-        // TOBIAS: update rcChart with new rcData
+        // update rcChart with new rcData
         updateChartFromGlobal()
 
         // update max bounds
@@ -319,13 +328,12 @@
         rc_trueidx = 0
         for  (let [rc_idx, l_idx] of chart_idx_lookup) {
             data_line = rcChart.data.datasets[l_idx].data;
-
             offset_thisline = offsetData[rc_trueidx]
             param = rcDict.parameters[rc_trueidx]
 
             // create an array that will be used to calculate the line point positions
             const arr = [];
-            for (let i = 0.05; i < 1; i += 0.05)
+            for (let i = 0; i < 1; i += 1/interpolation_points)
                 arr.push(i);
 
             // define the start and end points of the line
@@ -333,11 +341,8 @@
             end_pt = data_line[data_line.length - 1];
 
             // calculate the points in between start and end:
-            // e.g. Q = 4.67783 * ( H - 0)^3.79273
-            // which is X = const * ( Y - offset)^ exponent
-            var data_line_new_y          = arr.map((num) => (offset_thisline + start_pt.y + num * (end_pt.y-start_pt.y)) );
+            var data_line_new_y          = arr.map((num) => (start_pt.y + num * (end_pt.y-start_pt.y)) );
             var data_line_new_x          = data_line_new_y.map((num) => param.const * (num - offset_thisline) ** param.exp)
-            // var data_line_new_x          = data_line_new_y.map((num) => 4.67783 * num ** 3.79273)
 
             var data_line_new_pt = []
             // add start point to line
@@ -769,7 +774,7 @@
                         text: 'discharge (m\u00B3/s)'
                     },
                     // beginAtZero: true,
-                    max: getMaxQ(rcParam),
+                    max: getMaxQ(rcParam)
                 },
                 y: {
                     type: axisFormat,
@@ -797,7 +802,7 @@
                 },
                 // using the plugin https://github.com/chrispahm/chartjs-plugin-dragdata
                 dragData: {
-                    round: 3, // rounds the values to n decimal places
+                    round: 4, // rounds the values to n decimal places
                     showTooltip: true, // show the tooltip while dragging [default = true]
                     dragX: true, // also enable dragging along the x-axis this solely works for continous, numerical x-axis scales (no categories or dates)!
                     onDragStart: function(e, datasetIndex) {
@@ -819,15 +824,21 @@
                         rcChart.data.datasets[lineIdx].hidden = true;
                     },
                     onDrag: function(e, datasetIndex, index, value) {
-                        var dataset = rcChart.data.datasets[datasetIndex];
+                        //var dataset = rcChart.data.datasets[datasetIndex];
 
                         // you may control the range in which datapoints are allowed to be
                         // dragged by returning `false` in this callback
                         // restrict drag values:
-                        if (value.x < 1) return false
                         if (value.y < 0) return false
+                        if (value.x < 0.0001) return false
                     },
                     onDragEnd: function(e, datasetIndex, index, value) {
+                        if (value.x == 0 || value.y == 0) {
+                            // alert user that 0 values are not allowed
+                            alert('0 values are not allowed! Increase the value slightly.');
+                            return false
+                        }
+
                         var dataset = rcChart.data.datasets[datasetIndex];
                         // you may use this callback to store the final datapoint value
                         // (after dragging) in a database, or update other UI elements that
