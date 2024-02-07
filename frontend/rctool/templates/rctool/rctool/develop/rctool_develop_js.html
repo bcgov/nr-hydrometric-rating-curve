@@ -629,7 +629,7 @@
     function toggleAxisFormat(checked) {
 
         if (checked) {
-            console.log('exponent:' + rcParam[0].exp)
+            console.log('LogBase plotting with exponent:' + rcParam[0].exp)
 
             let exponent = rcParam[0].exp;
 
@@ -663,24 +663,32 @@
                 buildTicks() {
 
                     const ticks = [];
-                    console.log('min:' + this.min)
-                    console.log('max:' + this.max)
 
-                    let power = Math.floor(Math.log((this.min || 1)) / Math.log(rcParam[0].exp));
-                    let maxPower = Math.ceil(Math.log((this.max || 2)) / Math.log(rcParam[0].exp));
+                    let power = Math.floor(Math.log((this.min)) / Math.log(rcParam[0].exp));
+                    let maxPower = Math.ceil(Math.log((this.max)) / Math.log(rcParam[0].exp));
 
-                    console.log('power:' + power)
-                    console.log('maxPower:' + maxPower)
-
-                    console.log('power2' + Math.floor(Math.log2(this.min || 1)))
-                    console.log('maxPower2' + Math.ceil(Math.log2(this.max || 2)))
-
+                    let numTicks = maxPower - power + 1;
                     while (power <= maxPower) {
-                        console.log('power:' + power)
-                        ticks.push({
-                            value: Math.pow(exponent, power)
-                        });
-                        power += 1;
+                        let tickVal = Math.pow(rcParam[0].exp, power);
+
+                        // adjust to use rounded tick value based on log10 of value
+                        let roundMag = -Math.floor(Math.log10(tickVal));
+                        let tickValRound = Math.round(tickVal * 10 ** (roundMag + 2)) / 10 ** (roundMag + 2);
+
+                        for (let i = 0; i < 10; i++) {
+                            ticks.push({
+                                value: tickValRound
+                            });
+                        }
+
+                        
+                        if (numTicks <= 3) {
+                            power += 0.25;
+                        } else if (numTicks <= 5) {
+                            power += 0.5;
+                        } else {
+                            power += 1;
+                        }
                     }
 
                     this.min = ticks[0].value;
@@ -724,6 +732,7 @@
 
         }
         else {
+            console.log('Linear plotting')
             axisFormat = 'linear';
         };
 
