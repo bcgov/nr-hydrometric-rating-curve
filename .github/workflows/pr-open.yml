@@ -53,7 +53,7 @@ jobs:
             build_context: ./frontend
     steps:
       - uses: actions/checkout@v4
-      - uses: bcgov-nr/action-builder-ghcr@v2.0.1
+      - uses: bcgov-nr/action-builder-ghcr@v2.0.2
         with:
           package: ${{ matrix.package }}
           build_file: ${{ matrix.build_file }}
