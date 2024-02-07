@@ -79,13 +79,6 @@
     B.0) USER INPUT - ADJUST RATING CURVE POINT
     ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    // DATA FOR TESTING : WILL REMOVE
-    // var testSegmentBounds = {
-    //     segment1: [[0.075, 0.23],[3.3, 0.695]],
-    //     segment2: [[3.3, 0.695], [50, 1.5]]
-    // };
-    // var testOffsets = [0.1, 0.1];
-
     function updateFormVariables(){
         // update form variables
         $('#fieldData_datetime').val(Object.values(fielddatacsv.datetime))
@@ -268,6 +261,7 @@
 
         // update status
         // displayStatus('<strong>status: </strong> manual adjustment applied...')
+        toggleAxisFormat(document.getElementById("toggle_axis_format").checked)
 
     };
 
@@ -629,7 +623,6 @@
     function toggleAxisFormat(checked) {
 
         if (checked) {
-            console.log('LogBase plotting with exponent:' + rcParam[0].exp)
 
             let exponent = rcParam[0].exp;
 
@@ -661,34 +654,58 @@
                 }
 
                 buildTicks() {
-
                     const ticks = [];
+                    if (this.min > this.max) {
+                        let temp = this.min;
+                        this.min = this.max;
+                        this.max = temp;
+                    }
+                    let minPowerData = Math.log((this.min)) / Math.log(rcParam[0].exp);
+                    let maxPowerData = Math.log((this.max)) / Math.log(rcParam[0].exp);
 
-                    let power = Math.floor(Math.log((this.min)) / Math.log(rcParam[0].exp));
-                    let maxPower = Math.ceil(Math.log((this.max)) / Math.log(rcParam[0].exp));
 
-                    let numTicks = maxPower - power + 1;
-                    while (power <= maxPower) {
+                    if (minPowerData > maxPowerData) {
+                        minPowerData = -minPowerData;
+                        maxPowerData = -maxPowerData;
+                    }
+
+                    let minPower = Math.floor(minPowerData);
+                    let maxPower = Math.ceil(maxPowerData);
+
+                    //console.log('minPowerData: ' + minPowerData + ' maxPowerData: ' + maxPowerData, 'minPower: ' + minPower + ' maxPower: ' + maxPower)
+                    //console.log('min: ' + this.min + ' max: ' + this.max, 'exp: ' + rcParam[0].exp)
+
+                    let numTicks = maxPower - minPower + 1;
+                    let powerStep = (maxPower - minPower) / 10;
+
+                    //console.log('numTicks: ' + numTicks, 'powerStep: ' + powerStep)
+
+                    // iteratively find lowest power to plot a tick for
+                    let power = maxPower;
+                    //console.log(power, minPower, maxPower, powerStep)
+                    while ((power > minPower) && (power >= minPowerData)) {
+                        power -= powerStep;
+                    }
+                    //console.log('power: ' + power, 'minPower: ' + minPower, 'maxPower: ' + maxPower, 'powerStep: ' + powerStep)
+
+                    // add ticks from smallest to largest
+                    while (power <= (maxPower + powerStep)) {
                         let tickVal = Math.pow(rcParam[0].exp, power);
+
+                        // if exponent is less than 1, take negative
+                        if (rcParam[0].exp < 1) {
+                            tickVal = Math.pow(rcParam[0].exp, -power);
+                        }
 
                         // adjust to use rounded tick value based on log10 of value
                         let roundMag = -Math.floor(Math.log10(tickVal));
                         let tickValRound = Math.round(tickVal * 10 ** (roundMag + 2)) / 10 ** (roundMag + 2);
 
-                        for (let i = 0; i < 10; i++) {
-                            ticks.push({
-                                value: tickValRound
-                            });
-                        }
+                        ticks.push({
+                            value: tickValRound
+                        });
 
-                        
-                        if (numTicks <= 3) {
-                            power += 0.25;
-                        } else if (numTicks <= 5) {
-                            power += 0.5;
-                        } else {
-                            power += 1;
-                        }
+                        power += powerStep;
                     }
 
                     this.min = ticks[0].value;
@@ -732,7 +749,6 @@
 
         }
         else {
-            console.log('Linear plotting')
             axisFormat = 'linear';
         };
 
@@ -1102,6 +1118,8 @@
 
     // MAKE SURE SCALE HAS BEEN UPDATED
     updateMaxBounds(rcParam);
+
+    toggleAxisFormat(document.getElementById("toggle_axis_format").checked)
 
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
     C.2) REGRESSION RESIDUAL CHART
