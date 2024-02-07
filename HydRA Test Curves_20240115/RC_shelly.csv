@@ -1,0 +1,11 @@
+﻿datetime,discharge,stage,uncertainty,comments
+2021-11-22 10:00,0.13,0.33,0.05,"21 panels, some snow on ground"
+2021-04-06 14:00,0.01,0.24,0.05,19 panels
+2021-03-08 9:00,0.05,0.28,0.03,"35 panels, recent high flow event in December"
+2021-02-24 13:00,0.03,0.27,0.05,"21 panels, rain overnight"
+2021-01-28 14:00,0.12,0.32,0.04,"21 panels, good mmt"
+2021-01-11 10:00,0.18,0.39,0.04,"21 panels, recent high flows after consistent rain. High turbidity"
+2020-12-30 11:30,0.36,0.45,0.03,"24 panels, recent high flows and heavy rains"
+2020-11-24 13:30,0.03,0.26,0.04,21 panels. Rain overnight
+2021-12-13 8:00,0.29,0.4,0.04,20 panels
+2020-01-12 17:00,0.67,0.55,0.03,"23 panels, recent rain on snow event, creek rising during mmt"

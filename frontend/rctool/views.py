@@ -530,6 +530,9 @@ def rctool_develop_initialize(request):
         context["develop_tour_request_status_id"] = request.POST.get(
             "pass-tour-status-to-develop"
         )
+    else:
+        # redirect to import as no data was passed
+        return render(request, "rctool/rctool/import/rctool_import.html", context)
 
     context["rc_data"] = None
     context["table_dict"] = {
