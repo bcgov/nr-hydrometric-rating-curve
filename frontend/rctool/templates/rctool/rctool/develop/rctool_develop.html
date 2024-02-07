@@ -7,9 +7,8 @@
 
 
 {% block content %}
-</br>
 
-<div class="container">
+<div class="container-xl mt-1 mr-5 ml-5">
     <div class="tab-bar-container" style="display:flex;">
         <ul class="tab-bar-list" style="flex:1">
             <li class="tab-bar-item"><a href="{% url 'rctool_import' 0 %}">import</a></li>
@@ -20,20 +19,20 @@
         {% if filename %}
             <div class="tab-bar-filename-title">
                 <div style="display:flex; margin:0; padding:0;">
-                    <p style="color:grey; font-size:12px; font-weight:700; margin-right:5px; margin-bottom:0">filename: </p>
-                    <p style="color:grey; font-size:12px; margin-bottom:0">{{ filename|safe }}</p>
+                    <p style="color:grey; font-size:11.5px; font-weight:700; margin-right:5px; margin-bottom:0">filename: </p>
+                    <p style="color:grey; font-size:11.5px; margin-bottom:0">{{ filename|safe }}</p>
                 </div>
             </div>
         {% endif %}
     </div>
 
-    <div class="container" style="background-color: #FFFFFF;">
+    <div style="background-color: #FFFFFF; padding-left:10px; padding-right:10px;">
         
         <div id="warning-message-div" style="display:none;">
-            <div class="row" style="padding: 10px 10px 0px 10px;">
-                <div class="col-12" style="padding: 10px 10px 0px 10px">
+            <div class="row" style="padding: 5px 10px 0px 10px;">
+                <div class="col-12" style="padding: 5px 10px 0px 10px">
                     <div class="card" style="background-color:#ae2029; padding: 0px;" id="side-panel-card">
-                        <div class="card-body" style="padding:10px 20px 0px 20px;">
+                        <div class="card-body p-2" style="padding:10px 20px 0px 20px;">
                             <strong id='error-title' style="color:#FFFFFF">
                                 {% if sidepanel_message %}
                                     {{sidepanel_message.error_title|safe}}
@@ -50,21 +49,20 @@
             </div>
         </div>
         
-        <div class="row" style="padding: 10px 10px 0px 10px;">
-            <div class="col" style="padding: 10px;">
+        <div class="row" style="padding: 5px 10px 0px 10px;">
+            <div class="col-3" style="padding: 5px;">
                 <div class="card" id="input-settings-card">
-                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:13.5px; padding-top:7px;">Input Settings</h6>
-                    <div class="card-body" style="display: flex; padding-bottom:15px;">
+                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Input Settings</h6>
+                    <div class="card-body px-4 py-2" style="display: flex; padding-bottom:15px;">
                         {% include 'rctool/rctool/develop/develop_input_settings.html' %}
                     </div>
                 </div>
             </div>
-
             {% if messages %}
-                <div class="col-8" style="padding: 10px;">
+                <div class="col-6" style="padding: 5px;">
                     <div class="card">
-                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:13.5px; padding-top:7px;">Error</h6>
-                        <div class="card-body py-4" style="display: flex;">
+                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Error</h6>
+                        <div class="card-body p-2" style="display: flex;">
                             {% for message in messages %}
                             <div>
                                 <strong class="error-text">Error autofitting rating curve.</strong><br>
@@ -74,13 +72,11 @@
                         </div>
                     </div>
                 </div>
-
             {% else %}
-                <div class="col-8" style="padding: 10px;">
+                <div class="col-6" style="padding: 5px;">
                     <div class="card" id="rcchart-card">
-                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:13.5px; padding-top:7px;">Rating Curve</h6>
-
-                        <div class="card-body" style="margin:15px 0px 0px 0px; padding-bottom:0px;">
+                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Rating Curve</h6>
+                        <div class="card-body px-1 pt-1 pb-0">
                             <div class="rc-chart-container">
                                 <canvas id="rcChart">
                                 </canvas>
@@ -92,18 +88,12 @@
                         </div>
                     </div>
                 </div>
-            
             {% endif %}
-
-        </div>
-    
-        <div class="row" style="padding: 0px 10px 10px 10px;">
-
-            <div class="col-4" style="padding: 10px;">
+            <div class="col-3" style="padding: 5px;">
                 {% if not messages %}
                     <div class="card" id="regression-residuals-card">
-                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:13.5px; padding-top:7px;">Rating Error</h6>
-                        <div class="card-body py-4">
+                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Rating Error</h6>
+                        <div class="card-body p-1">
                             <div class="rc-chart-container">
                                 {% if rc.data %}
                                     <canvas id="residualChart">
@@ -114,14 +104,21 @@
                     </div>
                 {% endif %}
             </div>
-
-            <div class="col-8" style="padding: 10px;">
+        </div>
+    
+        <div class="row" style="padding: 0px 10px 10px 10px;">
+            <div class="col-6" style="padding: 5px;">
                 <div class="card" id="summary-card">
-                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:13.5px; padding-top:7px;">Summary</h6>
-                    {% include 'rctool/rctool/develop/develop_table.html' %}
+                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Measurements Summary</h6>
+                    {% include 'rctool/rctool/develop/develop_table_measurents.html' %}
                 </div>
             </div>
-
+            <div class="col-6" style="padding: 5px;">
+                <div class="card" id="summary-card">
+                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Rating Summary</h6>
+                    {% include 'rctool/rctool/develop/develop_table_rating.html' %}
+                </div>
+            </div>
         </div>
     </div>
 </div>

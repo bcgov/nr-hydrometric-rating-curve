@@ -1,10 +1,10 @@
 
 <form method="POST" action="." id="rcform">
     {% csrf_token %}
-    <p style="color: #003466; margin-bottom: 3px; font-size:13.5px; font-weight:500;">segment 1</p>
+    <small style="color: #003466; margin-bottom: 3px; font-size:11.5px; font-weight:500;">segment 1</small>
     <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
         <div style="flex: 1; margin-right: 10px;">
-            <p class="text-medium">end points:</p>
+            <small class="text-medium">end points:</small>
         </div>
         <div style="flex: 3;">
             <div style="display:flex">
@@ -17,7 +17,7 @@
     </div>
     <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;" id="offset1-panel">
         <div style="flex: 1; margin-right: 10px;">
-            <p class="text-medium">offset:</p>
+            <small class="text-medium">offset:</small>
         </div>
         <div style="flex: 3;">
             <input type="number" step="any" max="{{ max_offset }}" class="form-control form-control-sm" name="offset1" id="offset1" value="{{ offsets.0 }}" onchange="setOffset(0, this.value, '{{ max_offset }}')" style="font-size:12px;" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="segment 1 offset" required>
@@ -25,7 +25,7 @@
     </div>
     <div style="display: flex; width: 100%; margin: 20px 0px 5px 0px;">
         <div style="flex: 1; margin-right: 10px;">
-            <p class="text-medium">equation:</p>
+            <small class="text-medium">equation:</small>
         </div>
         <div style="flex: 3;">
             <div style="display:flex; font-size:12.5px; color:#696969;">
@@ -68,17 +68,17 @@
     {% if n_seg > 1 %}
         <div id="enter-breakpoint-field" style="display:flex; width: 100%; margin-top: 0px">
             <div style="flex: 1; margin-right: 10px;">
-                <p class="text-medium">breakpoint:</p>
+                <small class="text-medium">breakpoint:</small>
             </div>
             <div style="flex: 3;">
                 <input type="number" step="any" class="form-control form-control-sm" name="breakpoint1" id="breakpoint1" value="{{ breakpoint1 }}" max="{{ breakpoint_max }}" min="{{ breakpoint_min }}" onchange="setBreakpoint1(this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="breakpoint">
             </div>
         </div>
         <br>
-        <p style="color: #003466; margin-bottom: 3px; font-size: 13.5px; font-weight:500;">segment 2</p>
+        <p style="color: #003466; margin-bottom: 3px; font-size: 11.5px; font-weight:500;">segment 2</p>
         <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
             <div style="flex: 1; margin-right: 10px;">
-                <p class="text-medium">end points:</p>
+                <small class="text-medium">end points:</small>
             </div>
             <div style="flex: 3;">
                 <div style="display:flex">
@@ -91,7 +91,7 @@
         </div>
         <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
             <div style="flex: 1; margin-right: 10px;">
-                <p class="text-medium">offset:</p>
+                <small class="text-medium">offset:</small>
             </div>
             <div style="flex: 3;">
                 <input type="number" step="any" max="{{ max_offset }}" class="form-control form-control-sm" name="offset2" id="offset2" value="{{ offsets.1 }}" onchange="setOffset(1, this.value, '{{ max_offset }}')" onkeydown="return event.key != 'Enter';" href="#" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="segment 2 offset" required>
@@ -99,7 +99,7 @@
         </div>
         <div style="display: flex; width: 100%; margin: 20px 0px 0px 0px;">
             <div style="flex: 1; margin-right: 10px;">
-                <p class="text-medium">equation:</p>
+                <small class="text-medium">equation:</small>
             </div>
             <div style = " flex: 3;">
                 <div style="display:flex; font-size:12.5px; color:#696969;">
@@ -121,16 +121,16 @@
         {% if n_seg > 1 %}
             <div id='autofit-breakpoint-checkbox' style="display:flex; margin:0px; padding:0px;">
                 <input type="checkbox" id="toggle_breakpoint" name="toggle_breakpoint" onchange="" style="margin:0px; padding:0px;">
-                <label><p class="text-small margin-left:3px; padding-left:3px"> autofit new breakpoint</p></label>
+                <label><small class="text-small margin-left:3px; padding-left:3px"> autofit new breakpoint</small></label>
             </div>
         {% endif %}
         <div style="display: flex; margin:0px; padding:0px;">
             <input type="checkbox" id="toggle_weighted_fit" name="toggle_weighted_fit" onchange="" style="margin:0px; padding:0px;">
-            <label><p class="text-small margin-left:3px; padding-left:3px;"> autofit with weighted uncertainty</p></label>
+            <label><small class="text-small margin-left:3px; padding-left:3px;"> autofit with weighted uncertainty</small></label>
         </div>
     </div>
     <div class="d-grid gap-2">
-        <button class="btn btn-secondary btn-block" type="submit" href="{% url 'rctool_develop_autofit' %}" onkeydown="return event.key != 'Enter';">autofit new rating curve</button>
+        <button class="btn btn-secondary btn-block" type="submit" href="{% url 'rctool_develop_autofit' %}" onkeydown="return event.key != 'Enter';"><small>autofit new rating curve</small></button>
     </div>
 
 </form>
