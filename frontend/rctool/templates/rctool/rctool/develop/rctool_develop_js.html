@@ -255,7 +255,9 @@
                 this_chart = rcChart.data.datasets[chartIdx]
                 if (this_chart.label == this_data.label){
                     // dont continue if this is field data, no need to redraw:
-                    if (this_data.label == 'field'){continue}
+                    if (this_data.label == 'field'){
+                        continue
+                    }
                     // update data in rcChart
                     if (this_chart.type == 'scatter'){
                         var startPoint = this_data.data[0]
@@ -653,21 +655,14 @@
                     let minPower = Math.floor(minPowerData);
                     let maxPower = Math.ceil(maxPowerData);
 
-                    //console.log('minPowerData: ' + minPowerData + ' maxPowerData: ' + maxPowerData, 'minPower: ' + minPower + ' maxPower: ' + maxPower)
-                    //console.log('min: ' + this.min + ' max: ' + this.max, 'exp: ' + rcParam[0].exp)
-
                     let numTicks = maxPower - minPower + 1;
                     let powerStep = (maxPower - minPower) / 10;
 
-                    //console.log('numTicks: ' + numTicks, 'powerStep: ' + powerStep)
-
                     // iteratively find lowest power to plot a tick for
                     let power = maxPower;
-                    //console.log(power, minPower, maxPower, powerStep)
                     while ((power > minPower) && (power >= minPowerData)) {
                         power -= powerStep;
                     }
-                    //console.log('power: ' + power, 'minPower: ' + minPower, 'maxPower: ' + maxPower, 'powerStep: ' + powerStep)
 
                     // add ticks from smallest to largest
                     while (power <= (maxPower + powerStep)) {
@@ -1021,20 +1016,30 @@
                         // redraw chart with updated lines
                         rcChart.update();
                     },
-                }
-            },
-            tooltips: {
-                mode: 'index',
-                intersect: true,
-                // filter out the rating curve fit from the tooltips
-                filter: function (tooltipItem, data) {
-                    var dataset = data.datasets[tooltipItem.datasetIndex];
-                    if (dataset.type=="scatter") {
-                        return false;
-                    } else {
-                        return true;
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.dataset.label || '';
+
+                            console.log(label)
+                            // TODO: add shift, R%, stage, Q, MMT date
+
+                            if (label === 'field' || label === 'field inactive') {
+                                label = [];
+                                if (context.parsed.y !== null) {
+                                    label.push(['stage: ' + context.parsed.y.toFixed(2) + ' m']);
+                                }
+                                if (context.parsed.x !== null) {
+                                    label.push(['discharge: ' + context.parsed.x.toFixed(2) + ' m³/s']);
+                                }
+                            }
+
+
+                            return label;
+                        },
                     }
-                }
+                },
             },
         }
     });
@@ -1081,6 +1086,7 @@
     };
 
     // add field data plot later (so it's in the background)
+
     var currentLabel = rcData[0]['label']
     var colorLabel = pallet[0]
     var dataArray = rcData[0]['data'].map( item => ({x: item[1], y: item[0]}) )
