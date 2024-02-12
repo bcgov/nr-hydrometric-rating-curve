@@ -1,18 +1,8 @@
 {% load static %} {% load custom_tags %}
-<script
-    src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"
-    integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3ZSTk7kajkaj4D292NLuduDCO1c/NT8Id+jE58KYLKT7hXnbtryGmMg=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3ZSTk7kajkaj4D292NLuduDCO1c/NT8Id+jE58KYLKT7hXnbtryGmMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js" integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.2.3/dist/chartjs-plugin-dragdata.min.js"></script>
-<script
-    src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"
-    integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-></script>
 
 <script>
 
@@ -265,7 +255,9 @@
                 this_chart = rcChart.data.datasets[chartIdx]
                 if (this_chart.label == this_data.label){
                     // dont continue if this is field data, no need to redraw:
-                    if (this_data.label == 'field'){continue}
+                    if (this_data.label == 'field'){
+                        continue
+                    }
                     // update data in rcChart
                     if (this_chart.type == 'scatter'){
                         var startPoint = this_data.data[0]
@@ -663,21 +655,14 @@
                     let minPower = Math.floor(minPowerData);
                     let maxPower = Math.ceil(maxPowerData);
 
-                    //console.log('minPowerData: ' + minPowerData + ' maxPowerData: ' + maxPowerData, 'minPower: ' + minPower + ' maxPower: ' + maxPower)
-                    //console.log('min: ' + this.min + ' max: ' + this.max, 'exp: ' + rcParam[0].exp)
-
                     let numTicks = maxPower - minPower + 1;
                     let powerStep = (maxPower - minPower) / 10;
 
-                    //console.log('numTicks: ' + numTicks, 'powerStep: ' + powerStep)
-
                     // iteratively find lowest power to plot a tick for
                     let power = maxPower;
-                    //console.log(power, minPower, maxPower, powerStep)
                     while ((power > minPower) && (power >= minPowerData)) {
                         power -= powerStep;
                     }
-                    //console.log('power: ' + power, 'minPower: ' + minPower, 'maxPower: ' + maxPower, 'powerStep: ' + powerStep)
 
                     // add ticks from smallest to largest
                     while (power <= (maxPower + powerStep)) {
@@ -914,6 +899,17 @@
                         }
                     },
                 },
+                zoom: {
+                  zoom: {
+                    wheel: {
+                      enabled: true,
+                    },
+                    pinch: {
+                      enabled: true
+                    },
+                    mode: 'xy',
+                  }
+                },
                 // using the plugin https://github.com/chrispahm/chartjs-plugin-dragdata
                 dragData: {
                     round: 4, // rounds the values to n decimal places
@@ -943,8 +939,11 @@
                         // you may control the range in which datapoints are allowed to be
                         // dragged by returning `false` in this callback
                         // restrict drag values:
-                        if (value.y < 0) return false
-                        if (value.x < 0.0001) return false
+                        if (value.x <= 0 || value.y <= 0) {
+                            // alert user that 0 values are not allowed
+                            alert('0 values are not allowed! Increase the value slightly.');
+                            return false
+                        }
                     },
                     onDragEnd: function(e, datasetIndex, index, value) {
                         if (value.x == 0 || value.y == 0) {
@@ -1017,20 +1016,30 @@
                         // redraw chart with updated lines
                         rcChart.update();
                     },
-                }
-            },
-            tooltips: {
-                mode: 'index',
-                intersect: true,
-                // filter out the rating curve fit from the tooltips
-                filter: function (tooltipItem, data) {
-                    var dataset = data.datasets[tooltipItem.datasetIndex];
-                    if (dataset.type=="scatter") {
-                        return false;
-                    } else {
-                        return true;
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.dataset.label || '';
+
+                            console.log(label)
+                            // TODO: add shift, R%, stage, Q, MMT date
+
+                            if (label === 'field' || label === 'field inactive') {
+                                label = [];
+                                if (context.parsed.y !== null) {
+                                    label.push(['stage: ' + context.parsed.y.toFixed(2) + ' m']);
+                                }
+                                if (context.parsed.x !== null) {
+                                    label.push(['discharge: ' + context.parsed.x.toFixed(2) + ' m³/s']);
+                                }
+                            }
+
+
+                            return label;
+                        },
                     }
-                }
+                },
             },
         }
     });
@@ -1062,8 +1071,9 @@
             borderColor: colorLabel,
             backgroundColor: colorLabel,
             borderWidth: 2.75,
-            pointRadius: 2.75,
+            pointRadius: 3.75,
             pointHitRadius: 2.75,
+            pointStyle: ['circle', 'triangle'],
         });
         rcChart.update();
     }
@@ -1076,6 +1086,7 @@
     };
 
     // add field data plot later (so it's in the background)
+
     var currentLabel = rcData[0]['label']
     var colorLabel = pallet[0]
     var dataArray = rcData[0]['data'].map( item => ({x: item[1], y: item[0]}) )
@@ -1192,9 +1203,7 @@
 
     // Pass data to export page
     function passToExport() {
-        if (confirm('Warning. Cannot return back to develop page after exiting. Would you like to continue?')) {
-            document.getElementById('to-export-btn').click();
-        };
+        document.getElementById('to-export-btn').click();
     };
 
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
