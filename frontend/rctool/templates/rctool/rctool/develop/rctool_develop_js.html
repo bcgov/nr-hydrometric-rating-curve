@@ -193,7 +193,6 @@
             rcParam[idx].seg_bounds = [[segmentData[0][0], segmentData[0][1]], [segmentData[1][0], segmentData[1][1]]];
             rcDict = {'data':rcData, 'parameters':rcParam};
 
-
             // 3.5 Update HTML equation parameters and user input fields
             var segNumStr = String(idx + 1);
             document.getElementById('segment' + segNumStr + '-const').innerHTML = C.toFixed(4);
@@ -201,20 +200,12 @@
             document.getElementById('table1-segment' + segNumStr + '-const').innerHTML = C.toFixed(4);
             document.getElementById('table1-segment' + segNumStr + '-exp').innerHTML = slope.toFixed(4);
             document.getElementById('table1-segment' + segNumStr + '-rmse').innerHTML = rmse.toFixed(3);
-            document.getElementById('table2-segment' + segNumStr + '-const').innerHTML = C.toFixed(4);
-            document.getElementById('table2-segment' + segNumStr + '-offset').innerHTML = JSON.parse(JSON.stringify(offset.toFixed(3)));
-            document.getElementById('table2-segment' + segNumStr + '-exp').innerHTML = slope.toFixed(4);
             document.getElementById("endpointSeg1H0").value = rcParam[0].seg_bounds[0][0].toFixed(3);
-            // only round the first point if greater than 0.005, otherwise it was rounding to 0 and the plot bends / looks funny
-            if (rcParam[0].seg_bounds[0][0] < 0.005) {
-                document.getElementById("endpointSeg1Q0").value = rcParam[0].seg_bounds[0][1].toFixed(5);
-            } else {
-                document.getElementById("endpointSeg1Q0").value = rcParam[0].seg_bounds[0][1].toFixed(3);
-            };
+            document.getElementById("endpointSeg1Q0").value = rcParam[0].seg_bounds[0][1].toFixed(3);
             document.getElementById("endpointSeg1H1").value = rcParam[0].seg_bounds[1][0].toFixed(3);
             document.getElementById("endpointSeg1Q1").value = rcParam[0].seg_bounds[1][1].toFixed(3);
-            document.getElementById("table2-endpoint-Seg1H0").innerHTML = rcParam[0].seg_bounds[0][0].toFixed(3);
-            document.getElementById("table2-endpoint-Seg1H1").innerHTML = rcParam[0].seg_bounds[1][0].toFixed(3);
+            document.getElementById("table1-endpoint-Seg1H0").innerHTML = rcParam[0].seg_bounds[0][0].toFixed(3);
+            document.getElementById("table1-endpoint-Seg1H1").innerHTML = rcParam[0].seg_bounds[1][0].toFixed(3);
             document.getElementById("rc_out").value = JSON.stringify(rcDict);
 
             // Fix formatting issue with offset 1 in rating equation
@@ -233,8 +224,8 @@
                 document.getElementById("endpointSeg2H1").value = rcParam[1].seg_bounds[1][0].toFixed(3);
                 document.getElementById("endpointSeg2Q1").value = rcParam[1].seg_bounds[1][1].toFixed(3);
                 document.getElementById("breakpoint1").value = rcParam[1].seg_bounds[0][0].toFixed(3);
-                document.getElementById("table2-endpoint-Seg2H0").innerHTML = rcParam[1].seg_bounds[0][0].toFixed(3);
-                document.getElementById("table2-endpoint-Seg2H1").innerHTML = rcParam[1].seg_bounds[1][0].toFixed(3);
+                document.getElementById("table1-endpoint-Seg2H0").innerHTML = rcParam[1].seg_bounds[0][0].toFixed(3);
+                document.getElementById("table1-endpoint-Seg2H1").innerHTML = rcParam[1].seg_bounds[1][0].toFixed(3);
             };
 
             // update residual chart
