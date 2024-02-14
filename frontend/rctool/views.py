@@ -37,9 +37,14 @@ def rctool_tour_intro(response, tour_request_id=0):
 
 def rctool_import(request, tour_request_id=0):
     context = {}
-    context["tour_request_id"] = tour_request_id
+    context["tour_request_status_id"] = tour_request_id
 
     if request.method == "POST":
+
+        if request.POST.get("tour_request_status_id"):
+            context["tour_request_status_id"] = request.POST.get("tour_request_status_id")
+            print('here...')
+
         # If user is on the tour, upload test data
         if tour_request_id == 1:
             context["form"] = import_rc_data()
@@ -496,7 +501,7 @@ def rctool_develop_initialize(request):
                 }
                 context["n_seg"] = len(parameter_rc_lst)
                 context["breakpoint1"] = None
-                context["develop_tour_request_status_id"] = 0
+                context["tour_request_status_id"] = 0
                 context["toggle_breakpoint"] = "false"
                 context["toggle_weighted_fit"] = "false"
                 context["filename"] = df["filename"][0]
@@ -527,11 +532,7 @@ def rctool_develop_initialize(request):
         field_df_raw["stage"] = field_df_raw["stage"].round(decimals=3)
         field_df_raw["uncertainty"] = field_df_raw["uncertainty"].round(decimals=3)
         field_df_raw["datetime"] = field_df_raw["datetime"].apply(str)
-        context["develop_tour_request_status_id"] = request.POST.get(
-            "pass-tour-status-to-develop"
-        )
-
-        print('tour id here0: ', context["develop_tour_request_status_id"])
+        context["tour_request_status_id"] = request.POST.get("tour_request_status_id")
 
     context["rc_data"] = None
     context["table_dict"] = {
@@ -550,6 +551,7 @@ def rctool_develop_initialize(request):
     weighted = None
     context["fielddatacsv"] = field_df_raw.to_json(date_format="iso")
     context["filename"] = request.POST.get("pass-filename-to-develop")
+    context["tour_request_status_id"] = request.POST.get("tour_request_status_id")
 
     # get constraints for input settings
     df_filtered = field_df_raw.drop_duplicates(subset=["stage"], keep="first")
@@ -622,11 +624,10 @@ def rctool_develop_autofit(request):
             if context["toggle_breakpoint"] != "true":
                 context["breakpoint1"] = float(request.POST.get("breakpoint1"))
 
-        if request.POST.get("develop_tour_request_status_id"):
-            context["develop_tour_request_status_id"] = request.POST.get(
-                "develop_tour_request_status_id"
+        if request.POST.get("tour_request_status_id"):
+            context["tour_request_status_id"] = request.POST.get(
+                "tour_request_status_id"
             )
-            print('tour id here1:', context["develop_tour_request_status_id"])
 
         context["n_seg"] = int(request.POST.get("n-seg"))
         context["offsets"] = offsets

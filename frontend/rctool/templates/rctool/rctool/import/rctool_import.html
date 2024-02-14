@@ -86,7 +86,7 @@
                                         {% csrf_token %}
                                         <input type="hidden" id="pass-filename-to-develop" name="pass-filename-to-develop" value="{{ filename }}">
                                         <input type="hidden" id="pass-field-to-develop" name="pass-field-to-develop" value="{{ raw_field_data }}">
-                                        <input type="hidden" id="pass-tour-status-to-develop" name="pass-tour-status-to-develop" value="{{ tour_request_id }}">
+                                        <input type="hidden" id="tour_request_status_id" name="tour_request_status_id" value="{{ tour_request_status_id }}">
                                         <button class='btn btn-success btn-block' id="submit-import" type="submit" onclick="location.href='{% url 'rctool_develop_initialize' %}'" name='savebtn' style="background-color: #8FBC8F !important; border-color: #FFFFFF;"><small>next</small></button>
                                     </form>
                                 </div>
@@ -126,21 +126,35 @@
 
         // APP WALKTHROUGH
 
+        // // Check if tour status has been previously set
+        // if (sessionStorage.getItem("importTourStatus") == null) {
+        //     // Check if user selected tour
+        //     var importTourStatusID = {{ tour_request_status_id|safe }};
+        //     if (importTourStatusID == 1) {
+        //         var importTourStatus = true;
+        //         sessionStorage.setItem("importTourStatus", true);
+        //     } else {
+        //         var importTourStatus = false;
+        //         sessionStorage.setItem("importTourStatus", false);
+        //         }
+        //     };
+
         // Check if user selected tour
-        var importTourStatusID = {{ tour_request_id|safe }};
+        var importTourStatusID = {{ tour_request_status_id|safe }};
         if (importTourStatusID == 1) {
             var importTourStatus = true;
+            // sessionStorage.setItem("importTourStatus", true);
         } else {
             var importTourStatus = false;
-        };
+            // sessionStorage.setItem("importTourStatus", false);
+            };
         
-        console.log('importTourStatus: ', importTourStatus)
-
         // configure tour steps
         var importTour = new Tour({
             onEnd: function (tour) {
                 importTourStatus = false;
-                document.getElementById("pass-tour-status-to-develop").value = 0;
+                document.getElementById("tour_request_status_id").value = 0;
+                // sessionStorage.setItem("importTourStatus", false);
             },
             steps: [
                 {
