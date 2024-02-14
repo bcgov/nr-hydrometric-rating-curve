@@ -1,0 +1,144 @@
+{% extends 'rctool/base.html' %}
+{% load static %}
+
+
+{% block content %}
+<div class="container-xl mt-1 mr-5 ml-5">
+    <div class="tab-bar-container" style="display:flex;">
+        <ul class="tab-bar-list">
+            <li class="tab-bar-item-current"><a href="{% url 'rctool_import' 0 %}">import</a></li>
+            <li class="tab-bar-item" style="pointer-events: none;"><a href="#">develop</a></li>
+            <li class="tab-bar-item" style="pointer-events: none;"><a href="#">export</a></li>
+        </ul>
+    </div>
+
+    <div style="background-color: #FFFFFF; padding-left:10px; padding-right:10px;">
+        <div class="row justify-content-md-center" style="padding: 20px;">
+            <div class="col-10 col-lg-10 col-xl-10">
+                <div class="card">
+                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Rating Curve Development Overview</h6>
+                    <div class="card-body pt-3" style="display: flex;">
+                        <div class="row">
+                            <div class="col-md-11 mx-auto">
+                                <div id="carouselExampleIndicators" class="carousel slide carousel-fade" data-interval="false">
+                                    <ol class="carousel-indicators">
+                                        <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                                        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                                        <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+                                        <li data-target="#carouselExampleIndicators" data-slide-to="3"></li>
+                                        <li data-target="#carouselExampleIndicators" data-slide-to="4"></li>
+                                    </ol>
+                                    <div class="carousel-inner py-1 px-5">
+                                        <div class="carousel-item active" style="margin-bottom:20px;">
+                                            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Lets Get Started</h6>
+                                            <small class='text-description'>
+                                            To begin, we'll cover some basic concepts and development strategies. A hydrometric rating curve describes the relation between 
+                                            </small>
+                                            <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="Water height above the river bed.">stage</a>
+                                            <small class='text-description'> and </small>
+                                            <a class='key-term' href="#" data-toggle="tooltip" data-placement="top" title="Volume of water transported in a certain amount of time."> discharge</a>
+                                            <small class='text-description'>
+                                            . An example of this curve is the orange line in the figure below, where the x-axis is discharge and the y-axis is stage. A rating curve will appear as a straight line on log scale axes.
+                                            </small>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/fig_rating_curve_example_slide1.JPG' %}" class="slideshow-figure">
+                                            </div>
+                                            <small class="text-medium">Hover over any bolded terms for a brief description and navigate slides with the arrows.</small>
+                                        </div>
+                                        <div class="carousel-item">
+                                            <div class="text-box" style="margin-bottom:20px;">
+                                                <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">The Rating Equation</h6>
+                                                <small class='text-description'>Stage-discharge ratings are generally based on Manning's simplified hydraulic equation below where <em>Q</em> is </small>
+                                                <a class='key-term' style="font-weight:normal;" href='#' data-toggle="tooltip" data-placement="bottom" title="Volume of water transported in a certain amount of time.">discharge</a>                                            
+                                                <small class='text-description'>, <em>H</em> is </small>
+                                                <a class='key-term' style="font-weight:normal;" href='#' data-toggle="tooltip" data-placement="bottom" title="Water height above the bed.">stage</a>                                            
+                                                <small class='text-description'>, <em>h<sub>0</sub></em> is the </small>
+                                                <a class='key-term' style="font-weight:normal;" href='#' data-toggle="tooltip" data-placement="bottom" title="Gauge height at zero flow.">offset</a>                                                                                      
+                                                <small class='text-description'>, C is the </small>
+                                                <a class='key-term' style="font-weight:normal;" href='#' data-toggle="tooltip" data-placement="bottom" title="Calibration parameter influenced by channel characteristics.">coefficient</a>
+                                                <small class='text-description'>, and b is the </small>
+                                                <a class='key-term' style="font-weight:normal;" href='#' data-toggle="tooltip" data-placement="bottom" title="Calibration parameter influenced by the control geometry.">exponent.</a>
+                                            </div>
+                                            <div style="text-align:center;">
+                                                <small class='text-equation'>Q = C ( H - h<sub>0</sub> ) <sup>b</sup></small>
+                                            </div>
+                                            <div class="text-box" style="margin-top:20px; margin-bottom:20px;">
+                                                <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Gauge height at zero flow."><em>h<sub>0</sub></em> - offset:</a>
+                                                <small class='text-description'>Gauge height at zero flow. This is typically set as the height of the bed.</small><br>
+                                                <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Calibration parameter influenced by channel characteristics."><em>C</em> - coefficient:</a>
+                                                <small class='text-description'>Calibration parameter influenced by channel characteristics such as width, slope, bed roughness.</small><br>
+                                                <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Calibration parameter influenced by the control geometry."><em>b</em> - exponent:</a>
+                                                <small class='text-description'>Calibration parameter influenced by the control geometry. </small>
+                                                <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Features downstream of the gauge which influence flow.">Controls</a>
+                                                <small class='text-description'> are natural or constructed features located downstream of the gauge which influence flow.</small>
+                                            </div>
+                                        </div>
+                                        <div class="carousel-item" style="margin-bottom:15px;">
+                                            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Time for a Break</h6>
+                                            <small class='text-description'>Stage-discharge relations may have multiple rating</small>
+                                            <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="Region of a stage-discharge relation.">segments</a>
+                                            <small class='text-description'>divided by</small>
+                                            <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="The transition point of connecting segments.">breakpoints</a>   
+                                            <small class='text-description'>
+                                            . Each segment is a rating equation governed by unique hydraulic controls.
+                                            In the example figure below, segment 1 applies to stage between 0.32 m and 0.52 m and is likely influenced by section controls such as channel constrictions, woody debris, or rock ledges. Segment 2 applies to stage values between 0.52 m and 1.4 m and is likely affected by channel
+                                            controls such as channel geometry and bed roughness.
+                                            </small>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/fig_breakpoint_example_slide3_greylabels.JPG' %}" class="slideshow-figure">
+                                            </div>
+                                        </div>
+                                        <div class="carousel-item" style="margin-bottom:15px;">
+                                            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Performance</h6>
+                                            <div style="margin-bottom:5px;">
+                                                <small class='text-description'>Some common metrics used to assess the performance of hydrometric rating curves are included below:</small>
+                                            </div>
+                                            <div style="margin-bottom:15px;">
+                                                <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="The square root of the mean of the squared differences between observed and predicted values.">Root Mean Square Error</a><br>
+                                                <small class='text-description'>The root mean square error (RMSE) is given by the equation below where <em>Q</em> is discharge and <em>N</em> is number of measurements. This provides an indication of the average error between observed and predicted discharge values.</small>
+                                            </div>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/RMSE.JPG' %}" style="height:65px">
+                                            </div>
+                                            <div style="margin-bottom:15px;">
+                                                <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="The difference between the predicted and the observed value, divided by the observed value, then multiplied by 100.">Percent Error</a><br>
+                                                <small class='text-description'>Percent error is calculated by the following equation where <em>Q</em> is discharge and an example is shown by the figure below. This plot is useful for analyzing the error distribution and identifying outliers.</small>                          
+                                            </div>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/error_percent.JPG' %}" style="height:40px; margin-bottom:10px;">
+                                            </div>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/fig_rating_error_legend.JPG' %}" class="slideshow-figure">
+                                            </div>
+                                        </div>
+                                        <div class="carousel-item" style="margin-bottom:25px;">
+                                            <div class="col-md-8 mx-auto">
+                                                <div class="text-box" style="margin-bottom: 20px;">
+                                                    <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Overview Complete</h6>
+                                                    <small class='text-description'>All done! Proceed to a walkthrough of the HydRA platform from importing stage-discharge data to development, optimization, saving and exporting a session. Navigate with the arrows to revisit any topics previously covered.</small>
+                                                </div>
+                                                <div>
+                                                    <a class="btn btn-secondary btn-block custom-button" style="background-color: #6c747e !important; border-color: #FFFFFF;" href="{% url 'rctool_import' 1 %}"><small>Get Started</small></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div><!-- Close carousel-inner here -->
+                                    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="sr-only">Previous</span>
+                                    </a>
+                                    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="sr-only">Next</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
