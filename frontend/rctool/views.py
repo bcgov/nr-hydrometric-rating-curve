@@ -27,19 +27,24 @@ def home(response):
     return render(response, "rctool/home.html", {})
 
 
-def account(response):
-    return render(response, "rctool/account.html", {})
-
-
 def about(response):
     return render(response, "rctool/about.html", {})
 
 
+def rctool_tour_intro(response, tour_request_id=0):
+    return render(response, "rctool/rctool/tour/rctool_tour_intro.html", {})
+
+
 def rctool_import(request, tour_request_id=0):
     context = {}
-    context["tour_request_id"] = tour_request_id
+    context["tour_request_status_id"] = tour_request_id
 
     if request.method == "POST":
+
+        if request.POST.get("tour_request_status_id"):
+            context["tour_request_status_id"] = request.POST.get("tour_request_status_id")
+            print('here...')
+
         # If user is on the tour, upload test data
         if tour_request_id == 1:
             context["form"] = import_rc_data()
@@ -496,7 +501,7 @@ def rctool_develop_initialize(request):
                 }
                 context["n_seg"] = len(parameter_rc_lst)
                 context["breakpoint1"] = None
-                context["develop_tour_request_status_id"] = 0
+                context["tour_request_status_id"] = 0
                 context["toggle_breakpoint"] = "false"
                 context["toggle_weighted_fit"] = "false"
                 context["filename"] = df["filename"][0]
@@ -527,6 +532,7 @@ def rctool_develop_initialize(request):
         field_df_raw["stage"] = field_df_raw["stage"].round(decimals=3)
         field_df_raw["uncertainty"] = field_df_raw["uncertainty"].round(decimals=3)
         field_df_raw["datetime"] = field_df_raw["datetime"].apply(str)
+        context["tour_request_status_id"] = request.POST.get("tour_request_status_id")
         context["develop_tour_request_status_id"] = request.POST.get(
             "pass-tour-status-to-develop"
         )
@@ -551,6 +557,7 @@ def rctool_develop_initialize(request):
     weighted = None
     context["fielddatacsv"] = field_df_raw.to_json(date_format="iso")
     context["filename"] = request.POST.get("pass-filename-to-develop")
+    context["tour_request_status_id"] = request.POST.get("tour_request_status_id")
 
     # get constraints for input settings
     df_filtered = field_df_raw.drop_duplicates(subset=["stage"], keep="first")
@@ -623,9 +630,9 @@ def rctool_develop_autofit(request):
             if context["toggle_breakpoint"] != "true":
                 context["breakpoint1"] = float(request.POST.get("breakpoint1"))
 
-        if request.POST.get("pass-tour-status-to-develop"):
-            context["develop_tour_request_status_id"] = request.POST.get(
-                "pass-tour-status-to-develop"
+        if request.POST.get("tour_request_status_id"):
+            context["tour_request_status_id"] = request.POST.get(
+                "tour_request_status_id"
             )
 
         context["n_seg"] = int(request.POST.get("n-seg"))
@@ -731,7 +738,7 @@ def rctool_export_initialize(request):
         context["rc_output"]["filename"] = [request.POST.get("filename_out")]
     context["form"] = export_form
 
-    return render(request, "rctool/rctool/export & review/rctool_export.html", context)
+    return render(request, "rctool/rctool/export/rctool_export.html", context)
 
 
 def create_export_rc_img(field_data, rc_data):
@@ -1046,11 +1053,11 @@ def rctool_export_output(request):
 
                     # prepaire and return output pdf
                     template = get_template(
-                        "rctool/rctool/export & review/rctool_export_pdf.html"
+                        "rctool/rctool/export/rctool_export_pdf.html"
                     )
                     html = template.render(context)
                     pdf = render_to_pdf(
-                        "rctool/rctool/export & review/rctool_export_pdf.html", context
+                        "rctool/rctool/export/rctool_export_pdf.html", context
                     )
                     response = HttpResponse(pdf, content_type="application/pdf")
                     content = f"inline; filename={fname}.pdf"
@@ -1068,12 +1075,12 @@ def rctool_export_output(request):
             context["rc_output"] = rc_output
 
             return render(
-                request, "rctool/rctool/export & review/rctool_export.html", context
+                request, "rctool/rctool/export/rctool_export.html", context
             )
     else:
         export_form = export_rc_data()
     return render(
         request,
-        "rctool/rctool/export & review/rctool_export.html",
+        "rctool/rctool/export/rctool_export.html",
         {"form": export_form},
     )
