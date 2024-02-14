@@ -1053,7 +1053,12 @@
                                                 label.push(['Q model: ' + q_model.toFixed(2) + ' m³/s']);
                                             }
                                             if (r_percent !== null){
-                                                label.push(['R%:      ' + r_percent.toFixed(2) + ' %']);
+                                                if (r_percent > 0){
+                                                    // show + sign for positive values
+                                                    label.push(['R%:      +' + r_percent.toFixed(2) + ' %']);
+                                                } else {
+                                                    label.push(['R%:      ' + r_percent.toFixed(2) + ' %']);
+                                                }
                                             }
                                             label.push(['shift:   ' + 'placeholder' + ' m']);
                                         }
