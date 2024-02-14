@@ -1,6 +1,6 @@
 .rc-chart-container {
-    width: 100%;
-    height: 45vh;
+  width: 100%;
+  height: 45vh;
 }
 
 
@@ -30,24 +30,8 @@
 .tab a.active {
   background-color: #ccc;
 }
-  
-.tabcontent {
-    padding: 0px 6px;
-    border: 1px solid #ccc;
-    border-top: none;
-  }
 
-.tabcontent {
-    animation: fadeEffect 1s; /* Fading effect takes 1 second */
-  }
-
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  body {
+body {
     background-color: #F5F5F5;
 }
 
@@ -159,3 +143,14 @@
       color: grey;
       text-decoration: none;
   };
+
+/* Go from zero to full opacity */
+@keyframes fadeEffect {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

@@ -533,6 +533,12 @@ def rctool_develop_initialize(request):
         field_df_raw["uncertainty"] = field_df_raw["uncertainty"].round(decimals=3)
         field_df_raw["datetime"] = field_df_raw["datetime"].apply(str)
         context["tour_request_status_id"] = request.POST.get("tour_request_status_id")
+        context["develop_tour_request_status_id"] = request.POST.get(
+            "pass-tour-status-to-develop"
+        )
+    else:
+        # redirect to import as no data was passed
+        return render(request, "rctool/rctool/import/rctool_import.html", context)
 
     context["rc_data"] = None
     context["table_dict"] = {
