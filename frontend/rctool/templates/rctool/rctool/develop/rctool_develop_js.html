@@ -1018,20 +1018,55 @@
                     },
                 },
                 tooltip: {
+                    bodyFont: {
+                        size: 10,
+                        family: 'monospace',
+                    },
                     callbacks: {
                         label: function(context) {
                             var label = context.dataset.label || '';
 
-                            console.log(label)
-                            // TODO: add shift, R%, stage, Q, MMT date
+                            // get toggle state of toggle_detailed_tooltip
+                            var toggle_detailed_tooltip = document.getElementById("toggle_detailed_tooltip").checked
 
                             if (label === 'field' || label === 'field inactive') {
                                 label = [];
-                                if (context.parsed.y !== null) {
-                                    label.push(['stage: ' + context.parsed.y.toFixed(2) + ' m']);
-                                }
-                                if (context.parsed.x !== null) {
-                                    label.push(['discharge: ' + context.parsed.x.toFixed(2) + ' m³/s']);
+                                if (toggle_detailed_tooltip == true) {
+                                    for (var idx in fielddatacsv.stage) {
+                                        if (fielddatacsv.stage[idx] == context.parsed.y && fielddatacsv.discharge[idx] == context.parsed.x) {
+
+                                            // find discharge from rating curve for this stage
+                                            let q_model = null
+                                            let r_percent = null
+                                            for (var seg = 1; seg < residualData.length; seg++){
+                                                for (var j in residualData[seg].data){
+                                                    if (residualData[seg].data[j][0] == fielddatacsv.stage[idx]){
+                                                        q_model = residualData[seg].data[j][1]
+                                                        r_percent = residualData[seg].data[j][2]
+                                                    }
+                                                }
+                                            }
+                                            label.push(['H:       ' + context.parsed.y.toFixed(2) + ' m']);
+                                            label.push(['Q:       ' + context.parsed.x.toFixed(2) + ' m³/s']);
+                                            label.push(['date:    ' + fielddatacsv.datetime[idx]]);
+                                            if (q_model !== null){
+                                                label.push(['Q model: ' + q_model.toFixed(2) + ' m³/s']);
+                                            }
+                                            if (r_percent !== null){
+                                                if (r_percent > 0){
+                                                    // show + sign for positive values
+                                                    label.push(['R%:      +' + r_percent.toFixed(2) + ' %']);
+                                                } else {
+                                                    label.push(['R%:      ' + r_percent.toFixed(2) + ' %']);
+                                                }
+                                            }
+                                            label.push(['shift:   ' + 'placeholder' + ' m']);
+                                        }
+                                    }
+                                } else {
+                                    if (context.parsed.y !== null) {
+                                        label.push(['stage: ' + context.parsed.y.toFixed(2) + ' m, discharge: ' + context.parsed.x.toFixed(2) + ' m³/s']);
+                                    }
                                 }
                             }
 
