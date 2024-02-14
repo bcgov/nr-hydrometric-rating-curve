@@ -5,8 +5,9 @@ class DatePickerInput(forms.DateInput):
         input_type = 'date'
 
 class import_rc_data(forms.Form):
-    csv_upload = forms.FileField(label="csv file")
-    header_row = forms.IntegerField(label="header row number", widget=forms.NumberInput(attrs={'class': 'form-control', 'min':1, 'value':1, 'id':'form-header-row'}))
+    # csv_upload = forms.FileField(label="csv file", widget=forms.FileInput(attrs={'class': 'form-control form-control-sm'}))
+    csv_upload = forms.FileField(label="csv file", widget=forms.FileInput(attrs={'class': 'form-control form-control-sm', 'style': 'font-size: 11.5px;'}))
+    header_row = forms.IntegerField(label="header row number", widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'min':1, 'value':1, 'id':'form-header-row'}))
     csv_upload.required = False
     header_row.required = False
 

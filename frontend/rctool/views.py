@@ -27,12 +27,12 @@ def home(response):
     return render(response, "rctool/home.html", {})
 
 
-def account(response):
-    return render(response, "rctool/account.html", {})
-
-
 def about(response):
     return render(response, "rctool/about.html", {})
+
+
+def rctool_tour_intro(response, tour_request_id=0):
+    return render(response, "rctool/rctool/tour/rctool_tour_intro.html", {})
 
 
 def rctool_import(request, tour_request_id=0):
@@ -531,6 +531,8 @@ def rctool_develop_initialize(request):
             "pass-tour-status-to-develop"
         )
 
+        print('tour id here0: ', context["develop_tour_request_status_id"])
+
     context["rc_data"] = None
     context["table_dict"] = {
         "headings": field_df_raw.columns.values,
@@ -620,10 +622,11 @@ def rctool_develop_autofit(request):
             if context["toggle_breakpoint"] != "true":
                 context["breakpoint1"] = float(request.POST.get("breakpoint1"))
 
-        if request.POST.get("pass-tour-status-to-develop"):
+        if request.POST.get("develop_tour_request_status_id"):
             context["develop_tour_request_status_id"] = request.POST.get(
-                "pass-tour-status-to-develop"
+                "develop_tour_request_status_id"
             )
+            print('tour id here1:', context["develop_tour_request_status_id"])
 
         context["n_seg"] = int(request.POST.get("n-seg"))
         context["offsets"] = offsets
@@ -728,7 +731,7 @@ def rctool_export_initialize(request):
         context["rc_output"]["filename"] = [request.POST.get("filename_out")]
     context["form"] = export_form
 
-    return render(request, "rctool/rctool/export & review/rctool_export.html", context)
+    return render(request, "rctool/rctool/export/rctool_export.html", context)
 
 
 def create_export_rc_img(field_data, rc_data):
@@ -1043,11 +1046,11 @@ def rctool_export_output(request):
 
                     # prepaire and return output pdf
                     template = get_template(
-                        "rctool/rctool/export & review/rctool_export_pdf.html"
+                        "rctool/rctool/export/rctool_export_pdf.html"
                     )
                     html = template.render(context)
                     pdf = render_to_pdf(
-                        "rctool/rctool/export & review/rctool_export_pdf.html", context
+                        "rctool/rctool/export/rctool_export_pdf.html", context
                     )
                     response = HttpResponse(pdf, content_type="application/pdf")
                     content = f"inline; filename={fname}.pdf"
@@ -1065,12 +1068,12 @@ def rctool_export_output(request):
             context["rc_output"] = rc_output
 
             return render(
-                request, "rctool/rctool/export & review/rctool_export.html", context
+                request, "rctool/rctool/export/rctool_export.html", context
             )
     else:
         export_form = export_rc_data()
     return render(
         request,
-        "rctool/rctool/export & review/rctool_export.html",
+        "rctool/rctool/export/rctool_export.html",
         {"form": export_form},
     )

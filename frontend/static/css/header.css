@@ -10,7 +10,8 @@
 .header-title-text {
     margin: auto;
     color: #FFFFFF;
-    font-size: 15px;
+    font-size: 14px;
+    letter-spacing: 0.5px;
     font-weight: bold;
     font-family: Segoe UI;
 }

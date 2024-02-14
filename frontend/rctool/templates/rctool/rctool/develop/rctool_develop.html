@@ -126,16 +126,17 @@
 <div style="display: none;"></div>
     <form method="POST" action="../export/initialize" id="pass-develop-to-export-form">
         {% csrf_token %}
-            <input type="hidden" id="n-seg_out" name="n-seg" value="{{ n_seg }}">
-            <input type="hidden" id="fieldData_stage_out" name="fieldData_stage" value="">
-            <input type="hidden" id="fieldData_discharge_out" name="fieldData_discharge" value="">
-            <input type="hidden" id="fieldData_active_out" name="fieldData_active" value="">
-            <input type="hidden" id="fieldData_datetime_out" name="fieldData_datetime" value=""> 
-            <input type="hidden" id="fieldData_comments_out" name="fieldData_comments" value="">
-            <input type="hidden" id="fieldData_uncertainty_out" name="fieldData_uncertainty" value="">
-            <input type="hidden" id="rc_out" name="rc_out" value="{{ rc }}">
-            <input type="hidden" id="filename_out" name="filename_out" value="{{ filename }}">
-            <button type="submit" onclick="location.href='{% url 'rctool_export_initialize' %}'" name='to-export-btn' id='to-export-btn' onkeydown="return event.key != 'Enter';" hidden></button>
+        <input type="hidden" id="develop_tour_request_status_id" name="develop_tour_request_status_id" value="{{ develop_tour_request_status_id }}">
+        <input type="hidden" id="n-seg_out" name="n-seg" value="{{ n_seg }}">
+        <input type="hidden" id="fieldData_stage_out" name="fieldData_stage" value="">
+        <input type="hidden" id="fieldData_discharge_out" name="fieldData_discharge" value="">
+        <input type="hidden" id="fieldData_active_out" name="fieldData_active" value="">
+        <input type="hidden" id="fieldData_datetime_out" name="fieldData_datetime" value=""> 
+        <input type="hidden" id="fieldData_comments_out" name="fieldData_comments" value="">
+        <input type="hidden" id="fieldData_uncertainty_out" name="fieldData_uncertainty" value="">
+        <input type="hidden" id="rc_out" name="rc_out" value="{{ rc }}">
+        <input type="hidden" id="filename_out" name="filename_out" value="{{ filename }}">
+        <button type="submit" onclick="location.href='{% url 'rctool_export_initialize' %}'" name='to-export-btn' id='to-export-btn' onkeydown="return event.key != 'Enter';" hidden></button>
     </form>
 </div>
 
@@ -159,6 +160,9 @@ try {
 catch(err) {
     var developTourStatusID = 0;
 };
+
+console.log('tour request ID')
+console.log(developTourStatusID)
 
 
 // configure tour steps
