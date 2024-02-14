@@ -81,9 +81,15 @@
                                 <canvas id="rcChart">
                                 </canvas>
                             </div>
-                            <div style="display: flex; justify-content: flex-end;">
-                                <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" checked="checked" onchange="toggleAxisFormat(this.checked)">
-                                <label for='toggle_axis_format'><p class="text-small">logarithmic axis</p></label>
+                            <div style="display: flex; justify-content: space-between;">
+                                <div>
+                                    <input type="checkbox" id="toggle_detailed_tooltip" name="toggle_detailed_tooltip" checked="checked">
+                                    <label for='toggle_detailed_tooltip'><p class="text-small">detailed tooltip</p></label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" checked="checked" onchange="toggleAxisFormat(this.checked)">
+                                    <label for='toggle_axis_format'><p class="text-small">logarithmic axis</p></label>
+                                </div>
                             </div>
                         </div>
                     </div>
