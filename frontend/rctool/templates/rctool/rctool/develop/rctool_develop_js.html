@@ -1037,11 +1037,17 @@
 
                                             // find discharge from rating curve for this stage
                                             let q_model = null
+                                            let h_model = null
                                             let r_percent = null
                                             for (var seg = 1; seg < residualData.length; seg++){
                                                 for (var j in residualData[seg].data){
                                                     if (residualData[seg].data[j][0] == fielddatacsv.stage[idx]){
+                                                        console.log(residualData[seg])
+                                                        console.log(rcParam)
                                                         q_model = residualData[seg].data[j][1]
+                                                        h_model = Math.exp(1/rcParam[seg - 1].exp * Math.log(context.parsed.x / rcParam[seg - 1].const)) + rcParam[seg - 1].offset
+                                                        console.log("q = " + context.parsed.x + " exp " + rcParam[seg - 1].exp)
+                                                        console.log("h_model " + h_model)
                                                         r_percent = residualData[seg].data[j][2]
                                                     }
                                                 }
@@ -1049,9 +1055,12 @@
                                             label.push(['H:       ' + context.parsed.y.toFixed(2) + ' m']);
                                             label.push(['Q:       ' + context.parsed.x.toFixed(2) + ' m³/s']);
                                             label.push(['date:    ' + fielddatacsv.datetime[idx]]);
-                                            if (q_model !== null){
-                                                label.push(['Q model: ' + q_model.toFixed(2) + ' m³/s']);
+                                            if (h_model !== null) {
+                                                label.push(['H shift: ' + (context.parsed.y - h_model).toFixed(2) + ' m'])
                                             }
+                                            //if (q_model !== null){
+                                            //    label.push(['Q model: ' + q_model.toFixed(2) + ' m³/s']);
+                                            //}
                                             if (r_percent !== null){
                                                 if (r_percent > 0){
                                                     // show + sign for positive values
