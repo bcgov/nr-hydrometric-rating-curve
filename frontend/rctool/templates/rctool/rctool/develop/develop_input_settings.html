@@ -2,6 +2,14 @@
 <form method="POST" action="." id="rcform">
     {% csrf_token %}
     <small style="color: #003466; margin-bottom: 3px; font-size:11.5px; font-weight:500;">segment 1</small>
+    <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;" id="offset1-panel">
+        <div style="flex: 1; margin-right: 10px;">
+            <small class="text-medium">offset:</small>
+        </div>
+        <div style="flex: 3;">
+            <input type="number" step=".01" max="{{ max_offset }}" class="form-control form-control-sm" name="offset1" id="offset1" value="{{ offsets.0 }}" onchange="setOffset(0, this.value, '{{ max_offset }}')" style="font-size:12px;" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="segment 1 offset" required>
+        </div>
+    </div>
     <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
         <div style="flex: 1; margin-right: 10px;">
             <small class="text-medium">end points:</small>
@@ -13,14 +21,6 @@
                 <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg1H1" id="endpointSeg1H1" placeholder="H2" value="{{rc.parameters.0.seg_bounds.1.0}}" onchange="setEndpoints(0, 1, 0, this.value)" onkeydown="return event.key != 'Enter';" style="margin-left: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="final stage">
                 <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg1Q1" id="endpointSeg1Q1" placeholder="Q2" value="{{rc.parameters.0.seg_bounds.1.1}}" onchange="setEndpoints(0, 1, 1, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="final discharge">
             </div>
-        </div>
-    </div>
-    <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;" id="offset1-panel">
-        <div style="flex: 1; margin-right: 10px;">
-            <small class="text-medium">offset:</small>
-        </div>
-        <div style="flex: 3;">
-            <input type="number" step=".01" max="{{ max_offset }}" class="form-control form-control-sm" name="offset1" id="offset1" value="{{ offsets.0 }}" onchange="setOffset(0, this.value, '{{ max_offset }}')" style="font-size:12px;" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="segment 1 offset" required>
         </div>
     </div>
     <div style="display: flex; width: 100%; margin: 20px 0px 5px 0px;">
@@ -78,6 +78,14 @@
         <p style="color: #003466; margin-bottom: 3px; font-size: 11.5px; font-weight:500;">segment 2</p>
         <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
             <div style="flex: 1; margin-right: 10px;">
+                <small class="text-medium">offset:</small>
+            </div>
+            <div style="flex: 3;">
+                <input type="number" step=".01" max="{{ max_offset }}" class="form-control form-control-sm" name="offset2" id="offset2" value="{{ offsets.1 }}" onchange="setOffset(1, this.value, '{{ max_offset }}')" onkeydown="return event.key != 'Enter';" href="#" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="segment 2 offset" required>
+            </div>
+        </div>
+        <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
+            <div style="flex: 1; margin-right: 10px;">
                 <small class="text-medium">end points:</small>
             </div>
             <div style="flex: 3;">
@@ -87,14 +95,6 @@
                     <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg2H1" id="endpointSeg2H1" placeholder="H2" value="{{rc.parameters.1.seg_bounds.1.0}}" onchange="setEndpoints(1, 1, 0, this.value)" onkeydown="return event.key != 'Enter';" style="margin-left: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="final stage">
                     <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg2Q1" id="endpointSeg2Q1" placeholder="Q2" value="{{rc.parameters.1.seg_bounds.1.1}}" onchange="setEndpoints(1, 1, 1, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="final discharge">
                 </div>
-            </div>
-        </div>
-        <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
-            <div style="flex: 1; margin-right: 10px;">
-                <small class="text-medium">offset:</small>
-            </div>
-            <div style="flex: 3;">
-                <input type="number" step=".01" max="{{ max_offset }}" class="form-control form-control-sm" name="offset2" id="offset2" value="{{ offsets.1 }}" onchange="setOffset(1, this.value, '{{ max_offset }}')" onkeydown="return event.key != 'Enter';" href="#" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="segment 2 offset" required>
             </div>
         </div>
         <div style="display: flex; width: 100%; margin: 20px 0px 0px 0px;">
