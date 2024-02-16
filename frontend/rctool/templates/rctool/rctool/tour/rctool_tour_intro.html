@@ -142,3 +142,10 @@
     </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+// Store tour status in session storage
+sessionStorage.setItem("tourStatus", true);
+</script>
+{% endblock %}

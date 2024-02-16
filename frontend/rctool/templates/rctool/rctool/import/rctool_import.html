@@ -86,7 +86,6 @@
                                         {% csrf_token %}
                                         <input type="hidden" id="pass-filename-to-develop" name="pass-filename-to-develop" value="{{ filename }}">
                                         <input type="hidden" id="pass-field-to-develop" name="pass-field-to-develop" value="{{ raw_field_data }}">
-                                        <input type="hidden" id="tour_request_status_id" name="tour_request_status_id" value="{{ tour_request_status_id }}">
                                         <button class='btn btn-success btn-block' id="submit-import" type="submit" onclick="location.href='{% url 'rctool_develop_initialize' %}'" name='savebtn' style="background-color: #8FBC8F !important; border-color: #FFFFFF;"><small>next</small></button>
                                     </form>
                                 </div>
@@ -106,82 +105,64 @@
 
 
 {% block scripts %}
-    <script>
+<script>
 
-        function toggleInputForm(toggleFormVal) {
-            console.log(toggleFormVal);
-            var toggleDiv = document.getElementById("toggle-div");
-                if (toggleFormVal === "new-session") {
-                    document.getElementById('example-data').style.display = "block";
-                    toggleDiv.style.display = "block";
-                    document.getElementById("input-instructions").innerHTML = "Please upload in csv format with column names; 'datetime', 'discharge', 'stage', 'uncertainty', and 'comments'"
-                } else {
-                    toggleDiv.style.display = "none";
-                    document.getElementById('example-data').style.display = "none";
-                    document.getElementById("input-instructions").innerHTML = "Please upload .dat file from previous session."
-                    document.getElementById("import-data-form").action = '../../develop/initialize'
-            };
-
-        };
-
-        // APP WALKTHROUGH
-
-        // // Check if tour status has been previously set
-        // if (sessionStorage.getItem("importTourStatus") == null) {
-        //     // Check if user selected tour
-        //     var importTourStatusID = {{ tour_request_status_id|safe }};
-        //     if (importTourStatusID == 1) {
-        //         var importTourStatus = true;
-        //         sessionStorage.setItem("importTourStatus", true);
-        //     } else {
-        //         var importTourStatus = false;
-        //         sessionStorage.setItem("importTourStatus", false);
-        //         }
-        //     };
-
-        // Check if user selected tour
-        var importTourStatusID = {{ tour_request_status_id|safe }};
-        if (importTourStatusID == 1) {
-            var importTourStatus = true;
-            // sessionStorage.setItem("importTourStatus", true);
+function toggleInputForm(toggleFormVal) {
+    var toggleDiv = document.getElementById("toggle-div");
+        if (toggleFormVal === "new-session") {
+            document.getElementById('example-data').style.display = "block";
+            toggleDiv.style.display = "block";
+            document.getElementById("input-instructions").innerHTML = "Please upload in csv format with column names; 'datetime', 'discharge', 'stage', 'uncertainty', and 'comments'"
         } else {
-            var importTourStatus = false;
-            // sessionStorage.setItem("importTourStatus", false);
-            };
+            toggleDiv.style.display = "none";
+            document.getElementById('example-data').style.display = "none";
+            document.getElementById("input-instructions").innerHTML = "Please upload .dat file from previous session."
+            document.getElementById("import-data-form").action = '../../develop/initialize'
+    };
+};
+
+// APP WALKTHROUGH
+
+// Check if tour status has been previously set
+if (sessionStorage.getItem("tourStatus") == null) {
+    // Check if user selected tour
+    var tourStatusID = {{ tour_request_status_id|safe }};
+    if (tourStatusID == 1) {
+        sessionStorage.setItem("tourStatus", true);
+    } else {
+            sessionStorage.setItem("tourStatus", false);
+            }
+    };
         
-        // configure tour steps
-        var importTour = new Tour({
-            onEnd: function (tour) {
-                importTourStatus = false;
-                document.getElementById("tour_request_status_id").value = 0;
-                // sessionStorage.setItem("importTourStatus", false);
+// configure tour steps
+var importTour = new Tour({
+    onEnd: function (tour) {
+        sessionStorage.setItem("tourStatus", false);
+        },
+    steps: [
+            {
+            element: "#input-session-type",
+            title: "Import Walkthrough",
+            content: "To begin, a previous session or data for a new session can be uploaded. This step can be skipped for this tour since a sample dataset has already been uploaded."
             },
-            steps: [
-                {
-                    element: "#input-session-type",
-                    title: "Import Walkthrough",
-                    content: "To begin, a previous session or data for a new session can be uploaded. This step can be skipped for this tour since a sample dataset has already been uploaded."
-                },
-                {
-                    element: "#form-header-row",
-                    title: "Import Walkthrough",
+            {
+            element: "#form-header-row",
+            title: "Import Walkthrough",
                     content: "Field data can be uploaded using a csv file with example column names specified on the right. When importing data, select which row has these column headings. If uncertainty data is uploaded, missing values will be filled in as 0.5 (5 %)."
-                },
-                {
-                    element: "#enter-data-button",
-                    title: "Import Walkthrough",
-                    content: "To continue this tour with the sample data, please select load, then next"
-                }
-            ]
-        });
+            },
+            {
+            element: "#enter-data-button",
+            title: "Import Walkthrough",
+            content: "To continue this tour with the sample data, please select load, then next"
+            }
+        ]
+});
         
+if (sessionStorage.getItem("tourStatus") == 'true') {
+    importTour.init();
+    importTour.start(sessionStorage.getItem("tourStatus"));
+    importTour.restart();
+};
 
-        if (importTourStatus == true) {
-            importTour.init();
-            importTour.start(importTourStatus);
-            importTour.restart();
-        };
-
-    </script>
-
+</script>
 {% endblock %}
