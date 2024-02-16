@@ -1,17 +1,23 @@
-
 @media only screen and (min-width: 768px) {
 
     .card-body-left {
         flex: 1;
         padding: 0px 25px 0px 5px;
+        padding: 5px;
     }
 
 
     .card-body-right {
         flex: 2;
         padding: 0px 5px 0px 25px;
+        padding: 5px;
         border-left: 1.5px solid #F0F0F0;
     }
+}
+
+
+#fieldtable {
+    width: 100%;
 }
 
 
@@ -35,8 +41,18 @@ tr:nth-child(even) {
     width: 100%;
 }
 
+.table-container {
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+}
+
 .table-header {
     text-align: left;
+    font-size: 11.5px;
+    position: sticky;
+    top: 0;
+    background-color: #F8F8F8;
     font-size: 11.5px;
     position: sticky;
     top: 0;
@@ -45,6 +61,7 @@ tr:nth-child(even) {
 
 .table-cell {
     padding: 0px;
+    font-size: 10.5px;
     font-size: 10.5px;
 }
 
