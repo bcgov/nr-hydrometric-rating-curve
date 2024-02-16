@@ -81,9 +81,16 @@
                                 <canvas id="rcChart">
                                 </canvas>
                             </div>
-                            <div style="display: flex; justify-content: flex-end;">
-                                <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" checked="checked" onchange="toggleAxisFormat(this.checked)">
-                                <label for='toggle_axis_format'><p class="text-small">logarithmic axis</p></label>
+                            <div style="display: flex; justify-content: space-between;">
+                                <div>
+                                    <button class="btn btn-secondary text-small" onclick="resetZoom()">Reset Zoom</button>
+                                    <input type="checkbox" id="toggle_detailed_tooltip" name="toggle_detailed_tooltip" checked="checked">
+                                    <label for='toggle_detailed_tooltip'><p class="text-small">detailed tooltip</p></label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" checked="checked" onchange="toggleAxisFormat(this.checked)">
+                                    <label for='toggle_axis_format'><p class="text-small">logarithmic axis</p></label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -126,16 +133,17 @@
 <div style="display: none;"></div>
     <form method="POST" action="../export/initialize" id="pass-develop-to-export-form">
         {% csrf_token %}
-            <input type="hidden" id="n-seg_out" name="n-seg" value="{{ n_seg }}">
-            <input type="hidden" id="fieldData_stage_out" name="fieldData_stage" value="">
-            <input type="hidden" id="fieldData_discharge_out" name="fieldData_discharge" value="">
-            <input type="hidden" id="fieldData_active_out" name="fieldData_active" value="">
-            <input type="hidden" id="fieldData_datetime_out" name="fieldData_datetime" value=""> 
-            <input type="hidden" id="fieldData_comments_out" name="fieldData_comments" value="">
-            <input type="hidden" id="fieldData_uncertainty_out" name="fieldData_uncertainty" value="">
-            <input type="hidden" id="rc_out" name="rc_out" value="{{ rc }}">
-            <input type="hidden" id="filename_out" name="filename_out" value="{{ filename }}">
-            <button type="submit" onclick="location.href='{% url 'rctool_export_initialize' %}'" name='to-export-btn' id='to-export-btn' onkeydown="return event.key != 'Enter';" hidden></button>
+        <input type="hidden" id="tour_request_status_id" name="tour_request_status_id" value="{{ tour_request_status_id }}">
+        <input type="hidden" id="n-seg_out" name="n-seg" value="{{ n_seg }}">
+        <input type="hidden" id="fieldData_stage_out" name="fieldData_stage" value="">
+        <input type="hidden" id="fieldData_discharge_out" name="fieldData_discharge" value="">
+        <input type="hidden" id="fieldData_active_out" name="fieldData_active" value="">
+        <input type="hidden" id="fieldData_datetime_out" name="fieldData_datetime" value=""> 
+        <input type="hidden" id="fieldData_comments_out" name="fieldData_comments" value="">
+        <input type="hidden" id="fieldData_uncertainty_out" name="fieldData_uncertainty" value="">
+        <input type="hidden" id="rc_out" name="rc_out" value="{{ rc }}">
+        <input type="hidden" id="filename_out" name="filename_out" value="{{ filename }}">
+        <button type="submit" onclick="location.href='{% url 'rctool_export_initialize' %}'" name='to-export-btn' id='to-export-btn' onkeydown="return event.key != 'Enter';" hidden></button>
     </form>
 </div>
 
@@ -154,7 +162,7 @@ WALKTHROUGH
 // Initialize
 
 try {
-    var developTourStatusID = {{ develop_tour_request_status_id|safe }};
+    var developTourStatusID = {{ tour_request_status_id|safe }};
 }
 catch(err) {
     var developTourStatusID = 0;

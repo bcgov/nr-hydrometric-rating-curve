@@ -1,39 +1,7 @@
 {% load static %}
 {% load custom_tags %}
-  
-<!-- <div id="rating" class="tabcontent">
-    <div class="card-body px-4 py-2" style="display: flex;">
-        {% if rc.parameters %}
-            <table class="table">
-                <tr class="table-header">
-                    <th class="table-cell">segment</th>
-                    <th class="table-cell">equation</th>
-                    <th class="table-cell">RMSE</th>
-                </tr>
-                <tr class="table-row">
-                    <td class="table-cell"><p id="table1-segment1-label">{{rc.parameters.0.label}}</p></td>
-                    <td class="table-cell" style="display:flex;">Q = <p id="table1-segment1-const">{{rc.parameters.0.const}}</p>( H <p id="table1-segment1-offset">{{offsets_val.0}}</p> ) <sup><p id="table1-segment1-exp">{{rc.parameters.0.exp}}</p></sup></td>
-                    <td class="table-cell"><p id="table1-segment1-rmse">{{rc.parameters.0.rmse}}</p></td>
-                    <td class="table-cell">
-                    </td>
-                </tr>
-                {% if rc.parameters.1 %}
-                <tr class="table-row">
-                    <td class="table-cell"><p id="table1-segment2-label">{{rc.parameters.1.label}}</p></td>
-                    <td class="table-cell" style="display:flex;">Q = <p id="table1-segment2-const">{{rc.parameters.1.const}}</p>( H <p id="table1-segment2-offset">{{offsets_val.1}}</p> )<sup><p id="table1-segment2-exp">{{rc.parameters.1.exp}}</p></sup></td>
-                    <td class="table-cell"><p id="table1-segment2-rmse">{{rc.parameters.1.rmse}}</p></td>
-                    <td class="table-cell">
-                    </td>
-                </tr>
-                {% endif %}
-            </table>
-        {% else %}
-        <p>Please set offset and select generate curve</p>
-        {% endif %}
-    </div>
-</div> -->
-  
-<div id="compare" class="tabcontent">
+
+<div id="compare">
     <div class="card-body px-4 py-2">
         <table class="table">
             <tr class="table-header">
@@ -44,30 +12,30 @@
                 <th class="table-cell">start point</th>
                 <th class="table-cell">end point</th>
                 <th class="table-cell">RMSE</th>
-                <th class="table-cell"><p style="color:#80B7AB">add curve</p></th>
+                <th class="table-cell"><p style="color:#9ec1a3">add curve</p></th>
                 <!-- <th class="table-cell">edit rating</th> -->
             </tr>
             {% if rc.parameters %}
                 <tr class="table-row">
-                    <td class="table-cell"><p id="table2-segment1-label">{{rc.parameters.0.label}}</p></td>
-                    <td class="table-cell"><p id="table2-segment1-const">{{rc.parameters.0.const}}</p></td>
-                    <td class="table-cell"><p id="table2-segment1-exp">{{rc.parameters.0.exp}}</p></td>
-                    <td class="table-cell"><p id="table2-segment1-offset">{{rc.parameters.0.offset}}</p></td>
-                    <td class="table-cell"><p id="table2-endpoint-Seg1H0">{{rc.parameters.0.seg_bounds.0.0}}</p></td>
-                    <td class="table-cell"><p id="table2-endpoint-Seg1H1">{{rc.parameters.0.seg_bounds.1.0}}</p></td>
-                    <td class="table-cell"><p id="table1-segment1-rmse">{{rc.parameters.0.rmse}}</p></td>
+                    <td class="table-cell"><p id="table1-segment1-label">{{rc.parameters.0.label}}</p></td>
+                    <td class="table-cell"><p id="table1-segment1-const">{{rc.parameters.0.const|floatformat:2}}</p></td>
+                    <td class="table-cell"><p id="table1-segment1-exp">{{rc.parameters.0.exp|floatformat:2}}</p></td>
+                    <td class="table-cell"><p id="table1-segment1-offset">{{rc.parameters.0.offset}}</p></td>
+                    <td class="table-cell"><p id="table1-endpoint-Seg1H0">{{rc.parameters.0.seg_bounds.0.0}}</p></td>
+                    <td class="table-cell"><p id="table1-endpoint-Seg1H1">{{rc.parameters.0.seg_bounds.1.0}}</p></td>
+                    <td class="table-cell"><p id="table1-segment1-rmse">{{rc.parameters.0.rmse|floatformat:2}}</p></td>
                     <td class="table-cell"><p></p></td>
                 </tr>
             {% endif %}
             {% if rc.parameters.1 %}
                 <tr class="table-row">
-                    <td class="table-cell"><p id="table2-segment2-label">{{rc.parameters.1.label}}</p></td>
-                    <td class="table-cell"><p id="table2-segment2-const">{{rc.parameters.1.const}}</p></td>
-                    <td class="table-cell"><p id="table2-segment2-exp">{{rc.parameters.1.exp}}</p></td>
-                    <td class="table-cell"><p id="table2-segment2-offset"> {{rc.parameters.1.offset}}</p></td>
-                    <td class="table-cell"><p id="table2-endpoint-Seg2H0">{{rc.parameters.1.seg_bounds.0.0}}</p></td>
-                    <td class="table-cell"><p id="table2-endpoint-Seg2H1">{{rc.parameters.1.seg_bounds.1.0}}</p></td>
-                    <td class="table-cell"><p id="table1-segment2-rmse">{{rc.parameters.1.rmse}}</p></td>
+                    <td class="table-cell"><p id="table1-segment2-label">{{rc.parameters.1.label}}</p></td>
+                    <td class="table-cell"><p id="table1-segment2-const">{{rc.parameters.1.const|floatformat:2}}</p></td>
+                    <td class="table-cell"><p id="table1-segment2-exp">{{rc.parameters.1.exp|floatformat:2}}</p></td>
+                    <td class="table-cell"><p id="table1-segment2-offset"> {{rc.parameters.1.offset}}</p></td>
+                    <td class="table-cell"><p id="table1-endpoint-Seg2H0">{{rc.parameters.1.seg_bounds.0.0}}</p></td>
+                    <td class="table-cell"><p id="table1-endpoint-Seg2H1">{{rc.parameters.1.seg_bounds.1.0}}</p></td>
+                    <td class="table-cell"><p id="table1-segment2-rmse">{{rc.parameters.1.rmse|floatformat:2}}</p></td>
                     <td class="table-cell"><p></p></td>
                 </tr>
             {% endif %}
@@ -108,7 +76,7 @@
                     </div>
                 </td>
                 <td class="table-cell">
-                    <button class="btn btn-success btn-sm" type="submit" href="#" onclick="addCompareCurve()" style="background-color: #80B7AB !important; border-color: #FFFFFF; width: 40px;" onkeydown="return event.key != 'Enter';"> + </button>
+                    <button class="btn btn-success btn-sm" type="submit" href="#" onclick="addCompareCurve()" style="background-color: #9ec1a3 !important; border-color: #FFFFFF; width: 40px;" onkeydown="return event.key != 'Enter';"> + </button>
                 </td>
             </tr>
         </table>

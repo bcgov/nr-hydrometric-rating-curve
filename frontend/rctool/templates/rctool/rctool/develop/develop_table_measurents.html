@@ -1,32 +1,7 @@
 {% load static %}
 {% load custom_tags %}
 
-<!-- <div id="field" class="tabcontent">
-    <div class="card-body px-4 py-2" style="display: flex;">
-        <table class="table" id="fieldtable">
-            <tr class="table-header">
-              {% for header in table_dict.headings %}
-                {% if forloop.counter0 != 5 %}
-                    <th class="table-cell">{{ header }}</th>
-                {% endif %}
-              {% endfor %}
-              <th class="table-cell">use point</th>
-            </tr>
-            {% for row in table_dict.data %}
-            <tr class="table-row">
-              {% for cell in row %}
-                {% if forloop.counter0 != 5 %}
-                    <td class="table-cell">{{ cell }} </td>
-                {% endif %}
-              {% endfor %}
-              <td><input type="checkbox" id="toggle_data_point" name="toggle_data_point" checked="checked" onchange="togglePoint('{{ forloop.counter0 }}', this.checked)"></td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-</div> -->
-
-<div id="field" class="tabcontent">
+<div id="field">
   <div class="card-body px-4 py-2" style="display: flex;">
       <div class="table-container">
           <table class="table" id="fieldtable">

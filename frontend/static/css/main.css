@@ -2,12 +2,18 @@
     width: 90%;
 }
 
+.main-container {
+    width: 90%;
+}
+
 .text-small {
+    font-size: 10.5px;
     font-size: 10.5px;
     color: #A9A9A9;
 }
 
 .text-medium {
+    font-size: 11.5px;
     font-size: 11.5px;
     color: #A9A9A9;
 }
@@ -35,12 +41,17 @@
     color: #A9A9A9;
     text-decoration: none;
 }
-    a:hover {
-        color: grey;
-        text-decoration: none;
-};
 
-    a:active {
-        color: grey;
-        text-decoration: none;
-    };
+a:hover {
+    color: grey;
+    text-decoration: none;
+}
+
+;
+
+a:active {
+    color: grey;
+    text-decoration: none;
+}
+
+;
