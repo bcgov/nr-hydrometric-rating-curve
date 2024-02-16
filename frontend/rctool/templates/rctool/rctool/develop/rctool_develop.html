@@ -153,13 +153,18 @@ WALKTHROUGH
 ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
 // Initialize
+console.log(sessionStorage.getItem("tourStatus"))
 
-try {
-    var developTourStatusID = {{ tour_request_status_id|safe }};
-}
-catch(err) {
-    var developTourStatusID = 0;
-};
+// Check if tour status has been previously set
+if (sessionStorage.getItem("tourStatus") == null) {
+    // Check if user selected tour
+    var tourStatusID = {{ tour_request_status_id|safe }};
+    if (tourStatusID == 1) {
+        sessionStorage.setItem("tourStatus", true);
+        } else {
+                sessionStorage.setItem("tourStatus", false);
+                }
+    };
 
 
 // configure tour steps
@@ -168,7 +173,7 @@ var developTour = new Tour({
     delay: 750,
     backdropPadding: 10,
     onEnd: function (tour) {
-            developTourStatus = false;
+            sessionStorage.setItem("tourStatus", false);
             },
     steps: [
         {
@@ -218,16 +223,12 @@ var developTour = new Tour({
         }
     ]});
 
-    if (developTourStatusID == 1) {
-        var developTourStatus = true;
-        developTour.init();
-        developTour.start(developTourStatus);
-        developTour.restart();
-    } else {
-        var developTourStatus = false;
+if (sessionStorage.getItem("tourStatus") == 'true') {
+    developTour.init();
+    developTour.start(sessionStorage.getItem("tourStatus"));
+    developTour.restart();
     };
 
-    
 </script>
 {% endblock %}
 
