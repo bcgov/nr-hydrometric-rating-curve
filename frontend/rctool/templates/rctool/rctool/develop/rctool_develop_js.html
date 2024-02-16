@@ -690,7 +690,7 @@
 
         // 4. If data is calculated, plot
         if (compChartData.length > 1) {
-            addrcPlot(compChartData, compLabel, '#FFD97D');
+            addrcPlot(compChartData, compLabel, '#DDCC77');
             compareCurveCount++
         };
 
@@ -753,7 +753,21 @@
 
 
     // STYLING PARAMETERS
-    var pallet = ['#9ec1a3', '#fe5f55', '#003466', '#FFD97D', '#9bc1bc', '#002A5C', '#bdd5ea', '#9ec1a3', '#ffa400', '#89d2a3', '#c08497', '#4281a4', '#aa7bc3', '#8daa91', '#60D394', '#EE6055', '#FFD97D', '#AAF683', '#FF9B85'];
+    // palet formatting: [#color-measurements, #color-seg1, #color-seg2, #color-compare-curve]
+    // var pallet = ['#9ec1a3', '#fe5f55', '#003466', '#FFD97D', '#9bc1bc', '#002A5C', '#bdd5ea', '#9ec1a3', '#ffa400', '#89d2a3', '#c08497', '#4281a4', '#aa7bc3', '#8daa91', '#60D394', '#EE6055', '#FFD97D', '#AAF683', '#FF9B85'];
+    // Color blind friendly paletts:
+    // Paul Tol's: https://cran.r-project.org/web/packages/khroma/vignettes/tol.html#muted
+    // var pallet = ['#44BB99', '#EE8866', '#003466', '#f9c74f', '#e9c46a', '#002A5C', '#bdd5ea', '#9ec1a3', '#ffa400', '#89d2a3', '#c08497', '#4281a4', '#aa7bc3', '#8daa91', '#60D394', '#EE6055', '#FFD97D', '#AAF683', '#FF9B85'];
+    // https://visualisingdata.com/2019/08/five-ways-to-design-for-red-green-colour-blindness/
+    // var pallet = ['#57C4AD', '#EDA247', '#006164', '#006164', '#006164','#006164', '#006164'];
+    // https://stackoverflow.com/questions/57153428/r-plot-color-combinations-that-are-colorblind-accessible;
+    // V1
+    var pallet = ['#80B7AB', '#CC6677', '#003466','#DDCC77'];
+    // V2
+    // var pallet = ['#80B7AB', '#E7A742', '#003466','#DDCC77'];
+    // V3
+    // var pallet = ['#CC6677', '#003466', '#80B7AB','#DDCC77'];
+
     Chart.defaults.font.size = 11.5;
 
     // var pallet = ['#009E73', '#D55E00', '#003466', '#FFD97D', '#9bc1bc', '#002A5C', '#bdd5ea', '#9ec1a3', '#ffa400', '#89d2a3', '#c08497', '#4281a4', '#aa7bc3', '#8daa91', '#60D394', '#EE6055', '#FFD97D', '#AAF683', '#FF9B85'];
@@ -972,16 +986,16 @@
 
     
     // add inactive field data
-    var currentLabel = 'field inactive'
-    var colorLabel = '#ae2029'
+    var currentLabel = 'field inactive';
+    var colorLabel = '#661100';
     rcChart.data.datasets.push({
         type: 'scatter',
         label: currentLabel,
         fill: false,
         lineTension: 0.2,
         borderColor: colorLabel,
-        backgroundColor: colorLabel,
-        borderWidth: 2.75,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1.25,
         pointRadius: 2.75,
         pointHitRadius: 0,
     });    
