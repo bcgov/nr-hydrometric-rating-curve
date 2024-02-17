@@ -361,7 +361,9 @@
 
     function resetZoom() {
         rcChart.resetZoom();
-    }
+        // set the input checkbox to be checked
+        document.getElementById("toggle_axis_format").checked = true;
+    };
       
     function togglePoint(idx, checked) {
         var rowIndex = idx
@@ -801,12 +803,16 @@
 
     };
 
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    B.8) USER INPUT - ZOOM
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
 
     /* -------------------------------------------------------------------------------------------------------------------------------------------
     C) OUTPUT COMPONENTS (charts and table)
     ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
+    
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
     C.1) RATING CURVE CHART
     ------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -926,6 +932,9 @@
                       enabled: true
                     },
                     mode: 'xy',
+                    onZoom: function ({chart}) {
+                        document.getElementById("toggle_axis_format").checked = false;
+                    }
                   }
                 },
                 // using the plugin https://github.com/chrispahm/chartjs-plugin-dragdata
@@ -1188,7 +1197,7 @@
     // MAKE SURE SCALE HAS BEEN UPDATED
     updateMaxBounds(rcParam);
 
-    toggleAxisFormat(document.getElementById("toggle_axis_format").checked)
+    // toggleAxisFormat(document.getElementById("toggle_axis_format").checked)
 
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
     C.2) REGRESSION RESIDUAL CHART
@@ -1323,6 +1332,12 @@
     };
     // document.getElementById('toggle_breakpoint').checked = false;
     // document.getElementById('toggle_breakpoint').checked = false;
+
+    // TOGGLE CHART DISPLAY SETTINGS
+    function toggleChartSettings() {
+        document.getElementById('chart-settings').style.display = 'block';
+        document.getElementById('chart-settings-link').style.display = 'none';
+    };
 
 
     // TOGGLE BREAKPOINT INPUT FIELD

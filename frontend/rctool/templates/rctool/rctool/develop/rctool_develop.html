@@ -81,15 +81,20 @@
                                 <canvas id="rcChart">
                                 </canvas>
                             </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <div>
-                                    <button class="btn btn-secondary text-small" onclick="resetZoom()">Reset Zoom</button>
-                                    <input type="checkbox" id="toggle_detailed_tooltip" name="toggle_detailed_tooltip" checked="checked">
-                                    <label for='toggle_detailed_tooltip'><p class="text-small">detailed tooltip</p></label>
+                            <div style="display:flex; justify-content:left;">
+                                <div id="chart-settings-link" style="display:flex; margin:-15px 0px 10px 0px;">
+                                    <i class="fa fa-cog" aria-hidden="true" style="color: #A9A9A9; margin-right:4px;"></i>
+                                    <a class="chart-settings-text" href="#" onclick="toggleChartSettings()"> display settings</a>
                                 </div>
-                                <div>
-                                    <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" checked="checked" onchange="toggleAxisFormat(this.checked)">
-                                    <label for='toggle_axis_format'><p class="text-small">logarithmic axis</p></label>
+                                <div id="chart-settings" style="display:none;">
+                                    <div>
+                                        <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" onchange="resetZoom()">
+                                        <label for='toggle_axis_format'><p class="text-small">reset zoom</p></label>
+                                        <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" checked="checked" onchange="toggleAxisFormat(this.checked)">
+                                        <label for='toggle_axis_format'><p class="text-small">logarithmic axis</p></label>
+                                        <input type="checkbox" id="toggle_detailed_tooltip" name="toggle_detailed_tooltip" checked="checked">
+                                        <label for='toggle_detailed_tooltip'><p class="text-small">display data on points</p></label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -160,6 +165,7 @@ WALKTHROUGH
 ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
 // Initialize
+
 
 // Check if tour status has been previously set
 if (sessionStorage.getItem("tourStatus") == null) {
