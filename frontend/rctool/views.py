@@ -43,7 +43,6 @@ def rctool_import(request, tour_request_id=0):
 
         if request.POST.get("tour_request_status_id"):
             context["tour_request_status_id"] = request.POST.get("tour_request_status_id")
-            print('here...')
 
         # If user is on the tour, upload test data
         if tour_request_id == 1:

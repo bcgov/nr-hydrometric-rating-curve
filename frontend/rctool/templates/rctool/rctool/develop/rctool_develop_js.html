@@ -20,7 +20,6 @@
     var maxOffset = {{ max_offset|safe }};
     var rcDict = {};
     var fielddatacsv = JSON.parse( ' {{ fielddatacsv|safe }} ' );
-    var compareCurveCount = 0;
 
     var axisFormat = 'logarithmic';
 
@@ -237,7 +236,7 @@
         // update max bounds
         updateMaxBounds(rcParam);
 
-        // check if exponent in realistic rang
+        // check if exponent in realistic range
         checkExponent();
 
         // update status
@@ -765,42 +764,97 @@
     B.7) USER INPUT - ADD COMPARISON CURVE
     ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
+
+        // // 2. Calculate H and Q from user input parameters
+        // var compH = [];
+        // for (var i = compStartBounds; i <= compEndBounds; i += 0.001) {
+        //     compH.push(i);
+        // };
+        // compH.push(compEndBounds);
+
+        // var compData = compH.map((H) => [H, compConst * (H - compOffset) ** compExp, 0]);
+
+        // // 3. Prepaire output
+        // var compRcData = [{'label':compLabel, 'data':compData}]
+        // var compChartData = compRcData[0]['data'].map(item => ({ x: item[1], y: item[0] }))
+
+
     function addCompareCurve() {
-
-        // 0. Check if there is already a compare curve, if so stop
-        if (compareCurveCount >= 1) {
-            return
-        };
-
-        // 1. Collect user inputs
+        // 1. Collect user inputs and update input fields for data preservation
         var compLabel = document.getElementById('compareLabel').value;
         var compConst = parseFloat(document.getElementById('compareConst').value);
         var compExp = parseFloat(document.getElementById('compareExp').value);
         var compOffset = parseFloat(document.getElementById('compareOffset').value);
         var compStartBounds = parseFloat(document.getElementById('compareStartBounds').value);
         var compEndBounds = parseFloat(document.getElementById('compareEndBounds').value);
-
         // 2. Calculate H and Q from user input parameters
-        var compH = [];
-        for (var i = compStartBounds; i <= compEndBounds; i += 0.001) {
-            compH.push(i);
+        // Get filtered field data within segment bounds (used with to calculate RMSE and residuals)
+        var rawFieldData = rcData[0]['data'];
+        var fieldDataFiltered = rawFieldData.filter(item => ( item[0] >= compStartBounds && item[0] <= compEndBounds));
+        // Calculate model data from new rc equation, collect and prepaire output
+        var stage = fieldDataFiltered.map( item => (item[0]));
+        var fieldQ = fieldDataFiltered.map( item => (item[1]));
+        var compQ = stage.map(s => compConst * (s - compOffset) ** compExp);
+        // Calculate statistical parameters; residuals
+        var compResiduals = fieldDataFiltered.map(item => ( 100 * (compConst * (item[0] - compOffset) ** compExp - item[1]) / item[1] ) );
+        // Collect and prepaire output
+        var compData = [];
+        for (let t = 0; t < compQ.length; t++) {
+            compData.push([stage[t], compQ[t], compResiduals[t]]);
         };
-        compH.push(compEndBounds);
+        // Add endpoints for RC chart (not for residual chart)
+        lowerH = compStartBounds
+        lowerQ = compConst * (lowerH - compOffset) ** compExp
+        upperH = compEndBounds
+        upperQ = compConst * (upperH - compOffset) ** compExp
+        // create shallow copy of compData for RC chart to add endpoints
+        compRcData = [...compData];
+        compRcData.unshift([lowerH, lowerQ, 0])
+        compRcData.push([upperH, upperQ, 0])
+        // 3. Calculate statistical parameters; RMSE
+        var sumSquaredCumulative = 0;
+        for (var v = 0; v < compQ.length; v++) {
+            var currSumSquared = (compQ[v] - fieldQ[v]) ** 2;
+            sumSquaredCumulative = sumSquaredCumulative + currSumSquared;
+        };
+        compRmse = Math.sqrt((sumSquaredCumulative/ compQ.length)).toFixed(2);
+        // 4. Prepaire output
+        var compChartData = compRcData.map(item => ({ x: item[1], y: item[0] }));
+        var compResChartData = compData.map(item => ({ x: item[2], y: item[0] }));
 
-        var compData = compH.map((H) => [H, compConst * (H - compOffset) ** compExp, 0]);
-
-        // 3. Prepaire output
-        var compRcData = [{'label':compLabel, 'data':compData}]
-        var compChartData = compRcData[0]['data'].map(item => ({ x: item[1], y: item[0] }))
-
-        compChartData
-
-        // 4. If data is calculated, plot
+        // 5. If data is calculated, plot on RC chart and residual chart
         if (compChartData.length > 1) {
-            addrcPlot(compChartData, compLabel, '#DDCC77');
-            compareCurveCount++
+            addRcPlot(compChartData, compLabel, '#DDCC77');
+            addResidualPlot(compResChartData, compLabel, '#DDCC77')
         };
+        // 6. Update table with new values and remove option to add new curve
+        document.getElementById('compare-curve-rmse').innerHTML = compRmse;
+        document.getElementById('add-curve').style.display = 'none';
+        document.getElementById('remove-curve').style.display = 'block';
+        document.getElementById('comparison-header').style.color = '#e68a8a';
+    };
 
+
+    function removeCompareCurve(button) {
+        // get label of series being removed        
+        var compLabel = document.getElementById('compareLabel').value;
+        // remove compare curve from chart
+        removeRcPlot(compLabel)
+        removeResPlot(compLabel)
+        // reset user inputs
+        document.getElementById('compareLabel').value = ''
+        document.getElementById('compareConst').value = ''
+        document.getElementById('compareExp').value = ''
+        document.getElementById('compareOffset').value = ''
+        document.getElementById('compareStartBounds').value = ''
+        document.getElementById('compareEndBounds').value = ''
+        // remove rmse value
+        document.getElementById('compare-curve-rmse').innerHTML = '';
+        // hide 'remove curve' button and display 'add curve button'
+        document.getElementById('remove-curve').style.display = 'none';
+        document.getElementById('add-curve').style.display = 'block';
+        // reset header font color
+        document.getElementById('comparison-header').style.color = '#9ec1a3';
     };
 
     /* -------------------------------------------------------------------------------------------------------------------------------------------
@@ -935,7 +989,11 @@
                     onZoom: function ({chart}) {
                         document.getElementById("toggle_axis_format").checked = false;
                     }
-                  }
+                  },
+                pan: {
+                        enabled: true,
+                        modifierKey: 'ctrl',
+                    },
                 },
                 // using the plugin https://github.com/chrispahm/chartjs-plugin-dragdata
                 dragData: {
@@ -1070,12 +1128,8 @@
                                             for (var seg = 1; seg < residualData.length; seg++){
                                                 for (var j in residualData[seg].data){
                                                     if (residualData[seg].data[j][0] == fielddatacsv.stage[idx]){
-                                                        console.log(residualData[seg])
-                                                        console.log(rcParam)
                                                         q_model = residualData[seg].data[j][1]
                                                         h_model = Math.exp(1/rcParam[seg - 1].exp * Math.log(context.parsed.x / rcParam[seg - 1].const)) + rcParam[seg - 1].offset
-                                                        console.log("q = " + context.parsed.x + " exp " + rcParam[seg - 1].exp)
-                                                        console.log("h_model " + h_model)
                                                         r_percent = residualData[seg].data[j][2]
                                                         r_volumetric = r_percent/100 * context.parsed.x
                                                     }
@@ -1119,7 +1173,7 @@
     });
 
     // Function for adding another plot
-    function addrcPlot(dataArray, currentLabel, colorLabel) {
+    function addRcPlot(dataArray, currentLabel, colorLabel) {
         var startPoint = dataArray[0]
         var endPoint = dataArray.slice(-1)[0]
 
@@ -1151,13 +1205,29 @@
         });
         rcChart.update();
     }
+
+    function removeRcPlot(removeLabel, removeSeries) {
+        // remove label
+        rcChart.data.labels.pop(removeLabel);
+        // remove datasets
+        for (let i = 1; i < rcChart.data.datasets.length; i++) {
+            seriesData = rcChart.data.datasets[i]
+            if (seriesData.label == removeLabel) {
+                rcChart.data.datasets.splice(i);
+                };
+            };
+        rcChart.update();
+        };
+
+
     // Iterate and add all other data to chart
     for (let i = 1; i < rcData.length; i++) {
         var currentLabel = rcData[i]['label']
         var colorLabel = pallet[i]
         var dataArray = rcData[i]['data'].map( item => ({x: item[1], y: item[0]}) )
-        addrcPlot(dataArray, currentLabel, colorLabel)
+        addRcPlot(dataArray, currentLabel, colorLabel)
     };
+
 
     // add field data plot later (so it's in the background)
 
@@ -1251,7 +1321,7 @@
         residualChart.data.datasets.push({
             type: 'scatter',
             label: residualLabel,
-            data: residualChartData,
+            data: residualData,
             fill: false,
             lineTension: 0.2,
             borderColor: colorLabel,
@@ -1261,6 +1331,19 @@
         });
         residualChart.update();
     };
+
+    function removeResPlot(removeLabel, removeSeries) {
+        // remove label
+        residualChart.data.labels.pop(removeLabel);
+        // remove datasets
+        for (let i = 1; i < residualChart.data.datasets.length; i++) {
+            seriesData = residualChart.data.datasets[i]
+            if (seriesData.label == removeLabel) {
+                residualChart.data.datasets.splice(i);
+                };
+            };
+            residualChart.update();
+        };
 
     // Iterate and add all other data to chart
     for (let i = 2; i < residualData.length; i++) {
