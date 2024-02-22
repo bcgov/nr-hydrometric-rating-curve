@@ -764,21 +764,6 @@
     B.7) USER INPUT - ADD COMPARISON CURVE
     ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
-
-        // // 2. Calculate H and Q from user input parameters
-        // var compH = [];
-        // for (var i = compStartBounds; i <= compEndBounds; i += 0.001) {
-        //     compH.push(i);
-        // };
-        // compH.push(compEndBounds);
-
-        // var compData = compH.map((H) => [H, compConst * (H - compOffset) ** compExp, 0]);
-
-        // // 3. Prepaire output
-        // var compRcData = [{'label':compLabel, 'data':compData}]
-        // var compChartData = compRcData[0]['data'].map(item => ({ x: item[1], y: item[0] }))
-
-
     function addCompareCurve() {
         // 1. Collect user inputs and update input fields for data preservation
         var compLabel = document.getElementById('compareLabel').value;
@@ -831,29 +816,27 @@
         document.getElementById('compare-curve-rmse').innerHTML = compRmse;
         document.getElementById('add-curve').style.display = 'none';
         document.getElementById('remove-curve').style.display = 'block';
-        document.getElementById('comparison-header').style.color = '#e68a8a';
+        document.getElementById('comparison-header').style.color = '#000000';
     };
 
-
     function removeCompareCurve(button) {
-        // get label of series being removed        
+        // 1. get label of series being removed        
         var compLabel = document.getElementById('compareLabel').value;
-        // remove compare curve from chart
+        // 2. remove compare curve from chart
         removeRcPlot(compLabel)
         removeResPlot(compLabel)
-        // reset user inputs
+        // 3. reset user inputsand rmse value
         document.getElementById('compareLabel').value = ''
         document.getElementById('compareConst').value = ''
         document.getElementById('compareExp').value = ''
         document.getElementById('compareOffset').value = ''
         document.getElementById('compareStartBounds').value = ''
         document.getElementById('compareEndBounds').value = ''
-        // remove rmse value
         document.getElementById('compare-curve-rmse').innerHTML = '';
-        // hide 'remove curve' button and display 'add curve button'
+        // 4. hide 'remove curve' button and display 'add curve button'
         document.getElementById('remove-curve').style.display = 'none';
         document.getElementById('add-curve').style.display = 'block';
-        // reset header font color
+        // 5. reset header font color
         document.getElementById('comparison-header').style.color = '#9ec1a3';
     };
 

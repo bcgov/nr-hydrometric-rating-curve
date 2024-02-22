@@ -56,7 +56,6 @@ tr:nth-child(even) {
     font-size: 11.5px;
     position: sticky;
     top: 0;
-    background-color: #F8F8F8;
 }
 
 .table-cell {
