@@ -18,6 +18,11 @@
     color: #A9A9A9;
 }
 
+.text-description-intro {
+  color: #4C4E52;
+  font-size: 12.5px;
+}
+
 .remove-seg-link {
     background: none;
     border: none;

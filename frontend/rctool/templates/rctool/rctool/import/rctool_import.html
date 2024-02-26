@@ -22,7 +22,7 @@
                             <form method="POST" id="import-data-form" enctype="multipart/form-data">
                                 <div class="form-group" style="margin-bottom:25px;">
                                     {% csrf_token %}
-                                    <label class="form-label" style="font-size:11.5px">import</label><br>
+                                    <label class="form-label" style="font-size:11.5px;">import</label><br>
                                     <select class="form-control form-control-sm" id="input-session-type" name="input-session-type" onChange="toggleInputForm(this.value)">
                                         <option value="new-session" selected><small>new data</small></option>
                                         <option value="previous-session"><small>previous session</small></option>
