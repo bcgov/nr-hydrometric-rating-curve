@@ -112,7 +112,7 @@ def rctool_import(request, tour_request_id=0):
                 # handle possible uncertainty errors
                 if "uncertainty" not in df:
                     df["uncertainty"] = 0
-                df["uncertainty"].fillna(0.5, inplace=True)
+                df["uncertainty"].fillna(0.05, inplace=True)
 
                 # if user did not upload comments column, of if the user uploaded a column called comment
                 if "comment" not in df and "comments" not in df:
