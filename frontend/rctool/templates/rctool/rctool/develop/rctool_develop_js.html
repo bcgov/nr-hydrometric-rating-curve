@@ -56,6 +56,11 @@
         };
     };
 
+    // Initialize axis format
+    if (sessionStorage.getItem("axisFormat") == null) {
+            sessionStorage.setItem("axisFormat", true);
+    };
+
     // A.1 ADD AUTOFITTED BREAKPOINT VALUE TO INPUT SETTNGS FIELD
     if (nSegData == 2) {
         const autofittedBreakPoint = rcParam[0]['seg_bounds'][1][0].toFixed(3);
@@ -387,10 +392,10 @@
     // PLEASE NOTE: - PAGE RELOADS IF USER HITS ENTER
     //              - There is a custom tag that reformats the table data, we dont need this I'll take it out
 
-    function resetZoom() {
-        rcChart.resetZoom();
-        // set the input checkbox to be checked
-        document.getElementById("toggle_axis_format").checked = true;
+    function toggleZoom(checked) {
+        if (checked == true) {
+            rcChart.resetZoom();
+        }
     };
       
     function togglePoint(idx, checked) {
@@ -1003,12 +1008,12 @@
                     },
                     mode: 'xy',
                     onZoom: function ({chart}) {
-                        document.getElementById("toggle_axis_format").checked = false;
+                        document.getElementById("toggle_zoom").checked = false;
                     }
                   },
                 pan: {
                         enabled: true,
-                        modifierKey: 'ctrl',
+                        modifierKey: 'shift',
                     },
                 },
                 // using the plugin https://github.com/chrispahm/chartjs-plugin-dragdata
@@ -1283,7 +1288,7 @@
     // MAKE SURE SCALE HAS BEEN UPDATED
     updateMaxBounds(rcParam);
 
-    // toggleAxisFormat(document.getElementById("toggle_axis_format").checked)
+    toggleAxisFormat(document.getElementById("toggle_axis_format").checked)
 
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
     C.2) REGRESSION RESIDUAL CHART
