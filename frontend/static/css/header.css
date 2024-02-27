@@ -1,5 +1,12 @@
-.logo {
+.logo-gov {
     height: 30px;
+}
+
+.logo-hydra {
+    height: 65px;
+    opacity: 0.8;
+    padding: -10px;
+    margin: -10px;
 }
 
 .header-title-div {
