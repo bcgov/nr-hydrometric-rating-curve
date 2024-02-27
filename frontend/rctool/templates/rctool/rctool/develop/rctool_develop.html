@@ -29,20 +29,26 @@
     <div style="background-color: #FFFFFF; padding-left:10px; padding-right:10px;">
         
         <div id="warning-message-div" style="display:none;">
-            <div class="row" style="padding: 5px 10px 0px 10px;">
-                <div class="col-12" style="padding: 5px 10px 0px 10px">
-                    <div class="card" style="background-color:#ae2029; padding: 0px;" id="side-panel-card">
-                        <div class="card-body p-2" style="padding:10px 20px 0px 20px;">
-                            <strong id='error-title' style="color:#FFFFFF">
-                                {% if sidepanel_message %}
-                                    {{sidepanel_message.error_title|safe}}
-                                {% endif %}
-                            </strong><br>
-                            <p id='error-text' style="color:#F5F5F5; font-size:12.5px;">
+            <div class="row" style="padding: 10px 0px 0px 0px;">
+                <div class="col-12">
+                    <div class="card" style="background-color:#ae2029;" id="error-panel" display="block">
+                        <div class="card-body pl-3 pr-3 pt-2 pb-0">
+                            <div class="error-header">
+                                <strong id='error-title' style="color:#FFFFFF">
+                                    {% if sidepanel_message %}
+                                        {{sidepanel_message.error_title|safe}}
+                                    {% endif %}
+                                </strong>
+                                <button class="error-panel-close-button" onclick="closeErrorPanel()">x</button>
+                            </div>
+                            <p id='error-text' style="color:#F5F5F5; font-size:11.5px; margin:0px; padding:0px;">
                                 {% if sidepanel_message %}
                                     {{sidepanel_message.error_text|safe}}
                                 {% endif %}
                             </p>
+                            <div id="error-link-block" style="display:none; margin:0px; padding:0px;">
+                                <a id="error-link" href="#" target="_blank"><p id="error-link-text"></p></a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -186,6 +192,7 @@ var developTour = new Tour({
     backdropPadding: 10,
     onEnd: function (tour) {
             sessionStorage.setItem("tourStatus", false);
+            $('#tour_request_status_id').val("1")
             },
     steps: [
         {

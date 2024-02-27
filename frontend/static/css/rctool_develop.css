@@ -10,3 +10,40 @@ body {
 .form-control {
   font-size: 11.5px !important;
 }
+
+.error-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.error-panel-close-button {
+  background-color: #ae2029;
+  color: #F5F5F5;
+  margin: 0px;
+  padding: 0px;
+  outline: none;
+  border: none;
+}
+
+.error-panel-close-button:focus {
+  outline: none;
+  border: none;
+}
+
+.error-panel-close-button:hover {
+  color: #e2e2e2;
+  cursor: pointer;
+}
+
+#error-link {
+  color: #F5F5F5;
+  font-size: 11.5px;
+  font-weight: bold;
+  margin: 0px;
+}
+
+#error-link:hover {
+  color: #FFFFFF;
+  text-decoration: underline;
+}

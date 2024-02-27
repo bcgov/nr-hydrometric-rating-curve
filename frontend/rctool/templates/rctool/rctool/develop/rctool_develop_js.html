@@ -18,7 +18,7 @@
     var toggleBreakPointVal = {{ toggle_breakpoint|safe }};
     var toggleWeightedFitVal = {{ toggle_weighted_fit|safe }};
     var maxOffset = {{ max_offset|safe }};
-    var rcDict = {};
+    var rcDict = {'data':rcData, 'parameters':rcParam};
     var fielddatacsv = JSON.parse( ' {{ fielddatacsv|safe }} ' );
 
     var axisFormat = 'logarithmic';
@@ -27,6 +27,9 @@
 
     // update form variables
     updateFormVariables()
+
+    // update export page variables
+    updateExportVariables()
 
     // uncheck table and autofit settings check boxes according to newly loaded table:
     uncheckTableFields()
@@ -68,8 +71,7 @@
     B.0) USER INPUT - ADJUST RATING CURVE POINT
     ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    function updateFormVariables(){
-        // update form variables
+    function updateFormVariables() {
         $('#fieldData_datetime').val(Object.values(fielddatacsv.datetime))
         $('#fieldData_comments').val(Object.values(fielddatacsv.comments))
         $('#fieldData_uncertainty').val(Object.values(fielddatacsv.uncertainty))
@@ -83,8 +85,19 @@
         $('#fieldData_stage_out').val(Object.values(fielddatacsv.stage))
         $('#fieldData_discharge_out').val(Object.values(fielddatacsv.discharge))
         $('#fieldData_active_out').val(Object.values(fielddatacsv.toggle_point))
-        //$('#rc_out').val(Object.entries(rcDict))
     };
+
+    function updateExportVariables() {
+        // updates variables to pass to export page
+        $('#n-seg_out').val(Object.values(nSegData))
+        $('#fieldData_stage_out').val(Object.values(fielddatacsv.stage))
+        $('#fieldData_discharge_out').val(Object.values(fielddatacsv.discharge))
+        $('#fieldData_active_out').val(Object.values(fielddatacsv.toggle_point))
+        $('#fieldData_datetime_out').val(Object.values(fielddatacsv.datetime))
+        $('#fieldData_comments_out').val(Object.values(fielddatacsv.comments))
+        $('#fieldData_uncertainty_out').val(Object.values(fielddatacsv.uncertainty))
+        document.getElementById("rc_out").value = JSON.stringify(rcDict);
+    }
 
     function uncheckTableFields(){
         // set initial check boxes as they are defined in the table:
@@ -178,7 +191,7 @@
             rcParam[idx].const = C;
             rcParam[idx].exp = slope;
             rcParam[idx].offset = offset; // TODO REMOVE IF THIS HAS ALREADY BEEN UPDATED
-            //rcParam[idx].rmse = '-'; // TODO CALCULATE THIS
+            rcParam[idx].rmse = rmse;
             rcParam[idx].seg_bounds = [[segmentData[0][0], segmentData[0][1]], [segmentData[1][0], segmentData[1][1]]];
             rcDict = {'data':rcData, 'parameters':rcParam};
 
@@ -229,6 +242,9 @@
 
         // update form variables
         updateFormVariables()
+
+        // update export page variables
+        updateExportVariables()
 
         // update rcChart with new rcData
         updateChartFromGlobal()
@@ -431,6 +447,9 @@
 
         // update form variables
         updateFormVariables()
+
+        // update export page variables
+        updateExportVariables()
     }
 
     /* -------------------------------------------------------------------------------------------------------------------------------------------
@@ -483,15 +502,16 @@
 
 
         if ( offsetData[0] >= maxStage || offsetData[1] >= maxStage ) {
-            var warningDict = {'error_title': 'Warning', 'error_text': 'The specified offset has exceeded the maximum allowable offset (lowest stage value). Can not fit curve.'}
-            updateWarningMessage(warningDict)
-
+            var warningDict = {'error_title': 'Warning', 'error_text': 'The specified offset has exceeded the maximum allowable offset (lowest stage value) and cannot fit curve. It is recommended to set the offset at the height of zero flow. Click the document below for more information.'}
+            var warningLinkDict = {'title':'Water Survey of Canada Hydrometric Manual.pdf', 'url':'https://publications.gc.ca/collections/collection_2021/eccc/en37/En37-464-2016-eng.pdf'}
+            updateWarningMessage(warningDict, warningLinkDict);
             // dont proceed with rating calculation, will crash due to high offset
             return
 
         } else {
             var warningDict = {'error_title': '', 'error_text': 'no warning'};
-            updateWarningMessage(warningDict);
+            var warningLinkDict = {'title':'none', 'url':'none'}
+            updateWarningMessage(warningDict, warningLinkDict);
         };
 
         // 2. CREATE SEGMENT BOUNDS DICTIONARY
@@ -1352,42 +1372,59 @@
 
     function checkExponent() {
         // update warning message
-        if ( rcParam[0]['exp'] > 4) {
-            var warningDict = {'error_title': 'Warning', 'error_text': 'Exponent is too high. Warning triggered when exponent exceeds 4'};
-            updateWarningMessage(warningDict);
-        } else if ( rcParam[0]['exp'] < 1) {
-            var warningDict = {'error_title': 'Warning', 'error_text': 'Exponent is too low. Warning triggered when exponent is below 1'};
-            updateWarningMessage(warningDict);
+        if ( rcParam[0]['exp'] > 3) {
+            var warningDict = {'error_title': 'Warning', 'error_text': 'High exponent detected. Values typically range between 1.3 to 3.0. Click the document below for more information.'};
+            var warningLinkDict = {'title':'Water Survey of Canada Hydrometric Manual.pdf', 'url':'https://publications.gc.ca/collections/collection_2021/eccc/en37/En37-464-2016-eng.pdf'}
+            updateWarningMessage(warningDict, warningLinkDict);
+        } else if ( rcParam[0]['exp'] < 1.3) {
+            var warningDict = {'error_title': 'Warning', 'error_text': 'Low exponent detected. Values typically range between 1.3 to 3.0. Click the document below for more information.'};
+            var warningLinkDict = {'title':'Water Survey of Canada Hydrometric Manual.pdf', 'url':'https://publications.gc.ca/collections/collection_2021/eccc/en37/En37-464-2016-eng.pdf'}
+            updateWarningMessage(warningDict, warningLinkDict);
         } else {
             var warningDict = {'error_title': 'Warning', 'error_text': 'no warning'};
-            updateWarningMessage(warningDict);
+            var warningLinkDict = {'title':'none', 'url':'none'}
+            updateWarningMessage(warningDict, warningLinkDict);
         };
         if (rcParam.length > 1) {
-            if ( rcParam[0]['exp'] > 4 || rcParam[1]['exp'] > 4) {
-                var warningDict = {'error_title': 'Warning', 'error_text': 'Exponent is too high. Warning triggered when exponent exceeds 4'};
-                updateWarningMessage(warningDict);
-            } else if ( rcParam[0]['exp'] < 1 || rcParam[1]['exp'] < 1 ) {
-                var warningDict = {'error_title': 'Warning', 'error_text': 'Exponent is too low. Warning triggered when exponent is below 1'};
-                updateWarningMessage(warningDict);
+            if ( rcParam[0]['exp'] > 3 || rcParam[1]['exp'] > 3) {
+                var warningDict = {'error_title': 'Warning', 'error_text': 'High exponent detected. Values typically range between 1.3 to 3.0. Click the document document below for more information.'};
+                var warningLinkDict = {'title':'Water Survey of Canada Hydrometric Manual.pdf', 'url':'https://publications.gc.ca/collections/collection_2021/eccc/en37/En37-464-2016-eng.pdf'}
+                updateWarningMessage(warningDict, warningLinkDict);
+            } else if ( rcParam[0]['exp'] < 1.3 || rcParam[1]['exp'] < 1.3 ) {
+                var warningDict = {'error_title': 'Warning', 'error_text': 'Low exponent detected. Values typically range between 1.3 to 3.0. Click the document below for more information.'};
+                var warningLinkDict = {'title':'Water Survey of Canada Hydrometric Manual.pdf', 'url':'https://publications.gc.ca/collections/collection_2021/eccc/en37/En37-464-2016-eng.pdf'}
+                updateWarningMessage(warningDict, warningLinkDict);
             } else {
                 var warningDict = {'error_title': 'Warning', 'error_text': 'no warning'};
-                updateWarningMessage(warningDict);
+                var warningLinkDict = {'title':'none', 'url':'none'}
+                updateWarningMessage(warningDict, warningLinkDict);
             };
         };
     };
 
 
-    function updateWarningMessage(warningDict) {
-
-        var toggleDiv = document.getElementById("warning-message-div");
-
+    function updateWarningMessage(warningDict, warningLinkDict) {
+        var warningDiv = document.getElementById("warning-message-div");
+        var linkDiv = document.getElementById("error-link-block");
         if (warningDict['error_text'] === "no warning") {
-            toggleDiv.style.display = "none";
+            warningDiv.style.display = "none";
+        } else if (warningDict['error_text'] != "no-warning" &&  warningLinkDict['title'] != 'none') {
+            warningDiv.style.display = "block";
+            linkDiv.style.display = "block";
+            document.getElementById('error-title').innerHTML = warningDict['error_title'];
+            document.getElementById('error-text').innerHTML = warningDict['error_text'];
+            document.getElementById('error-link').setAttribute('href', warningLinkDict['url']);
+            document.getElementById('error-link-text').innerHTML = warningLinkDict['title'];
         } else {
-            toggleDiv.style.display = "block";
+            warningDiv.style.display = "block";
             document.getElementById('error-title').innerHTML = warningDict['error_title'];
             document.getElementById('error-text').innerHTML = warningDict['error_text'];
         };
+    };
+
+    // function for closing error panel when user selects the x in the upper right
+    function closeErrorPanel() {
+        document.getElementById('error-panel').style.display = 'none';
     };
 
 
