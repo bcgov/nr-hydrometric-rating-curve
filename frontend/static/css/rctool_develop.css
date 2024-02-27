@@ -17,8 +17,28 @@ body {
   align-items: center;
 }
 
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-text {
+  display: flex;
+  align-items: center;
+}
+
 .error-panel-close-button {
   background-color: #ae2029;
+  color: #F5F5F5;
+  margin: 0px;
+  padding: 0px;
+  outline: none;
+  border: none;
+}
+
+.info-panel-close-button {
+  background-color: #8c96a0;
   color: #F5F5F5;
   margin: 0px;
   padding: 0px;
@@ -31,7 +51,17 @@ body {
   border: none;
 }
 
+.info-panel-close-button:focus {
+  outline: none;
+  border: none;
+}
+
 .error-panel-close-button:hover {
+  color: #e2e2e2;
+  cursor: pointer;
+}
+
+.info-panel-close-button:hover {
   color: #e2e2e2;
   cursor: pointer;
 }

@@ -41,6 +41,20 @@
         // continue...
     }
 
+    // Initialize display message recommending to set offset before autofitting upon initialization of develop page
+    if (sessionStorage.getItem("developStartupMessage") == null) {
+            sessionStorage.setItem("developStartupMessage", true);
+    };
+    if ( (sessionStorage.getItem("developStartupMessage")) || (document.getElementById("offset1") == 0.0) ) {
+        document.getElementById("info-message-div").style.display = "block";
+    } else {
+        document.getElementById("info-message-div").style.display = "none";
+    };
+    if (nSegData == 2) {
+        if ( (sessionStorage.getItem("developStartupMessage")) || (document.getElementById("offset2") == 0.0) ) {
+            sessionStorage.setItem("developStartupMessage", true);
+        };
+    };
 
     // A.1 ADD AUTOFITTED BREAKPOINT VALUE TO INPUT SETTNGS FIELD
     if (nSegData == 2) {
@@ -237,10 +251,7 @@
 
         };
 
-
         rcDict = {'data':rcData, 'parameters':rcParam}
-        console.log('updating rcdata...')
-        console.log(rcData)
 
         // update form variables
         updateFormVariables()
@@ -848,12 +859,12 @@
         removeRcPlot(compLabel)
         removeResPlot(compLabel)
         // 3. reset user inputsand rmse value
-        document.getElementById('compareLabel').value = ''
-        document.getElementById('compareConst').value = ''
-        document.getElementById('compareExp').value = ''
-        document.getElementById('compareOffset').value = ''
-        document.getElementById('compareStartBounds').value = ''
-        document.getElementById('compareEndBounds').value = ''
+        // document.getElementById('compareLabel').value = ''
+        // document.getElementById('compareConst').value = ''
+        // document.getElementById('compareExp').value = ''
+        // document.getElementById('compareOffset').value = ''
+        // document.getElementById('compareStartBounds').value = ''
+        // document.getElementById('compareEndBounds').value = ''
         document.getElementById('compare-curve-rmse').innerHTML = '';
         // 4. hide 'remove curve' button and display 'add curve button'
         document.getElementById('remove-curve').style.display = 'none';
@@ -1427,6 +1438,14 @@
     // function for closing error panel when user selects the x in the upper right
     function closeErrorPanel() {
         document.getElementById('error-panel').style.display = 'none';
+        document.getElementById('error-panel-row').style.padding = '0';
+    };
+
+    // function for closing error panel when user selects the x in the upper right
+    function closeInfoPanel() {
+        document.getElementById('info-panel').style.display = 'none';
+        document.getElementById('info-panel-row').style.padding = '0';
+        sessionStorage.setItem("developStartupMessage", false)
     };
 
 

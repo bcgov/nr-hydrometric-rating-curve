@@ -28,8 +28,26 @@
 
     <div style="background-color: #FFFFFF; padding-left:10px; padding-right:10px;">
         
+        <div id="info-message-div" style="display:none;">
+            <div class="row" id="info-panel-row" style="padding: 10px 0px 0px 0px;">
+                <div class="col-12">
+                    <div class="card" style="background-color:#8c96a0;" id="info-panel" display="block">
+                        <div class="card-body pl-3 pr-3 pt-2 pb-2">
+                            <div class="info-header">
+                                <div class="info-text">
+                                    <strong style="color:#F5F5F5; font-size:11.5px; margin:0px; padding:0px;">Tip:</strong>
+                                    <p id='info-text' style="color:#F5F5F5; font-size:11.5px; margin:0px 0px 0px 5px; padding:0px;">Start by setting the offset as the gauge height at zero flow. Accurately calibrating and autofitting other parameters depends on this initial step.</p>
+                                </div>
+                                <button class="info-panel-close-button" onclick="closeInfoPanel()">x</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div id="warning-message-div" style="display:none;">
-            <div class="row" style="padding: 10px 0px 0px 0px;">
+            <div class="row" id="error-panel-row" style="padding: 10px 0px 0px 0px;">
                 <div class="col-12">
                     <div class="card" style="background-color:#ae2029;" id="error-panel" display="block">
                         <div class="card-body pl-3 pr-3 pt-2 pb-0">

@@ -107,6 +107,7 @@
 {% block scripts %}
 <script>
 
+// IMPORT FUNCTIONS
 function toggleInputForm(toggleFormVal) {
     var toggleDiv = document.getElementById("toggle-div");
         if (toggleFormVal === "new-session") {
@@ -121,8 +122,14 @@ function toggleInputForm(toggleFormVal) {
     };
 };
 
-// APP WALKTHROUGH
+// INITIALIZATION MESSAGE
+// Initialize display message recommending to set offset before autofitting upon initialization of develop page
+if (sessionStorage.getItem("developStartupMessage") == null) {
+        sessionStorage.setItem("developStartupMessage", true);
+};
 
+
+// APP WALKTHROUGH
 // Check if tour status has been previously set
 if (sessionStorage.getItem("tourStatus") == null) {
     // Check if user selected tour
