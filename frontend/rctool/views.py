@@ -713,9 +713,6 @@ def rctool_export_initialize(request):
         fieldData_active = list(request.POST.get("fieldData_active").split(","))
         rc_output = request.POST.get("rc_out")
 
-        print('export initialize: ')
-        print(rc_output)
-
         df_passthrough = pd.DataFrame()
         df_passthrough["datetime"] = fieldData_datetime
         df_passthrough["discharge"] = fieldData_discharge
@@ -741,12 +738,11 @@ def rctool_export_initialize(request):
 
 def create_export_rc_img(field_data, rc_data):
     # Initialize and prepaire
-    pallet = ["#9ec1a3", "#fe5f55", "#003466"]
+    pallet = ["#80B7AB", "#CC6677", "#003466"]
     df_field = field_data.copy()
     df_field_active = field_data[field_data["toggle_point"] == "checked"]
     df_field_inactive = field_data[field_data["toggle_point"] == "unchecked"]
     # create plot obj
-    plt.close(2)
     fig1, ax1 = plt.subplots(figsize=(11, 5), num=1)
     # scales etc
     plt.yscale("log")
@@ -755,7 +751,7 @@ def create_export_rc_img(field_data, rc_data):
     ax1.set_ylabel("Stage H (m)")
     ax1.set_xlabel("Discharge Q (m$^3$/s)")
     ax1.xaxis.set_major_formatter(ticker.FormatStrFormatter("%.3f"))
-    ax1.xaxis.set_minor_formatter(ticker.FormatStrFormatter("%.3f"))
+    ax1.xaxis.set_major_locator(plt.MaxNLocator(10))
     ax1.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.3f"))
     ax1.plot(
         df_field_active["stage"],
@@ -769,8 +765,10 @@ def create_export_rc_img(field_data, rc_data):
             df_field_inactive["stage"],
             df_field_inactive["discharge"],
             "o",
-            color="#808080",
+            color="#661100",
+            edgecolors='#661100',
             label="field data (inactive)",
+            facecolors='none',
         )
     i = 1
     for segment_parameters in rc_data["parameters"]:
@@ -787,25 +785,27 @@ def create_export_rc_img(field_data, rc_data):
         )
         i += 1
     ax1.legend()
+    plt.tight_layout()
     tmpfile1 = io.BytesIO()
     fig1.savefig(tmpfile1)
     b64_1 = base64.b64encode(tmpfile1.getvalue()).decode()
+    plt.close(fig1)
     return b64_1
 
 
 def create_export_res_img(field_data, rc_data):
     res_df = field_data.copy()
     # create plot obj
-    plt.close(2)
     fig2, ax2 = plt.subplots(figsize=(11, 5), num=2)
     ax2.grid(True, which="both")
     # scales etc
     ax2.set_ylabel("Stage H (m)")
     ax2.set_xlabel("Discharge Error (%)")
-    ax2.plot(res_df["Discharge Error (%)"], res_df["stage"], "o", color="#83c5be")
+    ax2.plot(res_df["Discharge Error (%)"], res_df["stage"], "o", color="#80B7AB")
     tmpfile2 = io.BytesIO()
     fig2.savefig(tmpfile2)
     b64_2 = base64.b64encode(tmpfile2.getvalue()).decode()
+    plt.close(fig2)
     return b64_2
 
 
@@ -863,14 +863,13 @@ def rctool_export_output(request):
         field_data_output_df = pd.read_json(field_data_output_json)
         field_data_output_dict = field_data_output_df.to_dict()
         field_data_output_df['datetime'] = field_data_output_df['datetime'].apply(str)
-        field_data_output_df['stage'] = field_data_output_df['stage'].round(decimals=4)
-        field_data_output_df['discharge'] = field_data_output_df['discharge'].round(decimals=4)
+        field_data_output_df['stage'] = field_data_output_df['stage'].round(decimals=3)
+        field_data_output_df['discharge'] = field_data_output_df['discharge'].round(decimals=3)
+        field_data_output_df['uncertainty'] = field_data_output_df['uncertainty'].round(decimals=3)
         field_data_values = field_data_output_df.values.tolist()
 
         rc_output = request.POST.get('rc_output')
         rc_output_dict = ast.literal_eval(rc_output)
-        print('in export: ')
-        print(rc_output)
         
         rc_output_dict['data'].append(field_data_values)
         rc_output_df = pd.DataFrame.from_dict(rc_output_dict, orient='index')
@@ -935,6 +934,7 @@ def rctool_export_output(request):
             elif ftype == 'session results (csv)':
                 export_calculate_discharge_error(field_data_output_df, rc_output_dict)
                 field_table = {'headings': field_data_output_df.columns.values, 'data': field_data_output_df.values.tolist()}
+                
                 context['rc_img'] = create_export_rc_img(field_data_output_df, rc_output_dict)
                 context['res_img'] = create_export_res_img(field_data_output_df, rc_output_dict)
 
@@ -980,8 +980,6 @@ def rctool_export_output(request):
 
                     return response
 
-
-
                 except Exception as e:
                     messages.error(request,"Unable to process request. "+repr(e))
 
@@ -995,7 +993,6 @@ def rctool_export_output(request):
                     # create figure for pdf
                     context['rc_img'] = create_export_rc_img(field_data_output_df, rc_output_dict)
                     context['res_img'] = create_export_res_img(field_data_output_df, rc_output_dict)
-
 
                     # prepaire and return output pdf
                     template = get_template('rctool/rctool/export/rctool_export_pdf.html')
