@@ -3,7 +3,7 @@
 
 
 {% block content %}
-<div class="container-xl mt-1 mr-5 ml-5">
+<div class="container-fluid mt-2">
     <div class="tab-bar-container" style="display:flex;">
         <ul class="tab-bar-list">
             <li class="tab-bar-item"><a href="{% url 'rctool_import' 0 %}">import</a></li>
@@ -14,10 +14,10 @@
 
     <div style="background-color: #FFFFFF; padding-left:10px; padding-right:10px;">
         <div class="row justify-content-md-center" style="padding: 20px;">
-            <div div class="col-12 col-sm-12 col-md-11 col-lg-8 col-xl-8">
+            <div class="col-lg-8 col-sm-12">
                 <div class="card">
                     <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Export</h6>
-                    <div class="card-body pt-3 col-12 col-sm-12 col-md-11 col-lg-8 col-xl-8" style="margin: auto;">
+                    <div class="card-body pt-3" style="margin: auto;">
                         <div syle="flex: 1">
                             <form method="post" id="export-form" action="./output" target="_blank">
                                 <div class="form-group">

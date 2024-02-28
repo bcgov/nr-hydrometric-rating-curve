@@ -3,9 +3,9 @@
 
  
 {% block content %}
-    <div class="container">
+    <div class="container-fluid">
         <div class="row justify-content-md-center" style="padding: 40px;">
-            <div class="col-12 col-sm-12 col-md-11 col-lg-8 col-xl-8">
+            <div class="col-lg-8 col-sm-12">
                 <div class="card">
 
                     <div class="card-body py-4" style="width: 80%; margin: auto;">
@@ -20,13 +20,10 @@
                                 and HydRA features, or jump straight into a session.
                             </p>
                         </div>
-                        <div class='import-button-container' style="display: flex; margin-bottom:15px;">
-                            <div style="flex:1; margin-right:10px;">
-                                <a class='btn btn-secondary btn-block custom-button' style="background-color: #758fa8 !important; border-color: #FFFFFF;" href="{% url 'rctool_tour_intro' 1 %}"><small>Guided Tour</small></a>
-                            </div>
-                            <div style='flex:1; margin-left:10px;'>
-                                <a class="btn btn-secondary btn-block custom-button" style="background-color: #6c747e !important; border-color: #FFFFFF;" href="{% url 'rctool_import' 0 %}"><small>Start Session</small></a>
-                            </div>
+                        <div class='import-button-container justify-between'>
+                            <a class='btn btn-secondary btn-block custom-button' style="background-color: #758fa8 !important; border-color: #FFFFFF;" href="{% url 'rctool_tour_intro' 1 %}"><small>Guided Tour</small></a>
+                            <div style="width: 50px;"></div>
+                            <a class="btn btn-secondary btn-block custom-button" style="background-color: #6c747e !important; border-color: #FFFFFF;" href="{% url 'rctool_import' 0 %}"><small>Start Session</small></a>
                         </div>
                     </div>
                 </div>
