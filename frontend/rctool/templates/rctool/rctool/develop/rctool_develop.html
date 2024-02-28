@@ -203,6 +203,7 @@ var developTour = new Tour({
     backdrop: true,
     delay: 750,
     backdropPadding: 10,
+    smartPlacement: true,
     onEnd: function (tour) {
             sessionStorage.setItem("tourStatus", false);
             $('#tour_request_status_id').val("1")
@@ -217,6 +218,7 @@ var developTour = new Tour({
             element: "#regression-residuals-card",
             title: "Develop Walkthrough",
             content: "To review the rating model fit, the percent change between field measured discharge and the rating model predicted discharge is calculated. These values should be kept as low as possible with an even distribution of points scattered about the vertical axis at 0."
+
         },
         {
             element: "#summary-card",
