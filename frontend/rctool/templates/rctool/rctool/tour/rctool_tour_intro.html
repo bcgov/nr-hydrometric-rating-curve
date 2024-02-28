@@ -29,7 +29,28 @@
                                         <li data-target="#carouselExampleIndicators" data-slide-to="4"></li>
                                     </ol>
                                     <div class="carousel-inner py-1 px-5">
-                                        <div class="carousel-item active" style="margin-bottom:20px;">
+                                        <div class="carousel-item active" style="margin-bottom:15px;">
+                                            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Let's Get Started</h6>
+                                            <small class='text-description'>
+                                                Hydrometric field work involves regular visits to a hydrometric gauging station across a range of streamflow conditions. A hydrometric gauging station typically consists of a stage sensor and benchmarks or reference gauge from which water level is referenced. Each field visit should collect three basic observations: reference of stage, measurement of discharge, and control observation. These observations are required to convert stage into discharge through the development of a hydrometric rating curve.  (Note: Safety should be considered when collecting these observations, do not attempt any unsafe field work!). The Hydrometric Rating Application (HydRA) is a tool for developing hydrometric rating curves based on observations of stage and discharge.  HydRA allows the user to upload observations of stage and discharge and automatically fits a rating curve.  Users can adjust the fit according to onsite observations. It then generates a rating equation that can be used for converting stage datasets into discharge.
+                                            </small>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/intro00.jpg' %}" class="slideshow-figure">
+                                            </div>
+                                        </div>
+                                        <div class="carousel-item" style="margin-bottom:15px;">
+                                            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Uploading Data</h6>
+                                            <small class='text-description'>
+                                                Users may input their hydrometric observations by uploading a .csv file.  Use the comments section to indicate meta-data such as measurement quality or control condition.  HydRA will plot all stage and discharge observations and then automatically fit a rating curve using the rating equation.
+                                            </small>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/intro01_table.jpg' %}" class="slideshow-figure" style="height: 200px;">
+                                            </div>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/intro01_graph.jpg' %}" class="slideshow-figure" style="height: 200px;">
+                                            </div>
+                                        </div>
+                                        <!-- <div class="carousel-item" style="margin-bottom:20px;">
                                             <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Lets Get Started</h6>
                                             <small class='text-description'>
                                             To begin, we'll cover some basic concepts and development strategies. A hydrometric rating curve describes the relation between 
@@ -44,7 +65,7 @@
                                                 <img src="{% static 'images/fig_rating_curve_example_slide1.JPG' %}" class="slideshow-figure">
                                             </div>
                                             <small class="text-medium">Hover over any bolded terms for a brief description and navigate slides with the arrows.</small>
-                                        </div>
+                                        </div> -->
                                         <div class="carousel-item">
                                             <div class="text-box" style="margin-bottom:20px;">
                                                 <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">The Rating Equation</h6>
@@ -64,7 +85,7 @@
                                             </div>
                                             <div class="text-box" style="margin-top:20px; margin-bottom:20px;">
                                                 <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Gauge height at zero flow."><em>h<sub>0</sub></em> - offset:</a>
-                                                <small class='text-description'>Gauge height at zero flow. This is typically set as the height of the bed.</small><br>
+                                                <small class='text-description'>Gauge height at zero flow. This is typically set by the user as the height of the bed.</small><br>
                                                 <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Calibration parameter influenced by channel characteristics."><em>C</em> - coefficient:</a>
                                                 <small class='text-description'>Calibration parameter influenced by channel characteristics such as width, slope, bed roughness.</small><br>
                                                 <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Calibration parameter influenced by the control geometry."><em>b</em> - exponent:</a>
@@ -85,7 +106,7 @@
                                             controls such as channel geometry and bed roughness.
                                             </small>
                                             <div style="display: flex; align-items: center; justify-content: center;">
-                                                <img src="{% static 'images/fig_breakpoint_example_slide3_greylabels.JPG' %}" class="slideshow-figure">
+                                                <img src="{% static 'images/fig_breakpoint_example_slide3_greylabels.JPG' %}" class="slideshow-figure" style="height:550px;">
                                             </div>
                                         </div>
                                         <div class="carousel-item" style="margin-bottom:15px;">
