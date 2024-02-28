@@ -23,6 +23,8 @@ class export_rc_data(forms.Form):
     export_filename = forms.CharField(label="file name", widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', 'style': 'font-size: 11.5px;' }), max_length=200)
     export_station_name = forms.CharField(label="station name", widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', 'style': 'font-size: 11.5px;'}), max_length=200)
     export_station_name.required = False
+    export_comments = forms.CharField(label="comments", widget=forms.Textarea(attrs={'class': 'form-control form-control-sm', 'style': 'font-size: 11.5px; height:60px;'}), max_length=1000)
+    export_comments.required = False
     export_date_applic_init = forms.DateField(widget=DatePickerInput)
     export_date_applic_init.widget.attrs['class'] = 'form-control form-control-sm'
     export_date_applic_init.required = False

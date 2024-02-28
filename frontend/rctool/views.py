@@ -881,6 +881,9 @@ def rctool_export_output(request):
             if export_form.cleaned_data["export_station_name"]:
                 stname = export_form.cleaned_data["export_station_name"]
                 context['stname'] = stname
+            if export_form.cleaned_data["export_comments"]:
+                comments = export_form.cleaned_data["export_comments"]
+                context['comments'] = comments
             if export_form.cleaned_data["export_date_applic_init"]:
                 app_period_start = export_form.cleaned_data["export_date_applic_init"]
                 context['app_period_start'] = app_period_start
@@ -967,6 +970,8 @@ def rctool_export_output(request):
                         writer.writerow(['location: {}'.format(export_form.cleaned_data["export_station_name"])])
                     if export_form.cleaned_data["export_date_applic_init"] and export_form.cleaned_data["export_date_applic_final"]:
                         writer.writerow(['period of applicability: {0} to {1}'.format(context['app_period_start'], context['app_period_end'])])
+                    if export_form.cleaned_data["export_comments"]:
+                        writer.writerow(['comments: {}'.format(export_form.cleaned_data["export_comments"])])
                     writer.writerow('')
                     writer.writerow(['MODEL PARAMETERS'])
                     writer.writerow(parameter_table['headings'])
