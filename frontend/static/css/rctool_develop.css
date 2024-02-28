@@ -77,3 +77,12 @@ body {
   color: #FFFFFF;
   text-decoration: underline;
 }
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  opacity: 1;
+}
+
+input[type=number]::-webkit-inner-spin-button {
+  opacity: 1;
+}

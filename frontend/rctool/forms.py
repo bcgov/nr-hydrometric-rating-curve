@@ -14,8 +14,8 @@ class import_rc_data(forms.Form):
 class develop_rc(forms.Form):
     set_offset1 = forms.FloatField(label="offset 1", widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'id':'offset1', 'style': 'font-size: 11.5px;'}))
     set_offset2 = forms.FloatField(label="offset 2", widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'id':'offset2', 'style': 'font-size: 11.5px;'}))
-    set_breakpoint1 = forms.IntegerField(label="number of breakpoints", widget=forms.NumberInput(attrs={'class form-control-sm': 'form-control','id':'breakpoint1', 'min':1, 'value':1, 'style': 'font-size: 11.5px;'}))
-    set_breakpoint2 = forms.IntegerField(label="number of breakpoints", widget=forms.NumberInput(attrs={'class form-control-sm': 'form-control', 'id':'breakpoint2', 'min':1, 'value':1, 'style': 'font-size: 11.5px;'}))
+    set_breakpoint1 = forms.IntegerField(label="number of breakpoints", widget=forms.NumberInput(attrs={'class form-control-sm': 'form-control','id':'breakpoint1', 'value':1, 'style': 'font-size: 11.5px;'}))
+    set_breakpoint2 = forms.IntegerField(label="number of breakpoints", widget=forms.NumberInput(attrs={'class form-control-sm': 'form-control', 'id':'breakpoint2', 'value':1, 'style': 'font-size: 11.5px;'}))
 
 class export_rc_data(forms.Form):
     export_filetype = forms.ChoiceField(label='export type', widget=forms.Select(attrs={'class': 'form-control form-control-sm', 'style': 'font-size: 11.5px;'}), choices=[('session settings', 'session settings'), ('session results (pdf)', 'session results (pdf)'), ('session results (csv)', 'session results (csv)')])

@@ -216,10 +216,10 @@
 
             // 3.5 Update HTML equation parameters and user input fields
             var segNumStr = String(idx + 1);
-            document.getElementById('segment' + segNumStr + '-const').innerHTML = C.toFixed(4);
-            document.getElementById('segment' + segNumStr + '-exp').innerHTML = slope.toFixed(4);
-            document.getElementById('table1-segment' + segNumStr + '-const').innerHTML = C.toFixed(4);
-            document.getElementById('table1-segment' + segNumStr + '-exp').innerHTML = slope.toFixed(4);
+            document.getElementById('segment' + segNumStr + '-const').innerHTML = C.toFixed(2);
+            document.getElementById('segment' + segNumStr + '-exp').innerHTML = slope.toFixed(2);
+            document.getElementById('table1-segment' + segNumStr + '-const').innerHTML = C.toFixed(2);
+            document.getElementById('table1-segment' + segNumStr + '-exp').innerHTML = slope.toFixed(2);
             document.getElementById('table1-segment' + segNumStr + '-rmse').innerHTML = rmse.toFixed(3);
             document.getElementById("endpointSeg1H0").value = rcParam[0].seg_bounds[0][0].toFixed(3);
             document.getElementById("endpointSeg1Q0").value = rcParam[0].seg_bounds[0][1].toFixed(3);
@@ -523,6 +523,17 @@
             var warningDict = {'error_title': 'Warning', 'error_text': 'The specified offset has exceeded the maximum allowable offset (lowest stage value) and cannot fit curve. It is recommended to set the offset at the height of zero flow. Click the document below for more information.'}
             var warningLinkDict = {'title':'Water Survey of Canada Hydrometric Manual.pdf', 'url':'https://publications.gc.ca/collections/collection_2021/eccc/en37/En37-464-2016-eng.pdf'}
             updateWarningMessage(warningDict, warningLinkDict);
+            // make the autofit, remove-segment, and add-segment buttons not clickable until offset is adjusted
+            if (document.getElementById("add-seg-link") != null) {
+                document.getElementById("add-seg-link").disabled = true;
+                document.getElementById("add-seg-link").title = "Add segment disabled. Please enter an offset value lower than your minimum stage.";
+            }
+            if (document.getElementById("remove-seg-link") != null) {
+                document.getElementById("remove-seg-link").disabled = true;
+                document.getElementById("remove-seg-link").title = "Remove segment disabled. Please enter an offset value lower than your minimum stage.";
+            }
+            document.getElementById("autofit-rc-button").disabled = true;
+            document.getElementById("autofit-rc-button").title = "Autofit disabled. Please enter an offset value lower than your minimum stage.";
             // dont proceed with rating calculation, will crash due to high offset
             return
 
@@ -530,6 +541,16 @@
             var warningDict = {'error_title': '', 'error_text': 'no warning'};
             var warningLinkDict = {'title':'none', 'url':'none'}
             updateWarningMessage(warningDict, warningLinkDict);
+            if (document.getElementById("add-seg-link") != null) {
+                document.getElementById("add-seg-link").disabled = false;
+                document.getElementById("add-seg-link").title = "Autofit a second segment and breakpoint. Segment 1 offset will be preserved.";
+            };
+            if (document.getElementById("remove-seg-link") != null) {
+                document.getElementById("remove-seg-link").disabled = false;
+                document.getElementById("remove-seg-link").title = "Remove Segment 2 and autofit Segment 1 with specified offset.";
+            };
+            document.getElementById("autofit-rc-button").disabled = false;
+            document.getElementById("autofit-rc-button").title = "Autofit with specified offset(s)";
         };
 
         // 2. CREATE SEGMENT BOUNDS DICTIONARY

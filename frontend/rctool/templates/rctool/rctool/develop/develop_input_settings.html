@@ -4,22 +4,22 @@
     <small style="color: #003466; margin-bottom: 3px; font-size:11.5px; font-weight:500;">segment 1</small>
     <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;" id="offset1-panel">
         <div style="flex: 1; margin-right: 10px;">
-            <small class="text-medium">offset:</small>
+            <small class="text-medium" data-toggle="tooltip" data-placement="top" title="Offset for segment 1. Typically set as the approximate gauge height for the point of zero flow. This is usually found at the deepest part of the control.">offset:</small>
         </div>
         <div style="flex: 3;">
-            <input type="number" step=".01" class="form-control form-control-sm" name="offset1" id="offset1" value="{{ offsets.0|floatformat:2 }}" onchange="setOffset(0, this.value, '{{ max_offset|floatformat:2 }}')" style="font-size:12px;" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="segment 1 offset" required>
+            <input type="number" step="0.001" class="form-control form-control-sm" name="offset1" id="offset1" value="{{ offsets.0|floatformat:3 }}" onchange="setOffset(0, this.value, '{{ max_offset|floatformat:3 }}')" style="font-size:12px;" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="Offset for segment 1. Typically set as the gauge height at zero flow." required>
         </div>
     </div>
     <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
         <div style="flex: 1; margin-right: 10px;">
-            <small class="text-medium">end points:</small>
+            <small class="text-medium" data-toggle="tooltip" data-placement="top" title="Endpoints for Segment 1 in the form (Stage H1, Discharge Q1), (Stage H2, Discharge Q2)">end points:</small>
         </div>
         <div style="flex: 3;">
             <div style="display:flex">
-                <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg1H0" id="endpointSeg1H0" placeholder="H1" value="{{ rc.parameters.0.seg_bounds.0.0|floatformat:3 }}" onchange="setEndpoints(0, 0, 0, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="initial stage">
-                <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg1Q0" id="endpointSeg1Q0" placeholder="Q1" value="{{ rc.parameters.0.seg_bounds.0.1|floatformat:3 }}" onchange="setEndpoints(0, 0, 1, this.value)" onkeydown="return event.key != 'Enter';" style="margin-right: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="initial discharge">
-                <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg1H1" id="endpointSeg1H1" placeholder="H2" value="{{ rc.parameters.0.seg_bounds.1.0|floatformat:3 }}" onchange="setEndpoints(0, 1, 0, this.value)" onkeydown="return event.key != 'Enter';" style="margin-left: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="final stage">
-                <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg1Q1" id="endpointSeg1Q1" placeholder="Q2" value="{{ rc.parameters.0.seg_bounds.1.1|floatformat:3 }}" onchange="setEndpoints(0, 1, 1, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="final discharge">
+                <input type="number" step="0.001" class="form-control form-control-sm" name="endpointSeg1H0" id="endpointSeg1H0" placeholder="H1" value="{{ rc.parameters.0.seg_bounds.0.0|floatformat:3 }}" onchange="setEndpoints(0, 0, 0, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="Initial Stage H (m) for Segment 1">
+                <input type="number" step="0.001" class="form-control form-control-sm" name="endpointSeg1Q0" id="endpointSeg1Q0" placeholder="Q1" value="{{ rc.parameters.0.seg_bounds.0.1|floatformat:3 }}" onchange="setEndpoints(0, 0, 1, this.value)" onkeydown="return event.key != 'Enter';" style="margin-right: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="Initial Discharge Q (m3/s) for Segment 1">
+                <input type="number" step="0.001" class="form-control form-control-sm" name="endpointSeg1H1" id="endpointSeg1H1" placeholder="H2" value="{{ rc.parameters.0.seg_bounds.1.0|floatformat:3 }}" onchange="setEndpoints(0, 1, 0, this.value)" onkeydown="return event.key != 'Enter';" style="margin-left: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="Final Stage H (m) for Segment 1">
+                <input type="number" step="0.001" class="form-control form-control-sm" name="endpointSeg1Q1" id="endpointSeg1Q1" placeholder="Q2" value="{{ rc.parameters.0.seg_bounds.1.1|floatformat:3 }}" onchange="setEndpoints(0, 1, 1, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="Final Discharge Q (m3/s) for Segment 1">
             </div>
         </div>
     </div>
@@ -53,7 +53,7 @@
     -->
 
     {% if n_seg <= 1 %}
-        <button type="submit" id="add-seg-link" class="add-seg-link" href="{% url 'rctool_develop_autofit' %}" onclick="addRemoveSeg(1)" onkeydown="return event.key != 'Enter';">(+) add segment</button>
+        <button type="submit" id="add-seg-link" class="add-seg-link" href="{% url 'rctool_develop_autofit' %}" onclick="addRemoveSeg(1)" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="Autofit a second segment and breakpoint. Segment 1 offset will be preserved.">(+) add segment</button>
     {% endif %}
 
     <input type="hidden" id="n-seg" name="n-seg" value="{{ n_seg }}" onkeydown="return event.key != 'Enter';">
@@ -68,32 +68,32 @@
     {% if n_seg > 1 %}
         <div id="enter-breakpoint-field" style="display:flex; width: 100%; margin-top: 0px">
             <div style="flex: 1; margin-right: 10px;">
-                <small class="text-medium">breakpoint:</small>
+                <small class="text-medium" data-toggle="tooltip" data-placement="top" title="Stage H (m) connecting both segments.">breakpoint:</small>
             </div>
             <div style="flex: 3;">
-                <input type="number" step=".01" class="form-control form-control-sm" name="breakpoint1" id="breakpoint1" value="{{ breakpoint1|floatformat:3 }}" onchange="setBreakpoint1(this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="breakpoint">
+                <input type="number" step="0.001" class="form-control form-control-sm" name="breakpoint1" id="breakpoint1" value="{{ breakpoint1|floatformat:3 }}" onchange="setBreakpoint1(this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="Stage H (m) connecting both segments.">
             </div>
         </div>
         <br>
         <p style="color: #003466; margin-bottom: 3px; font-size: 11.5px; font-weight:500;">segment 2</p>
         <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
             <div style="flex: 1; margin-right: 10px;">
-                <small class="text-medium">offset:</small>
+                <small class="text-medium" data-toggle="tooltip" data-placement="top" title="Offset for segment 2. Typically set as the gauge height at zero flow.">offset:</small>
             </div>
             <div style="flex: 3;">
-                <input type="number" step=".01" class="form-control form-control-sm" name="offset2" id="offset2" value="{{ offsets.1|floatformat:2 }}" onchange="setOffset(1, this.value, '{{ max_offset|floatformat:2 }}')" onkeydown="return event.key != 'Enter';" href="#" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="segment 2 offset" required>
+                <input type="number" step="0.001" class="form-control form-control-sm" name="offset2" id="offset2" value="{{ offsets.1|floatformat:2 }}" onchange="setOffset(1, this.value, '{{ max_offset|floatformat:2 }}')" onkeydown="return event.key != 'Enter';" href="#" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="Offset for segment 2. Typically set as the approximate gauge height for the point of zero flow. This is usually found at the deepest part of the control." required>
             </div>
         </div>
         <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
             <div style="flex: 1; margin-right: 10px;">
-                <small class="text-medium">end points:</small>
+                <small class="text-medium" data-toggle="tooltip" data-placement="top" title="Endpoints for Segment 2 in the form (Stage H1, Discharge Q1), (Stage H2, Discharge Q2)">end points:</small>
             </div>
             <div style="flex: 3;">
                 <div style="display:flex">
-                    <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg2H0" id="endpointSeg2H0" placeholder="H1" value="{{ rc.parameters.1.seg_bounds.0.0|floatformat:3 }}" onchange="setEndpoints(1, 0, 0, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="initial stage">
-                    <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg2Q0" id="endpointSeg2Q0" placeholder="Q1" value="{{ rc.parameters.1.seg_bounds.0.1|floatformat:3 }}" onchange="setEndpoints(1, 0, 1, this.value)" onkeydown="return event.key != 'Enter';" style="margin-right: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="initial discharge">
-                    <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg2H1" id="endpointSeg2H1" placeholder="H2" value="{{ rc.parameters.1.seg_bounds.1.0|floatformat:3 }}" onchange="setEndpoints(1, 1, 0, this.value)" onkeydown="return event.key != 'Enter';" style="margin-left: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="final stage">
-                    <input type="number" step=".01" class="form-control form-control-sm" name="endpointSeg2Q1" id="endpointSeg2Q1" placeholder="Q2" value="{{ rc.parameters.1.seg_bounds.1.1|floatformat:3 }}" onchange="setEndpoints(1, 1, 1, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="final discharge">
+                    <input type="number" step="0.001" class="form-control form-control-sm" name="endpointSeg2H0" id="endpointSeg2H0" placeholder="H1" value="{{ rc.parameters.1.seg_bounds.0.0|floatformat:3 }}" onchange="setEndpoints(1, 0, 0, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="Initial Stage H (m) for Segment 2">
+                    <input type="number" step="0.001" class="form-control form-control-sm" name="endpointSeg2Q0" id="endpointSeg2Q0" placeholder="Q1" value="{{ rc.parameters.1.seg_bounds.0.1|floatformat:3 }}" onchange="setEndpoints(1, 0, 1, this.value)" onkeydown="return event.key != 'Enter';" style="margin-right: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="Initial Discharge Q (m3/s) for Segment 2">
+                    <input type="number" step="0.001" class="form-control form-control-sm" name="endpointSeg2H1" id="endpointSeg2H1" placeholder="H2" value="{{ rc.parameters.1.seg_bounds.1.0|floatformat:3 }}" onchange="setEndpoints(1, 1, 0, this.value)" onkeydown="return event.key != 'Enter';" style="margin-left: 5px; font-size:12px;" data-toggle="tooltip" data-placement="top" title="Final Stage H (m) for Segment 2">
+                    <input type="number" step="0.001" class="form-control form-control-sm" name="endpointSeg2Q1" id="endpointSeg2Q1" placeholder="Q2" value="{{ rc.parameters.1.seg_bounds.1.1|floatformat:3 }}" onchange="setEndpoints(1, 1, 1, this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="Final Discharge Q (m3/s) for Segment 2">
                 </div>
             </div>
         </div>
@@ -109,7 +109,7 @@
                 </div>
             </div>
         </div>
-        <button type="submit" class="remove-seg-link" href="{% url 'rctool_develop_autofit' %}" onclick="addRemoveSeg(-1)" onkeydown="return event.key != 'Enter';">(-) remove segment</button>
+        <button type="submit" class="remove-seg-link" id="remove-seg-link" href="{% url 'rctool_develop_autofit' %}" onclick="addRemoveSeg(-1)" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="Remove Segment 2 and autofit Segment 1 with specified offset.">(-) remove segment</button>
     {% endif %}
     <br>
     <br>
@@ -130,7 +130,7 @@
         </div>
     </div>
     <div class="d-grid gap-2">
-        <button class="btn btn-primary btn-block" style="background-color: #6c747e !important; border-color: #FFFFFF;" type="submit" href="{% url 'rctool_develop_autofit' %}" onkeydown="return event.key != 'Enter';"><small>autofit new rating curve</small></button>
+        <button class="btn btn-primary btn-block" id="autofit-rc-button" style="background-color: #6c747e !important; border-color: #FFFFFF;" type="submit" href="{% url 'rctool_develop_autofit' %}" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="Autofit with specified offset(s)"><small>autofit new rating curve</small></button>
     </div>
 
 </form>
