@@ -7,7 +7,7 @@
             <small class="text-medium">offset:</small>
         </div>
         <div style="flex: 3;">
-            <input type="number" step=".01" max="{{ max_offset|floatformat:2 }}" class="form-control form-control-sm" name="offset1" id="offset1" value="{{ offsets.0|floatformat:2 }}" onchange="setOffset(0, this.value, '{{ max_offset|floatformat:2 }}')" style="font-size:12px;" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="segment 1 offset" required>
+            <input type="number" step=".01" class="form-control form-control-sm" name="offset1" id="offset1" value="{{ offsets.0|floatformat:2 }}" onchange="setOffset(0, this.value, '{{ max_offset|floatformat:2 }}')" style="font-size:12px;" onkeydown="return event.key != 'Enter';" data-toggle="tooltip" data-placement="top" title="segment 1 offset" required>
         </div>
     </div>
     <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
@@ -71,7 +71,7 @@
                 <small class="text-medium">breakpoint:</small>
             </div>
             <div style="flex: 3;">
-                <input type="number" step=".01" class="form-control form-control-sm" name="breakpoint1" id="breakpoint1" value="{{ breakpoint1|floatformat:3 }}" max="{{ breakpoint_max|floatformat:3 }}" min="{{ breakpoint_min|floatformat:3 }}" onchange="setBreakpoint1(this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="breakpoint">
+                <input type="number" step=".01" class="form-control form-control-sm" name="breakpoint1" id="breakpoint1" value="{{ breakpoint1|floatformat:3 }}" onchange="setBreakpoint1(this.value)" onkeydown="return event.key != 'Enter';" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="breakpoint">
             </div>
         </div>
         <br>
@@ -81,7 +81,7 @@
                 <small class="text-medium">offset:</small>
             </div>
             <div style="flex: 3;">
-                <input type="number" step=".01" max="{{ max_offset|floatformat:2 }}" class="form-control form-control-sm" name="offset2" id="offset2" value="{{ offsets.1|floatformat:2 }}" onchange="setOffset(1, this.value, '{{ max_offset|floatformat:2 }}')" onkeydown="return event.key != 'Enter';" href="#" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="segment 2 offset" required>
+                <input type="number" step=".01" class="form-control form-control-sm" name="offset2" id="offset2" value="{{ offsets.1|floatformat:2 }}" onchange="setOffset(1, this.value, '{{ max_offset|floatformat:2 }}')" onkeydown="return event.key != 'Enter';" href="#" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="segment 2 offset" required>
             </div>
         </div>
         <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
