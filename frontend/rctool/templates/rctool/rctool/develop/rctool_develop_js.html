@@ -1207,7 +1207,7 @@
                                                     if (residualData[seg].data[j][0] == fielddatacsv.stage[idx]){
                                                         q_model = residualData[seg].data[j][1]
                                                         h_model = Math.exp(1/rcParam[seg - 1].exp * Math.log(context.parsed.x / rcParam[seg - 1].const)) + rcParam[seg - 1].offset
-                                                        r_percent = residualData[seg].data[j][2]
+                                                        r_percent = -residualData[seg].data[j][2]
                                                         r_volumetric = r_percent/100 * context.parsed.x
                                                     }
                                                 }
