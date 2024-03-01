@@ -8,7 +8,7 @@
 
 {% block content %}
 
-<div class="container-xl mt-1 mr-5 ml-5">
+<div class="container-fluid mt-2">
     <div class="tab-bar-container" style="display:flex;">
         <ul class="tab-bar-list" style="flex:1">
             <li class="tab-bar-item"><a href="{% url 'rctool_import' 0 %}">import</a></li>
@@ -74,7 +74,7 @@
         </div>
         
         <div class="row" style="padding: 5px 10px 0px 10px;">
-            <div class="col-3" style="padding: 5px;">
+            <div class="col-xl-4 col-lg-5 col-md-6 col-sm-12" style="padding: 5px; min-width: 420px">
                 <div class="card" id="input-settings-card">
                     <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Input Settings</h6>
                     <div class="card-body px-4 py-2" style="display: flex; padding-bottom:15px;">
@@ -82,50 +82,49 @@
                     </div>
                 </div>
             </div>
+            <div class="col-xl-5 col-lg-7 col-md-6 col-sm-12" style="padding: 5px;">
             {% if messages %}
-                <div class="col-6" style="padding: 5px;">
-                    <div class="card">
-                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Error</h6>
-                        <div class="card-body p-2" style="display: flex;">
-                            {% for message in messages %}
-                            <div>
-                                <strong class="error-text">Error autofitting rating curve.</strong><br>
-                                <p>{{message|safe}}<p>
-                            </div>
-                            {% endfor %}
+                <div class="card">
+                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Error</h6>
+                    <div class="card-body p-2" style="display: flex;">
+                        {% for message in messages %}
+                        <div>
+                            <strong class="error-text">Error autofitting rating curve.</strong><br>
+                            <p>{{message|safe}}<p>
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
             {% else %}
-                <div class="col-6" style="padding: 5px;">
-                    <div class="card" id="rcchart-card">
-                        <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Rating Curve</h6>
-                        <div class="card-body px-1 pt-1 pb-0">
-                            <div class="rc-chart-container">
-                                <canvas id="rcChart">
-                                </canvas>
+                <div class="card" id="rcchart-card">
+                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px">Rating Curve</h6>
+                    <div class="card-body px-1 pt-1 pb-0">
+                        <div class="rc-chart-container">
+                            <canvas id="rcChart">
+                            </canvas>
+                        </div>
+                        <div style="display:flex; justify-content:left;">
+                            <div id="chart-settings-link" style="display:none; margin:-15px 0px 10px 0px;">
+                                <i class="fa fa-cog" aria-hidden="true" style="color: #A9A9A9; margin-right:4px;"></i>
+                                <a class="chart-settings-text" href="#" onclick="toggleChartSettings()"> display settings</a>
                             </div>
-                            <div style="display:flex; justify-content:left;">
-                                <div id="chart-settings-link" style="display:none; margin:-15px 0px 10px 0px;">
-                                    <i class="fa fa-cog" aria-hidden="true" style="color: #A9A9A9; margin-right:4px;"></i>
-                                    <a class="chart-settings-text" href="#" onclick="toggleChartSettings()"> display settings</a>
-                                </div>
-                                <div id="chart-settings" style="display:flex; margin:-10px 0px -5px 0px;">
-                                    <div style="margin: 0px;">
-                                        <input type="checkbox" id="toggle_zoom" name="toggle_zoom" onchange="toggleZoom(this.checked)" style="margin: 0px 0px 0px 10px;">
-                                        <label for='toggle_zoom' style="margin: 0px 10px 0px 0px"><p class="text-small">reset zoom</p></label>
-                                        <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" checked="checked" onchange="toggleAxisFormat(this.checked)" style="margin:0px;">
-                                        <label for='toggle_axis_format' style="margin: 0px 10px 0px 0px"><p class="text-small">logarithmic axis</p></label>
-                                        <input type="checkbox" id="toggle_detailed_tooltip" name="toggle_detailed_tooltip" checked="checked" style="margin:0px;">
-                                        <label for='toggle_detailed_tooltip' style="margin: 0px 10px 0px 0px"><p class="text-small">hover info</p></label>
-                                    </div>
+                            <div id="chart-settings" style="display:flex; margin:-10px 0px -5px 0px;">
+                                <div style="margin: 0px;">
+                                    <input type="checkbox" id="toggle_zoom" name="toggle_zoom" onchange="toggleZoom(this.checked)" style="margin: 0px 0px 0px 10px;">
+                                    <label for='toggle_zoom' style="margin: 0px 10px 0px 0px"><p class="text-small">reset zoom</p></label>
+                                    <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" checked="checked" onchange="toggleAxisFormat(this.checked)" style="margin:0px;">
+                                    <label for='toggle_axis_format' style="margin: 0px 10px 0px 0px"><p class="text-small">logarithmic axis</p></label>
+                                    <input type="checkbox" id="toggle_detailed_tooltip" name="toggle_detailed_tooltip" checked="checked" style="margin:0px;">
+                                    <label for='toggle_detailed_tooltip' style="margin: 0px 10px 0px 0px"><p class="text-small">hover info</p></label>
                                 </div>
                             </div>
                         </div>
+                        <p class="text-small" style="text-align: right;">Scroll with mouse to zoom, hold shift to pan</p>
                     </div>
                 </div>
             {% endif %}
-            <div class="col-3" style="padding: 5px;">
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12" style="padding: 5px;">
                 {% if not messages %}
                     <div class="card" id="regression-residuals-card">
                         <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Rating Error</h6>
@@ -140,16 +139,13 @@
                     </div>
                 {% endif %}
             </div>
-        </div>
-    
-        <div class="row" style="padding: 0px 10px 10px 10px;">
-            <div class="col-6" style="padding: 5px;">
+            <div class="col-lg-6 col-sm-12" style="padding: 5px;">
                 <div class="card" id="summary-card">
                     <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Measurements Summary</h6>
                     {% include 'rctool/rctool/develop/develop_table_measurents.html' %}
                 </div>
             </div>
-            <div class="col-6" style="padding: 5px;">
+            <div class="col-lg-6 col-sm-12" style="padding: 5px;">
                 <div class="card" id="summary-card">
                     <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Rating Summary</h6>
                     {% include 'rctool/rctool/develop/develop_table_rating.html' %}
@@ -194,7 +190,10 @@ WALKTHROUGH
 // Check if tour status has been previously set
 if (sessionStorage.getItem("tourStatus") == null) {
     // Check if user selected tour
-    var tourStatusID = {{ tour_request_status_id|safe }};
+    var tourStatusID = null;
+    {% if tour_request_status_id %}
+        tourStatusID = {{ tour_request_status_id|safe }};
+    {% endif %}
     if (tourStatusID == 1) {
         sessionStorage.setItem("tourStatus", true);
         } else {
@@ -208,6 +207,7 @@ var developTour = new Tour({
     backdrop: true,
     delay: 750,
     backdropPadding: 10,
+    smartPlacement: true,
     onEnd: function (tour) {
             sessionStorage.setItem("tourStatus", false);
             $('#tour_request_status_id').val("1")
@@ -222,6 +222,7 @@ var developTour = new Tour({
             element: "#regression-residuals-card",
             title: "Develop Walkthrough",
             content: "To review the rating model fit, the percent change between field measured discharge and the rating model predicted discharge is calculated. These values should be kept as low as possible with an even distribution of points scattered about the vertical axis at 0."
+
         },
         {
             element: "#summary-card",

@@ -1,7 +1,7 @@
 {% load static %}
 
-<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #003466">
-    <div class="header-title-div"></div>
+<nav class="navbar navbar-expand-sm navbar-dark" style="background-color: #003466">
+    <div class="header-title-div justify-items-start"></div>
       <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'images/gov_logo.JPG' %}" class="logo-gov"></a>
       <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'images/HydRALogo_text.png' %}" class="logo-hydra "></a>
     </div>
@@ -11,10 +11,10 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto w-100 justify-content-end">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'home' %}"><small>home</small></a>
+          <a class="nav-link" href="{% url 'home' %}"><small>Home</small></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'rctool_import' 0 %}"><small>develop</small></a>
+            <a class="nav-link" href="{% url 'rctool_import' 0 %}"><small>Develop</small></a>
         </li>
       </ul>
     </div>

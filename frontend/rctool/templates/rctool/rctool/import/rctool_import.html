@@ -3,8 +3,8 @@
 
 
 {% block content %}
-<div class="container-xl mt-1 mr-5 ml-5">
-    <div class="tab-bar-container" style="display:flex;">
+<div class="container-fluid mt-2">
+    <div class="tab-bar-container">
         <ul class="tab-bar-list">
             <li class="tab-bar-item-current"><a href="{% url 'rctool_import' 0 %}">import</a></li>
             <li class="tab-bar-item" style="pointer-events: none;"><a href="#">develop</a></li>
@@ -14,11 +14,11 @@
 
     <div style="background-color: #FFFFFF; padding-left:10px; padding-right:10px;">
         <div class="row justify-content-md-center" style="padding: 20px;">
-            <div div class="col-12 col-lg-11 col-xl-11">
-                <div class="card">
-                    <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Import Data</h6>
-                    <div class="card-body pt-3" style="display: flex;">
-                        <div class="card-body-left">
+            <div class="card">
+                <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Import Data</h6>
+                <div class="card-body pt-3" style="display: flex;">
+                    <div class="row">
+                        <div class="card-body-left col-lg-5 col-md-12">
                             <form method="POST" id="import-data-form" enctype="multipart/form-data">
                                 <div class="form-group" style="margin-bottom:25px;">
                                     {% csrf_token %}
@@ -40,12 +40,12 @@
                             </form>
                         </div>
 
-                        <div class="card-body-right">
+                        <div class="card-body-right col-lg-7 col-md-12">
                             {% if not table_data %}
                                 <p id="input-instructions" style="font-size:11.5px;">
                                     Please upload in csv format with the specific column names and format specified below.
                                 </p>
-                                <div id="example-data" style="display:block">
+                                <div id="example-data">
                                     <table class="table">
                                         <tr class="table-header">
                                             <th class="table-cell">datetime</th>
