@@ -17,24 +17,24 @@
             {% if rc.parameters %}
                 <tr class="table-row">
                     <td class="table-cell"><p id="table1-segment1-label">{{ rc.parameters.0.label }}</p></td>
-                    <td class="table-cell"><p id="table1-segment1-const">{{ rc.parameters.0.const|floatformat:2 }}</p></td>
-                    <td class="table-cell"><p id="table1-segment1-exp">{{ rc.parameters.0.exp|floatformat:2 }}</p></td>
+                    <td class="table-cell"><p id="table1-segment1-const">{{ rc.parameters.0.const|floatformat:3 }}</p></td>
+                    <td class="table-cell"><p id="table1-segment1-exp">{{ rc.parameters.0.exp|floatformat:3 }}</p></td>
                     <td class="table-cell"><p id="table1-segment1-offset">{{ rc.parameters.0.offset }}</p></td>
                     <td class="table-cell"><p id="table1-endpoint-Seg1H0">{{ rc.parameters.0.seg_bounds.0.0|floatformat:3 }}</p></td>
                     <td class="table-cell"><p id="table1-endpoint-Seg1H1">{{ rc.parameters.0.seg_bounds.1.0|floatformat:3 }}</p></td>
-                    <td class="table-cell"><p id="table1-segment1-rmse">{{ rc.parameters.0.rmse|floatformat:2 }}</p></td>
+                    <td class="table-cell"><p id="table1-segment1-rmse">{{ rc.parameters.0.rmse|floatformat:3 }}</p></td>
                     <td class="table-cell"><p></p></td>
                 </tr>
             {% endif %}
             {% if rc.parameters.1 %}
                 <tr class="table-row">
                     <td class="table-cell"><p id="table1-segment2-label">{{ rc.parameters.1.label }}</p></td>
-                    <td class="table-cell"><p id="table1-segment2-const">{{ rc.parameters.1.const|floatformat:2 }}</p></td>
-                    <td class="table-cell"><p id="table1-segment2-exp">{{ rc.parameters.1.exp|floatformat:2 }}</p></td>
+                    <td class="table-cell"><p id="table1-segment2-const">{{ rc.parameters.1.const|floatformat:3 }}</p></td>
+                    <td class="table-cell"><p id="table1-segment2-exp">{{ rc.parameters.1.exp|floatformat:3 }}</p></td>
                     <td class="table-cell"><p id="table1-segment2-offset"> {{ rc.parameters.1.offset }}</p></td>
                     <td class="table-cell"><p id="table1-endpoint-Seg2H0">{{ rc.parameters.1.seg_bounds.0.0|floatformat:3 }}</p></td>
                     <td class="table-cell"><p id="table1-endpoint-Seg2H1">{{ rc.parameters.1.seg_bounds.1.0|floatformat:3 }}</p></td>
-                    <td class="table-cell"><p id="table1-segment2-rmse">{{ rc.parameters.1.rmse|floatformat:2 }}</p></td>
+                    <td class="table-cell"><p id="table1-segment2-rmse">{{ rc.parameters.1.rmse|floatformat:3 }}</p></td>
                     <td class="table-cell"><p></p></td>
                 </tr>
             {% endif %}

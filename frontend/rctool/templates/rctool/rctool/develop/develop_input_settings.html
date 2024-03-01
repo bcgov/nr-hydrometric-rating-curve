@@ -29,9 +29,9 @@
         </div>
         <div style="flex: 3;">
             <div style="display:flex; font-size:12.5px; color:#696969;">
-                Q = <p id="segment1-const">{{rc.parameters.0.const|floatformat:2}}</p>
+                Q = <p id="segment1-const">{{rc.parameters.0.const|floatformat:3}}</p>
                     ( H <p id="segment1-offset">{{offsets_val.0}}</p>)
-                <sup><p id="segment1-exp">{{rc.parameters.0.exp|floatformat:2}}</p></sup>
+                <sup><p id="segment1-exp">{{rc.parameters.0.exp|floatformat:3}}</p></sup>
             </div>
         </div>
     </div>
@@ -81,7 +81,7 @@
                 <small class="text-medium" data-toggle="tooltip" data-placement="top" title="Offset for segment 2. Typically set as the gauge height at zero flow.">offset:</small>
             </div>
             <div style="flex: 3;">
-                <input type="number" step="0.001" class="form-control form-control-sm" name="offset2" id="offset2" value="{{ offsets.1|floatformat:2 }}" onchange="setOffset(1, this.value, '{{ max_offset|floatformat:2 }}')" onkeydown="return event.key != 'Enter';" href="#" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="Offset for segment 2. Typically set as the approximate gauge height for the point of zero flow. This is usually found at the deepest part of the control." required>
+                <input type="number" step="0.001" class="form-control form-control-sm" name="offset2" id="offset2" value="{{ offsets.1|floatformat:3 }}" onchange="setOffset(1, this.value, '{{ max_offset|floatformat:3 }}')" onkeydown="return event.key != 'Enter';" href="#" style="font-size:12px;" data-toggle="tooltip" data-placement="top" title="Offset for segment 2. Typically set as the approximate gauge height for the point of zero flow. This is usually found at the deepest part of the control." required>
             </div>
         </div>
         <div style="display: flex; width: 100%; margin: 10px 0px 10px 0px;">
@@ -103,9 +103,9 @@
             </div>
             <div style = " flex: 3;">
                 <div style="display:flex; font-size:12.5px; color:#696969;">
-                    Q = <p id="segment2-const">{{rc.parameters.1.const|floatformat:2}}</p>
+                    Q = <p id="segment2-const">{{rc.parameters.1.const|floatformat:3}}</p>
                         ( H <p id="segment2-offset">{{offsets_val.1}}</p>)
-                    <sup><p id="segment2-exp">{{rc.parameters.1.exp|floatformat:2}}</p></sup>
+                    <sup><p id="segment2-exp">{{rc.parameters.1.exp|floatformat:3}}</p></sup>
                 </div>
             </div>
         </div>
