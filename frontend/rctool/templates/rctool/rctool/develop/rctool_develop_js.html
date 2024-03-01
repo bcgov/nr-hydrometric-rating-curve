@@ -787,9 +787,44 @@
 
             axisFormat = 'logBase';
 
+            console.log('disallowed zoom and pan!')
+            // TODO: allow zoom and pan for logarithmic scale
+            // disallow zoom and pan:
+            rcChart.options.plugins.zoom = {
+                zoom: {
+                    wheel: {
+                        enabled: false
+                    },
+                    pinch: {
+                        enabled: false
+                    },
+                    mode: 'xy'
+                },
+                pan: {
+                    enabled: false,
+                    mode: 'xy'
+                }
+            };
         }
         else {
             axisFormat = 'linear';
+
+            // allow zoom and pan:
+            rcChart.options.plugins.zoom = {
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                    },
+                    pinch: {
+                        enabled: true,
+                    },
+                    mode: 'xy'
+                },
+                pan: {
+                    enabled: true,
+                    mode: 'xy'
+                }
+            };
         };
 
         rcChart.options.scales = {

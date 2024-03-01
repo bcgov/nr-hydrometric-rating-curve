@@ -119,6 +119,7 @@
                                 </div>
                             </div>
                         </div>
+                        <p class="text-small" style="text-align: right;">Scroll with mouse to zoom, hold shift to pan</p>
                     </div>
                 </div>
             {% endif %}
@@ -189,7 +190,10 @@ WALKTHROUGH
 // Check if tour status has been previously set
 if (sessionStorage.getItem("tourStatus") == null) {
     // Check if user selected tour
-    var tourStatusID = {{ tour_request_status_id|safe }};
+    var tourStatusID = null;
+    {% if tour_request_status_id %}
+        tourStatusID = {{ tour_request_status_id|safe }};
+    {% endif %}
     if (tourStatusID == 1) {
         sessionStorage.setItem("tourStatus", true);
         } else {
