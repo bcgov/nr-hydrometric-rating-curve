@@ -250,7 +250,11 @@
             };
 
             // update residual chart
-            updateResidualChart(newSegData, idx)
+            let newSegPlotData = newSegData.map(item => ({ x: item[2], y: item[0] })).slice(1,-1);
+
+            console.log('working: got to redraw residual chart')
+            console.log(newSegPlotData)
+            updateResidualChart(newSegPlotData, idx)
 
             idx++;
 
@@ -312,12 +316,14 @@
             }
         }
         updateChartSegments()
+        updateFieldData()
 
         // redraw chart with updated lines
         rcChart.update();
     }
 
     function updateChartSegments(){
+        console.log('updateChartSegments()')
         // get all chart indices
         var datasetIndices = Object.keys(rcChart.data.datasets)
 
@@ -377,13 +383,10 @@
 
 
 
-    function updateResidualChart(newResData, r_idx) {
-        var newResidualChartData = newResData.map(item => ({ x: item[2], y: item[0] })).slice(1,-1);
+    function updateResidualChart(newResidualChartData, r_idx) {
         residualChart.data.datasets[r_idx].data = newResidualChartData;
         residualChart.update();
-
     };
-
 
     /* -------------------------------------------------------------------------------------------------------------------------------------------
     B.1) USER INPUT - HIDE / USE DATA POINTS
@@ -399,8 +402,6 @@
     };
       
     function togglePoint(idx, checked) {
-        var rowIndex = idx
-
         if (checked == true){
             // set point to checked now
             fielddatacsv.toggle_point[idx] = 'checked';
@@ -409,6 +410,11 @@
             fielddatacsv.toggle_point[idx] = 'unchecked';
         }
 
+        // update field data in the plot
+        updateFieldData()
+    }
+
+    function updateFieldData() {
         // redraw field data in the plot, but do not call autofit (it will update when the user hits that button)
         var datasetIndices = Object.keys(rcChart.data.datasets)
         var fieldIdx = null;
@@ -468,6 +474,13 @@
 
         // update export page variables
         updateExportVariables()
+
+        // update residualChart
+        console.log('got to redraw residual chart')
+        console.log(residualData[0].data)
+
+        let newSegPlotData = residualData[0].data.map(item => ({ x: item[1], y: item[0] })).slice(1,-1);
+        updateResidualChart(newSegPlotData, 0)
     }
 
     /* -------------------------------------------------------------------------------------------------------------------------------------------
@@ -1360,6 +1373,7 @@
 
     toggleAxisFormat(document.getElementById("toggle_axis_format").checked)
 
+
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
     C.2) REGRESSION RESIDUAL CHART
     ------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -1460,6 +1474,10 @@
         var residualChartData = residualData[i]['data'].map(item => ({ x: item[2], y: item[0] })).slice(1, -1);
         addResidualPlot(residualData, residualLabel, colorLabel)
     };
+
+
+    console.log(fielddatacsv)
+    updateChartFromGlobal();
 
 
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
