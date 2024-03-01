@@ -707,9 +707,9 @@
                         this.min = this.max;
                         this.max = temp;
                     }
-                    let minPowerData = Math.log((this.min)) / Math.log(rcParam[0].exp);
-                    let maxPowerData = Math.log((this.max)) / Math.log(rcParam[0].exp);
-
+                    let exponent = rcParam[0].exp;
+                    let minPowerData = Math.log((this.min)) / Math.log(exponent);
+                    let maxPowerData = Math.log((this.max)) / Math.log(exponent);
 
                     if (minPowerData > maxPowerData) {
                         minPowerData = -minPowerData;
@@ -727,14 +727,13 @@
                     while ((power > minPower) && (power >= minPowerData)) {
                         power -= powerStep;
                     }
-
                     // add ticks from smallest to largest
                     while (power <= (maxPower + powerStep)) {
-                        let tickVal = Math.pow(rcParam[0].exp, power);
+                        let tickVal = Math.pow(exponent, power);
 
                         // if exponent is less than 1, take negative
-                        if (rcParam[0].exp < 1) {
-                            tickVal = Math.pow(rcParam[0].exp, -power);
+                        if (exponent < 1) {
+                            tickVal = Math.pow(exponent, -power);
                         }
 
                         // adjust to use rounded tick value based on log10 of value
@@ -748,8 +747,23 @@
                         power += powerStep;
                     }
 
-                    this.min = ticks[0].value;
-                    this.max = ticks[ticks.length - 1].value;
+                    try {
+                        this.min = ticks[0].value;
+                        this.max = ticks[ticks.length - 1].value;
+                    } catch (e) {
+                        // show temporary ticks:
+                        this.min = 0;
+                        this.max = 1;
+
+                        // display warning/error message on top
+                        updateWarningMessage(
+                            {'error_title': 'Error', 'error_text': 'No ticks found for logarithmic scale! Please adjust the exponent of the rating curve by changing your endpoints or triggering the autofit again!'},
+                            {'title':'none', 'url':'none'}
+                        );
+
+                        // force non-log scale:
+                        document.getElementById("toggle_axis_format").checked = false;
+                    }
                     return ticks;
                 }
 
@@ -1493,6 +1507,8 @@
             warningDiv.style.display = "block";
             document.getElementById('error-title').innerHTML = warningDict['error_title'];
             document.getElementById('error-text').innerHTML = warningDict['error_text'];
+            document.getElementById('error-link').setAttribute('href', '');
+            document.getElementById('error-link-text').innerHTML = '';
         };
     };
 
