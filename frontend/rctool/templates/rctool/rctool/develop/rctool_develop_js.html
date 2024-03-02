@@ -845,9 +845,44 @@
                     modifierKey: 'shift',
                 }
             };
+            console.log('disallowed zoom and pan!')
+            // TODO: allow zoom and pan for logarithmic scale
+            // disallow zoom and pan:
+            rcChart.options.plugins.zoom = {
+                zoom: {
+                    wheel: {
+                        enabled: false
+                    },
+                    pinch: {
+                        enabled: false
+                    },
+                    mode: 'xy'
+                },
+                pan: {
+                    enabled: false,
+                    modifierKey: 'shift',
+                }
+            };
         }
         else {
             axisFormat = 'linear';
+
+            // allow zoom and pan:
+            rcChart.options.plugins.zoom = {
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                    },
+                    pinch: {
+                        enabled: true,
+                    },
+                    mode: 'xy'
+                },
+                pan: {
+                    enabled: true,
+                    modifierKey: 'shift',
+                }
+            };
 
             // allow zoom and pan:
             rcChart.options.plugins.zoom = {
@@ -1256,6 +1291,7 @@
                                             label.push(['Q:       ' + context.parsed.x.toFixed(2) + ' m³/s']);
                                             label.push(['date:    ' + fielddatacsv.datetime[idx]]);
                                             if (h_model !== null) {
+                                                label.push(['H shift: ' + (h_model - context.parsed.y).toFixed(2) + ' m'])
                                                 label.push(['H shift: ' + (h_model - context.parsed.y).toFixed(2) + ' m'])
                                             }
                                             //if (q_model !== null){
