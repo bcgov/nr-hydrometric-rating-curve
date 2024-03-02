@@ -251,9 +251,6 @@
 
             // update residual chart
             let newSegPlotData = newSegData.map(item => ({ x: item[2], y: item[0] })).slice(1,-1);
-
-            console.log('working: got to redraw residual chart')
-            console.log(newSegPlotData)
             updateResidualChart(newSegPlotData, idx)
 
             idx++;
@@ -323,7 +320,6 @@
     }
 
     function updateChartSegments(){
-        console.log('updateChartSegments()')
         // get all chart indices
         var datasetIndices = Object.keys(rcChart.data.datasets)
 
@@ -381,8 +377,6 @@
         }
     }
 
-
-
     function updateResidualChart(newResidualChartData, r_idx) {
         residualChart.data.datasets[r_idx].data = newResidualChartData;
         residualChart.update();
@@ -414,6 +408,19 @@
         updateFieldData()
     }
 
+    function calc_q_model(h, c, exp, offset) {
+        return c * (h - offset) ** exp;
+    }
+
+    function calc_h_model(q, c, exp, offset) {
+        return Math.exp(1/exp * Math.log(q / c)) + offset
+    }
+
+    function calc_residual_percent(h, q, c, exp, offset) {
+        var q_model = calc_q_model(h, c, exp, offset)
+        return 100 * (q - q_model) / q
+    }
+
     function updateFieldData() {
         // redraw field data in the plot, but do not call autofit (it will update when the user hits that button)
         var datasetIndices = Object.keys(rcChart.data.datasets)
@@ -436,23 +443,14 @@
                 id: id,
                 x: Object.values(fielddatacsv.discharge)[index],
                 y: Object.values(fielddatacsv.stage)[index],
-                active: Object.values(fielddatacsv.toggle_point)[index]
+                active: Object.values(fielddatacsv.toggle_point)[index],
             }
         });
 
-        // filter out which data is active/inactive
-        var fieldDataActive = dataArray.filter(data => data.active == 'checked')
-        var fieldDataInActive = dataArray.filter(data => data.active == 'unchecked')
 
-        // remove the active attribute
-        fieldDataActive.forEach(object => {
-            delete object['active'];
-            delete object['id'];
-        });
-        fieldDataInActive.forEach(object => {
-            delete object['active'];
-            delete object['id'];
-        });
+        // filter out which data is active/inactive
+        var fieldDataActive = Array.from(dataArray.filter(data => data.active == 'checked'));
+        var fieldDataInActive = Array.from(dataArray.filter(data => data.active == 'unchecked'));
 
         // update data in the chart objects directly:
         rcChart.data.datasets[fieldIdx].data = fieldDataActive;
@@ -475,12 +473,26 @@
         // update export page variables
         updateExportVariables()
 
-        // update residualChart
-        console.log('got to redraw residual chart')
-        console.log(residualData[0].data)
+        // update residual chart
+        for (var seg = 0; seg < rcParam.length; seg++) {
+            var dataArray_residual = Object.keys(fielddatacsv.toggle_point).map((id, index) => {
+                return {
+                    id: id,
+                    x: calc_residual_percent(Object.values(fielddatacsv.stage)[index], Object.values(fielddatacsv.discharge)[index], rcParam[seg].const, rcParam[seg].exp, rcParam[seg].offset),
+                    y: Object.values(fielddatacsv.stage)[index],
+                    active: Object.values(fielddatacsv.toggle_point)[index],
+                }
+            });
 
-        let newSegPlotData = residualData[0].data.map(item => ({ x: item[1], y: item[0] })).slice(1,-1);
-        updateResidualChart(newSegPlotData, 0)
+            // filter out which data is active/inactive
+            var fieldDataActive_residual = Array.from(dataArray_residual.filter(data => data.active == 'checked'));
+
+            // filter out data that is not within the segment bounds
+            fieldDataActive_residual = fieldDataActive_residual.filter(item => ( item.y >= rcParam[seg].seg_bounds[0][0] && item.y <= rcParam[seg].seg_bounds[1][0]));
+
+            let newSegPlotData = fieldDataActive_residual.map(item => ({ x: item.x, y: item.y }));
+            updateResidualChart(newSegPlotData, seg)
+        }
     }
 
     /* -------------------------------------------------------------------------------------------------------------------------------------------
@@ -1233,8 +1245,8 @@
                                                 for (var j in residualData[seg].data){
                                                     if (residualData[seg].data[j][0] == fielddatacsv.stage[idx]){
                                                         q_model = residualData[seg].data[j][1]
-                                                        h_model = Math.exp(1/rcParam[seg - 1].exp * Math.log(context.parsed.x / rcParam[seg - 1].const)) + rcParam[seg - 1].offset
-                                                        r_percent = -residualData[seg].data[j][2]
+                                                        h_model = calc_h_model(context.parsed.x, rcParam[seg - 1].const, rcParam[seg - 1].exp, rcParam[seg - 1].offset)
+                                                        r_percent = calc_residual_percent(context.parsed.y, context.parsed.x, rcParam[seg - 1].const, rcParam[seg - 1].exp, rcParam[seg - 1].offset)
                                                         r_volumetric = r_percent/100 * context.parsed.x
                                                     }
                                                 }
@@ -1397,6 +1409,9 @@
         },
         options: {
             maintainAspectRatio: false,
+            animation: {
+                duration: 0
+            },
             scales: {
                 x: {
                     title: {
@@ -1471,14 +1486,10 @@
     for (let i = 2; i < residualData.length; i++) {
         var residualLabel = residualData[i]['label']
         var colorLabel = pallet[i]
-        var residualChartData = residualData[i]['data'].map(item => ({ x: item[2], y: item[0] })).slice(1, -1);
         addResidualPlot(residualData, residualLabel, colorLabel)
     };
 
-
-    console.log(fielddatacsv)
     updateChartFromGlobal();
-
 
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
     C.3) FORMS
