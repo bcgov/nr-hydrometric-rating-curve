@@ -33,6 +33,10 @@
                                     </div>
                                     <label class="form-label" style="margin-top:15px; font-size:11.5px">load data</label>
                                     {{form.csv_upload}}
+
+                                    <small class="text-small">
+                                        *csv format only, download sample file here: <a href="{% static 'sample_data/sample_data.csv' %}" download>sample_data.csv</a>
+                                    </small>
                                 </div>
                                 <div class="form-group">
                                     <button class="btn btn-primary btn-block" style="background-color: #6c747e !important; border-color: #FFFFFF;" type="submit" id="enter-data-button" value="submit"><small>load</small></button>

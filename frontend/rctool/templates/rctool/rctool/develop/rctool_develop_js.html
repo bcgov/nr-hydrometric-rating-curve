@@ -250,7 +250,8 @@
             };
 
             // update residual chart
-            updateResidualChart(newSegData, idx)
+            let newSegPlotData = newSegData.map(item => ({ x: item[2], y: item[0] })).slice(1,-1);
+            updateResidualChart(newSegPlotData, idx)
 
             idx++;
 
@@ -312,6 +313,7 @@
             }
         }
         updateChartSegments()
+        updateFieldData()
 
         // redraw chart with updated lines
         rcChart.update();
@@ -375,15 +377,10 @@
         }
     }
 
-
-
-    function updateResidualChart(newResData, r_idx) {
-        var newResidualChartData = newResData.map(item => ({ x: item[2], y: item[0] })).slice(1,-1);
+    function updateResidualChart(newResidualChartData, r_idx) {
         residualChart.data.datasets[r_idx].data = newResidualChartData;
         residualChart.update();
-
     };
-
 
     /* -------------------------------------------------------------------------------------------------------------------------------------------
     B.1) USER INPUT - HIDE / USE DATA POINTS
@@ -399,8 +396,6 @@
     };
       
     function togglePoint(idx, checked) {
-        var rowIndex = idx
-
         if (checked == true){
             // set point to checked now
             fielddatacsv.toggle_point[idx] = 'checked';
@@ -409,6 +404,25 @@
             fielddatacsv.toggle_point[idx] = 'unchecked';
         }
 
+        // update field data in the plot
+        updateFieldData()
+    }
+
+    function calc_q_model(h, c, exp, offset) {
+        return c * (h - offset) ** exp;
+    }
+
+    function calc_h_model(q, c, exp, offset) {
+        return Math.exp(1/exp * Math.log(q / c)) + offset
+    }
+
+    function calc_residual_percent(h, q, c, exp, offset) {
+        var q_model = calc_q_model(h, c, exp, offset)
+        return 100 * (q - q_model) / q
+    }
+    
+
+    function updateFieldData() {
         // redraw field data in the plot, but do not call autofit (it will update when the user hits that button)
         var datasetIndices = Object.keys(rcChart.data.datasets)
         var fieldIdx = null;
@@ -430,23 +444,14 @@
                 id: id,
                 x: Object.values(fielddatacsv.discharge)[index],
                 y: Object.values(fielddatacsv.stage)[index],
-                active: Object.values(fielddatacsv.toggle_point)[index]
+                active: Object.values(fielddatacsv.toggle_point)[index],
             }
         });
 
-        // filter out which data is active/inactive
-        var fieldDataActive = dataArray.filter(data => data.active == 'checked')
-        var fieldDataInActive = dataArray.filter(data => data.active == 'unchecked')
 
-        // remove the active attribute
-        fieldDataActive.forEach(object => {
-            delete object['active'];
-            delete object['id'];
-        });
-        fieldDataInActive.forEach(object => {
-            delete object['active'];
-            delete object['id'];
-        });
+        // filter out which data is active/inactive
+        var fieldDataActive = Array.from(dataArray.filter(data => data.active == 'checked'));
+        var fieldDataInActive = Array.from(dataArray.filter(data => data.active == 'unchecked'));
 
         // update data in the chart objects directly:
         rcChart.data.datasets[fieldIdx].data = fieldDataActive;
@@ -468,6 +473,27 @@
 
         // update export page variables
         updateExportVariables()
+
+        // update residual chart
+        for (var seg = 0; seg < rcParam.length; seg++) {
+            var dataArray_residual = Object.keys(fielddatacsv.toggle_point).map((id, index) => {
+                return {
+                    id: id,
+                    x: calc_residual_percent(Object.values(fielddatacsv.stage)[index], Object.values(fielddatacsv.discharge)[index], rcParam[seg].const, rcParam[seg].exp, rcParam[seg].offset),
+                    y: Object.values(fielddatacsv.stage)[index],
+                    active: Object.values(fielddatacsv.toggle_point)[index],
+                }
+            });
+
+            // filter out which data is active/inactive
+            var fieldDataActive_residual = Array.from(dataArray_residual.filter(data => data.active == 'checked'));
+
+            // filter out data that is not within the segment bounds
+            fieldDataActive_residual = fieldDataActive_residual.filter(item => ( item.y >= rcParam[seg].seg_bounds[0][0] && item.y <= rcParam[seg].seg_bounds[1][0]));
+
+            let newSegPlotData = fieldDataActive_residual.map(item => ({ x: item.x, y: item.y }));
+            updateResidualChart(newSegPlotData, seg)
+        }
     }
 
     /* -------------------------------------------------------------------------------------------------------------------------------------------
@@ -707,9 +733,9 @@
                         this.min = this.max;
                         this.max = temp;
                     }
-                    let minPowerData = Math.log((this.min)) / Math.log(rcParam[0].exp);
-                    let maxPowerData = Math.log((this.max)) / Math.log(rcParam[0].exp);
-
+                    let exponent = rcParam[0].exp;
+                    let minPowerData = Math.log((this.min)) / Math.log(exponent);
+                    let maxPowerData = Math.log((this.max)) / Math.log(exponent);
 
                     if (minPowerData > maxPowerData) {
                         minPowerData = -minPowerData;
@@ -727,14 +753,13 @@
                     while ((power > minPower) && (power >= minPowerData)) {
                         power -= powerStep;
                     }
-
                     // add ticks from smallest to largest
                     while (power <= (maxPower + powerStep)) {
-                        let tickVal = Math.pow(rcParam[0].exp, power);
+                        let tickVal = Math.pow(exponent, power);
 
                         // if exponent is less than 1, take negative
-                        if (rcParam[0].exp < 1) {
-                            tickVal = Math.pow(rcParam[0].exp, -power);
+                        if (exponent < 1) {
+                            tickVal = Math.pow(exponent, -power);
                         }
 
                         // adjust to use rounded tick value based on log10 of value
@@ -748,8 +773,23 @@
                         power += powerStep;
                     }
 
-                    this.min = ticks[0].value;
-                    this.max = ticks[ticks.length - 1].value;
+                    try {
+                        this.min = ticks[0].value;
+                        this.max = ticks[ticks.length - 1].value;
+                    } catch (e) {
+                        // show temporary ticks:
+                        this.min = 0;
+                        this.max = 1;
+
+                        // display warning/error message on top
+                        updateWarningMessage(
+                            {'error_title': 'Error', 'error_text': 'No ticks found for logarithmic scale! Please adjust the exponent of the rating curve by changing your endpoints or triggering the autofit again!'},
+                            {'title':'none', 'url':'none'}
+                        );
+
+                        // force non-log scale:
+                        document.getElementById("toggle_axis_format").checked = false;
+                    }
                     return ticks;
                 }
 
@@ -805,9 +845,44 @@
                     modifierKey: 'shift',
                 }
             };
+            console.log('disallowed zoom and pan!')
+            // TODO: allow zoom and pan for logarithmic scale
+            // disallow zoom and pan:
+            rcChart.options.plugins.zoom = {
+                zoom: {
+                    wheel: {
+                        enabled: false
+                    },
+                    pinch: {
+                        enabled: false
+                    },
+                    mode: 'xy'
+                },
+                pan: {
+                    enabled: false,
+                    modifierKey: 'shift',
+                }
+            };
         }
         else {
             axisFormat = 'linear';
+
+            // allow zoom and pan:
+            rcChart.options.plugins.zoom = {
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                    },
+                    pinch: {
+                        enabled: true,
+                    },
+                    mode: 'xy'
+                },
+                pan: {
+                    enabled: true,
+                    modifierKey: 'shift',
+                }
+            };
 
             // allow zoom and pan:
             rcChart.options.plugins.zoom = {
@@ -1206,8 +1281,8 @@
                                                 for (var j in residualData[seg].data){
                                                     if (residualData[seg].data[j][0] == fielddatacsv.stage[idx]){
                                                         q_model = residualData[seg].data[j][1]
-                                                        h_model = Math.exp(1/rcParam[seg - 1].exp * Math.log(context.parsed.x / rcParam[seg - 1].const)) + rcParam[seg - 1].offset
-                                                        r_percent = -residualData[seg].data[j][2]
+                                                        h_model = calc_h_model(context.parsed.x, rcParam[seg - 1].const, rcParam[seg - 1].exp, rcParam[seg - 1].offset)
+                                                        r_percent = calc_residual_percent(context.parsed.y, context.parsed.x, rcParam[seg - 1].const, rcParam[seg - 1].exp, rcParam[seg - 1].offset)
                                                         r_volumetric = r_percent/100 * context.parsed.x
                                                     }
                                                 }
@@ -1216,6 +1291,7 @@
                                             label.push(['Q:       ' + context.parsed.x.toFixed(2) + ' m³/s']);
                                             label.push(['date:    ' + fielddatacsv.datetime[idx]]);
                                             if (h_model !== null) {
+                                                label.push(['H shift: ' + (h_model - context.parsed.y).toFixed(2) + ' m'])
                                                 label.push(['H shift: ' + (h_model - context.parsed.y).toFixed(2) + ' m'])
                                             }
                                             //if (q_model !== null){
@@ -1346,6 +1422,7 @@
 
     toggleAxisFormat(document.getElementById("toggle_axis_format").checked)
 
+
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
     C.2) REGRESSION RESIDUAL CHART
     ------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -1369,6 +1446,9 @@
         },
         options: {
             maintainAspectRatio: false,
+            animation: {
+                duration: 0
+            },
             scales: {
                 x: {
                     title: {
@@ -1385,6 +1465,74 @@
                     beginAtZero: false
                 }
 
+            },
+            plugins: {
+                zoom: {
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                        },
+                        pinch: {
+                            enabled: true,
+                        },
+                        mode: 'xy'
+                    },
+                    pan: {
+                        enabled: true,
+                        modifierKey: 'shift',
+                    },
+                },
+                tooltip: {
+                    bodyFont: {
+                        size: 10,
+                        family: 'monospace',
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.dataset.label || '';
+
+                            // find discharge from rating curve for this stage
+                            let h_field = context.parsed.y
+                            let r_percent = context.parsed.x
+
+                            label = [];
+                            for (var seg = 0; seg < rcParam.length; seg++){
+                                let q_model = calc_q_model(h_field, rcParam[seg].const, rcParam[seg].exp, rcParam[seg].offset)
+                                // r_percent = 100 * (q_field - q_model) / q_field
+                                let q_field = - 100 * q_model / (r_percent - 100)
+                                let q_field_rounded = Math.round(q_field * 100) / 100
+                                let h_model = calc_h_model(q_field, rcParam[seg].const, rcParam[seg].exp, rcParam[seg].offset)
+                                let r_volumetric = r_percent/100 * q_field
+
+                                for (var idx in fielddatacsv.stage) {
+                                    if (fielddatacsv.stage[idx] == h_field && fielddatacsv.discharge[idx] == q_field_rounded) {
+                                        label.push(['H:       ' + context.parsed.y.toFixed(2) + ' m']);
+                                        label.push(['Q:       ' + context.parsed.x.toFixed(2) + ' m³/s']);
+                                        label.push(['date:    ' + fielddatacsv.datetime[idx]]);
+                                        if (h_model !== null) {
+                                            label.push(['H shift: ' + (h_model - context.parsed.y).toFixed(2) + ' m'])
+                                        }
+                                        //if (q_model !== null){
+                                        //    label.push(['Q model: ' + q_model.toFixed(2) + ' m³/s']);
+                                        //}
+                                        if (r_percent !== null){
+                                            if (r_percent > 0){
+                                                // show + sign for positive values
+                                                label.push(['R%:      +' + r_percent.toFixed(2) + ' %']);
+                                                label.push(['R volume:+' + r_volumetric.toFixed(2) + ' m3/s']);
+                                            } else {
+                                                label.push(['R%:      ' + r_percent.toFixed(2) + ' %']);
+                                                label.push(['R volume:' + r_volumetric.toFixed(2) + ' m3/s']);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            return label;
+                        },
+                    }
+                },
             },
             tooltips: {
                 mode: 'index',
@@ -1426,10 +1574,10 @@
     for (let i = 2; i < residualData.length; i++) {
         var residualLabel = residualData[i]['label']
         var colorLabel = pallet[i]
-        var residualChartData = residualData[i]['data'].map(item => ({ x: item[2], y: item[0] })).slice(1, -1);
         addResidualPlot(residualData, residualLabel, colorLabel)
     };
 
+    updateChartFromGlobal();
 
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
     C.3) FORMS
@@ -1493,6 +1641,8 @@
             warningDiv.style.display = "block";
             document.getElementById('error-title').innerHTML = warningDict['error_title'];
             document.getElementById('error-text').innerHTML = warningDict['error_text'];
+            document.getElementById('error-link').setAttribute('href', '');
+            document.getElementById('error-link-text').innerHTML = '';
         };
     };
 
