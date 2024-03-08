@@ -1502,10 +1502,9 @@
                                 let q_model = calc_q_model(h_field, rcParam[seg].const, rcParam[seg].exp, rcParam[seg].offset)
                                 // r_percent = 100 * (q_field - q_model) / q_field
                                 let q_field = - 100 * q_model / (r_percent - 100)
-                                let q_field_rounded = Math.round(q_field * 100) / 100
+                                let q_field_rounded = Math.round(q_field * 1000) / 1000
                                 let h_model = calc_h_model(q_field, rcParam[seg].const, rcParam[seg].exp, rcParam[seg].offset)
                                 let r_volumetric = r_percent/100 * q_field
-
                                 for (var idx in fielddatacsv.stage) {
                                     if (fielddatacsv.stage[idx] == h_field && fielddatacsv.discharge[idx] == q_field_rounded) {
                                         label.push(['H:       ' + h_field.toFixed(2) + ' m']);
@@ -1527,6 +1526,8 @@
                                                 label.push(['R volume:' + r_volumetric.toFixed(2) + ' m3/s']);
                                             }
                                         }
+                                        // break loop
+                                        break;
                                     }
                                 }
                             }
