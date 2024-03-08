@@ -1457,14 +1457,20 @@
                         display: true,
                         text: 'Q rated vs Q field (% change)'
                     },
-                    beginAtZero: false
+                    beginAtZero: true,
+                    // make zero tick thicker:
+                    grid: {
+                        color: function(context) {
+                            return context.tick.value === 0 ? 'black' : 'rgba(0,0,0,0.1)';
+                        },
+                    },
                 },
                 y: {
                     title: {
                         display: true,
                         text: 'Stage H (m)'
                     },
-                    beginAtZero: false
+                    beginAtZero: false,
                 }
 
             },
