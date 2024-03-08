@@ -1295,12 +1295,12 @@
                                                     }
                                                 }
                                             }
-                                            label.push(['H:       ' + h_field.toFixed(2) + ' m']);
-                                            label.push(['Q:       ' + q_field.toFixed(2) + ' m³/s']);
+                                            label.push(['H:       ' + h_field.toFixed(3) + ' m']);
+                                            label.push(['Q:       ' + q_field.toFixed(3) + ' m³/s']);
                                             label.push(['date:    ' + fielddatacsv.datetime[idx]]);
                                             if (h_model !== null) {
-                                                label.push(['H shift: ' + (h_model - h_field).toFixed(2) + ' m'])
-                                                label.push(['H shift: ' + (h_model - h_field).toFixed(2) + ' m'])
+                                                label.push(['H shift: ' + (h_model - h_field).toFixed(3) + ' m'])
+                                                label.push(['H shift: ' + (h_model - h_field).toFixed(3) + ' m'])
                                             }
                                             //if (q_model !== null){
                                             //    label.push(['Q model: ' + q_model.toFixed(2) + ' m³/s']);
@@ -1519,15 +1519,12 @@
                                 let r_volumetric = r_percent/100 * q_field
                                 for (var idx in fielddatacsv.stage) {
                                     if (fielddatacsv.stage[idx] == h_field && fielddatacsv.discharge[idx] == q_field_rounded) {
-                                        label.push(['H:       ' + h_field.toFixed(2) + ' m']);
-                                        label.push(['Q:       ' + q_field.toFixed(2) + ' m³/s']);
+                                        label.push(['H:       ' + h_field.toFixed(3) + ' m']);
+                                        label.push(['Q:       ' + q_field.toFixed(3) + ' m³/s']);
                                         label.push(['date:    ' + fielddatacsv.datetime[idx]]);
                                         if (h_model !== null) {
-                                            label.push(['H shift: ' + (h_model - h_field).toFixed(2) + ' m'])
+                                            label.push(['H shift: ' + (h_model - h_field).toFixed(3) + ' m'])
                                         }
-                                        //if (q_model !== null){
-                                        //    label.push(['Q model: ' + q_model.toFixed(2) + ' m³/s']);
-                                        //}
                                         if (r_percent !== null){
                                             if (r_percent > 0){
                                                 // show + sign for positive values
@@ -1538,7 +1535,6 @@
                                                 label.push(['R volume:' + r_volumetric.toFixed(2) + ' m3/s']);
                                             }
                                         }
-                                        // break loop
                                         break;
                                     }
                                 }
