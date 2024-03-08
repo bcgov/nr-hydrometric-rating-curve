@@ -1,5 +1,4 @@
-﻿"Station notes: approx offset 0.170m, breakpoint at 0.386m, surveyed on 2023-07-26",,,,
-datetime,stage,discharge,Uncertainty,Comments
+﻿datetime,stage,discharge,Uncertainty,Comments
 2024-01-26 11:16:54,0.502,0.341,0.064,"clear, control submerged, wading MMT 24 panels, max 6.4%"
 2023-10-13 11:30:00,0.198,0.005,,"clear, section control, Volumetric bucket MMT x3"
 2023-08-14 14:07:05,0.184,0.002,0.17,"clear, section control, wading MMT 13 panels, min spacing, max 18.9%"
@@ -16,3 +15,10 @@ datetime,stage,discharge,Uncertainty,Comments
 2017-11-27 13:30:00,0.54,0.46,0.72,"clear, control submerged, wading MMT 25 panels, max 6.3%"
 2014-12-19 11:30:00,0.498,0.288,,"clear, control submerged, wading MMT 21 panels, max 10.5%"
 2014-02-17 13:00:00,0.658,1.06,0.16,"clear, control submerged, panels unknown"
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
