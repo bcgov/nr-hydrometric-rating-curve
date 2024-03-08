@@ -215,6 +215,13 @@
             rcDict = {'data':rcData, 'parameters':rcParam};
 
             // 3.5 Update HTML equation parameters and user input fields
+            // make sure all bounds for Q are at minimum 0.001:
+            if (rcParam[0].seg_bounds[0][1] < 0.001) {
+                rcParam[0].seg_bounds[0][1] = 0.001;
+            }
+            if (rcParam[0].seg_bounds[1][1] < 0.001) {
+                rcParam[0].seg_bounds[1][1] = 0.001;
+            }
             var segNumStr = String(idx + 1);
             document.getElementById('segment' + segNumStr + '-const').innerHTML = C.toFixed(2);
             document.getElementById('segment' + segNumStr + '-exp').innerHTML = slope.toFixed(2);
@@ -501,7 +508,6 @@
     ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
     function setEndpoints(segEP, pointEP, coordEP, valueEP) {
-
         // 1. COLLECT AND INITIATE PARAMETERS
         if (rcParam.length == 2) {
             var newSegBounds = [rcParam[0].seg_bounds, rcParam[1].seg_bounds];
@@ -1289,12 +1295,12 @@
                                                     }
                                                 }
                                             }
-                                            label.push(['H:       ' + h_field.toFixed(2) + ' m']);
-                                            label.push(['Q:       ' + q_field.toFixed(2) + ' m³/s']);
+                                            label.push(['H:       ' + h_field.toFixed(3) + ' m']);
+                                            label.push(['Q:       ' + q_field.toFixed(3) + ' m³/s']);
                                             label.push(['date:    ' + fielddatacsv.datetime[idx]]);
                                             if (h_model !== null) {
-                                                label.push(['H shift: ' + (h_model - h_field).toFixed(2) + ' m'])
-                                                label.push(['H shift: ' + (h_model - h_field).toFixed(2) + ' m'])
+                                                label.push(['H shift: ' + (h_model - h_field).toFixed(3) + ' m'])
+                                                label.push(['H shift: ' + (h_model - h_field).toFixed(3) + ' m'])
                                             }
                                             //if (q_model !== null){
                                             //    label.push(['Q model: ' + q_model.toFixed(2) + ' m³/s']);
@@ -1457,14 +1463,20 @@
                         display: true,
                         text: 'Q rated vs Q field (% change)'
                     },
-                    beginAtZero: false
+                    beginAtZero: true,
+                    // make zero tick thicker:
+                    grid: {
+                        color: function(context) {
+                            return context.tick.value === 0 ? 'black' : 'rgba(0,0,0,0.1)';
+                        },
+                    },
                 },
                 y: {
                     title: {
                         display: true,
                         text: 'Stage H (m)'
                     },
-                    beginAtZero: false
+                    beginAtZero: false,
                 }
 
             },
@@ -1502,21 +1514,17 @@
                                 let q_model = calc_q_model(h_field, rcParam[seg].const, rcParam[seg].exp, rcParam[seg].offset)
                                 // r_percent = 100 * (q_field - q_model) / q_field
                                 let q_field = - 100 * q_model / (r_percent - 100)
-                                let q_field_rounded = Math.round(q_field * 100) / 100
+                                let q_field_rounded = Math.round(q_field * 1000) / 1000
                                 let h_model = calc_h_model(q_field, rcParam[seg].const, rcParam[seg].exp, rcParam[seg].offset)
                                 let r_volumetric = r_percent/100 * q_field
-
                                 for (var idx in fielddatacsv.stage) {
                                     if (fielddatacsv.stage[idx] == h_field && fielddatacsv.discharge[idx] == q_field_rounded) {
-                                        label.push(['H:       ' + h_field.toFixed(2) + ' m']);
-                                        label.push(['Q:       ' + q_field.toFixed(2) + ' m³/s']);
+                                        label.push(['H:       ' + h_field.toFixed(3) + ' m']);
+                                        label.push(['Q:       ' + q_field.toFixed(3) + ' m³/s']);
                                         label.push(['date:    ' + fielddatacsv.datetime[idx]]);
                                         if (h_model !== null) {
-                                            label.push(['H shift: ' + (h_model - h_field).toFixed(2) + ' m'])
+                                            label.push(['H shift: ' + (h_model - h_field).toFixed(3) + ' m'])
                                         }
-                                        //if (q_model !== null){
-                                        //    label.push(['Q model: ' + q_model.toFixed(2) + ' m³/s']);
-                                        //}
                                         if (r_percent !== null){
                                             if (r_percent > 0){
                                                 // show + sign for positive values
@@ -1527,6 +1535,7 @@
                                                 label.push(['R volume:' + r_volumetric.toFixed(2) + ' m3/s']);
                                             }
                                         }
+                                        break;
                                     }
                                 }
                             }

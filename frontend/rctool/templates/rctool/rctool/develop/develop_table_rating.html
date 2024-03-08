@@ -9,8 +9,8 @@
                 <th class="table-cell">coefficient</th>
                 <th class="table-cell">exponent</th>
                 <th class="table-cell">offset</th>
-                <th class="table-cell">start point</th>
-                <th class="table-cell">end point</th>
+                <th class="table-cell">start point<br>(stage in m)</th>
+                <th class="table-cell">end point<br>(stage in m)</th>
                 <th class="table-cell">RMSE</th>
                 <th class="table-cell"><p id="comparison-header", style="color:#9ec1a3">compare</p></th>
             </tr>
@@ -40,32 +40,52 @@
             {% endif %}
             <tr class="table-row" id="add-compare">
                 <td class="table-cell">
-                    <input type="text" class="form-control form-control-sm" name="compareLabel" id="compareLabel" style="font-size: 12px; min-width: 40px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    <input type="text" class="form-control form-control-sm" name="compareLabel" id="compareLabel" style="font-size: 12px; min-width: 45px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
                 </td>
                 <td class="table-cell">
-                    <input type="number" step="0.01" class="form-control form-control-sm" name="compareConst" id="compareConst" style="font-size: 12px; width: 40px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    <input type="text" inputmode="numeric"  step="0.01" class="form-control form-control-sm" name="compareConst" id="compareConst" style="font-size: 12px; width: 45px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
                 </td>
                 <td class="table-cell">
-                    <input type="number" step="0.01" class="form-control form-control-sm" name="compareExp" id="compareExp" style="font-size: 12px; width: 40px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    <input type="text" inputmode="numeric"  step="0.01" class="form-control form-control-sm" name="compareExp" id="compareExp" style="font-size: 12px; width: 45px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
                 </td>
                 <td class="table-cell">
-                    <input type="number" step="0.01" class="form-control form-control-sm" name="compareOffset" id="compareOffset" style="font-size: 12px; width: 40px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    <input type="text" inputmode="numeric"  step="0.01" class="form-control form-control-sm" name="compareOffset" id="compareOffset" style="font-size: 12px; width: 45px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
                 </td>
                 <td class="table-cell">
-                    <input type="number" step="0.01" class="form-control form-control-sm" name="compareStartBounds" id="compareStartBounds" style="font-size: 12px; width: 40px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    <input type="text" inputmode="numeric"  step="0.01" class="form-control form-control-sm" name="compareStartBounds" id="compareStartBounds" style="font-size: 12px; width: 45px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
                 </td>
                 <td class="table-cell">
-                    <input type="number" step="0.01" class="form-control form-control-sm" name="compareEndBounds" id="compareEndBounds" style="font-size: 12px; width: 40px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
+                    <input type="text" inputmode="numeric"  step="0.01" class="form-control form-control-sm" name="compareEndBounds" id="compareEndBounds" style="font-size: 12px; width: 45px" placeholder="" onchange="" onkeydown="return event.key != 'Enter';">
                 </td>
                 <td class="table-cell">
-                    <p id="compare-curve-rmse" style="width: 40px;"></p>
+                    <p id="compare-curve-rmse" style="width: 45px;"></p>
                 </td>
                 <td class="table-cell" style="display:block">
                     <div id="add-curve">
-                        <button class="btn btn-success btn-sm" type="submit" href="#" onclick="addCompareCurve()" style="background-color: #9ec1a3 !important; border-color: #FFFFFF; width: 40px;" onkeydown="return event.key != 'Enter';"> + </button>
+                        <button 
+                            class="btn btn-success btn-sm" 
+                            type="submit" 
+                            href="#" 
+                            onclick="addCompareCurve()" 
+                            style="background-color: #9ec1a3 !important; border-color: #FFFFFF; width: 45px;" 
+                            onkeydown="return event.key != 'Enter';" 
+                            data-toggle="tooltip" 
+                            data-placement="top" 
+                            title="Input rating equation parameters to compare rating curves"
+                        > + </button>
                     </div>
                     <div id="remove-curve" style="display:none">
-                        <button class="btn btn-success btn-sm" type="submit" href="#" onclick="removeCompareCurve()" style="background-color: #CC6677 !important; border-color: #FFFFFF; width: 40px;" onkeydown="return event.key != 'Enter';"> - </button>
+                        <button 
+                            class="btn btn-success btn-sm" 
+                            type="submit" 
+                            href="#" 
+                            onclick="removeCompareCurve()" 
+                            style="background-color: #CC6677 !important; border-color: #FFFFFF; width: 45px;" 
+                            onkeydown="return event.key != 'Enter';"
+                            data-toggle="tooltip" 
+                            data-placement="top" 
+                            title="Remove rating curve from chart"
+                        > - </button>
                     </div>
                 </td>
             </tr>

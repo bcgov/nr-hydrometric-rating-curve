@@ -32,7 +32,8 @@
                                         <div class="carousel-item active" style="margin-bottom:15px;">
                                             <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Let's Get Started</h6>
                                             <small class='text-description'>
-                                                Hydrometric field work involves regular visits to a hydrometric gauging station across a range of streamflow conditions. A hydrometric gauging station typically consists of a stage sensor and benchmarks or reference gauge from which water level is referenced. Each field visit should collect three basic observations: reference of stage, measurement of discharge, and control observation. These observations are required to convert stage into discharge through the development of a hydrometric rating curve.  (Note: Safety should be considered when collecting these observations, do not attempt any unsafe field work!). The Hydrometric Rating Application (HydRA) is a tool for developing hydrometric rating curves based on observations of stage and discharge.  HydRA allows the user to upload observations of stage and discharge and automatically fits a rating curve.  Users can adjust the fit according to onsite observations. It then generates a rating equation that can be used for converting stage datasets into discharge.
+                                                Hydrometric field work involves regular visits to a hydrometric gauging station across a range of streamflow conditions. A hydrometric gauging station typically consists of a stage sensor and benchmarks or reference gauge from which water level is referenced. Each field visit should collect three basic observations: reference of stage, measurement of discharge, and control observation. These observations are required to convert stage into discharge through the development of a hydrometric rating curve.  (Note: Safety should be considered when collecting these observations, do not attempt any unsafe field work!). 
+                                                </br><br>The Hydrometric Rating Application (HydRA) is a tool for developing hydrometric rating curves based on observations of stage and discharge.  HydRA allows the user to upload observations of stage and discharge and automatically fits a rating curve.  Users can adjust the fit according to onsite observations. It then generates a rating equation that can be used for converting stage datasets into discharge.
                                             </small>
                                             <div style="display: flex; align-items: center; justify-content: center;">
                                                 <img src="{% static 'images/intro00.jpg' %}" class="slideshow-figure">
@@ -50,22 +51,6 @@
                                                 <img src="{% static 'images/intro01_graph.jpg' %}" class="slideshow-figure" style="height: 200px;">
                                             </div>
                                         </div>
-                                        <!-- <div class="carousel-item" style="margin-bottom:20px;">
-                                            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Lets Get Started</h6>
-                                            <small class='text-description'>
-                                            To begin, we'll cover some basic concepts and development strategies. A hydrometric rating curve describes the relation between 
-                                            </small>
-                                            <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="Water height above the river bed.">stage</a>
-                                            <small class='text-description'> and </small>
-                                            <a class='key-term' href="#" data-toggle="tooltip" data-placement="top" title="Volume of water transported in a certain amount of time."> discharge</a>
-                                            <small class='text-description'>
-                                            . An example of this curve is the orange line in the figure below, where the x-axis is discharge and the y-axis is stage. A rating curve will appear as a straight line on log scale axes.
-                                            </small>
-                                            <div style="display: flex; align-items: center; justify-content: center;">
-                                                <img src="{% static 'images/fig_rating_curve_example_slide1.JPG' %}" class="slideshow-figure">
-                                            </div>
-                                            <small class="text-medium">Hover over any bolded terms for a brief description and navigate slides with the arrows.</small>
-                                        </div> -->
                                         <div class="carousel-item">
                                             <div class="text-box" style="margin-bottom:20px;">
                                                 <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">The Rating Equation</h6>
@@ -112,7 +97,7 @@
                                         <div class="carousel-item" style="margin-bottom:15px;">
                                             <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Performance</h6>
                                             <div style="margin-bottom:5px;">
-                                                <small class='text-description'>Some common metrics used to assess the performance of hydrometric rating curves are included below:</small>
+                                                <small class='text-description'>The HydRa app offers the option to auto-fit rating curves by finding the best equation describing the uploaded field data. This is done by calculating common metrics used to assess the performance of hydrometric rating curves:</small>
                                             </div>
                                             <div style="margin-bottom:15px;">
                                                 <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="The square root of the mean of the squared differences between observed and predicted values.">Root Mean Square Error</a><br>
@@ -130,6 +115,18 @@
                                             </div>
                                             <div style="display: flex; align-items: center; justify-content: center;">
                                                 <img src="{% static 'images/fig_rating_error_legend.JPG' %}" class="slideshow-figure">
+                                            </div>
+                                        </div>
+                                        <div class="carousel-item" style="margin-bottom:25px;">
+                                            <div class="col-md-8 mx-auto">
+                                                <div class="text-box" style="margin-bottom: 20px;">
+                                                    <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Data Review</h6>
+                                                    <small class='text-description'>HydRA is designed to ONLY produce a rating curve equation and summary report.  The complete hydrometric data review process should include the review, correction, and grading of the input stage dataset and the output discharge dataset according to the <a href="https://www2.gov.bc.ca/assets/gov/environment/natural-resource-stewardship/nr-laws-policy/risc/man_bc_hydrometric_stand_v2.pdf" target="_blank">2018 BC Hydrometric RISC standards</a>
+                                                    </br></br>Applying RISC grades to the output discharge dataset may depend on the performance of the rating equation in predicting discharge or the range of discharge observed during the rating period.  All hydrometric data should be reviewed and graded by a qualified professional according to the RISC standards.  For more information, consult RISC Table 1-1.</small>
+                                                </div>
+                                                <div>
+                                                    <a class="btn btn-secondary btn-block custom-button" style="background-color: #6c747e !important; border-color: #FFFFFF;" href="{% url 'rctool_import' 1 %}"><small>Get Started</small></a>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="carousel-item" style="margin-bottom:25px;">

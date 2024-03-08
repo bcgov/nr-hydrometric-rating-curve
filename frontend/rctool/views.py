@@ -42,7 +42,9 @@ def rctool_import(request, tour_request_id=0):
     if request.method == "POST":
 
         if request.POST.get("tour_request_status_id"):
-            context["tour_request_status_id"] = request.POST.get("tour_request_status_id")
+            context["tour_request_status_id"] = request.POST.get(
+                "tour_request_status_id"
+            )
 
         # If user is on the tour, upload test data
         if tour_request_id == 1:
@@ -544,9 +546,9 @@ def rctool_develop_initialize(request):
         "headings": field_df_raw.columns.values,
         "data": field_df_raw.values.tolist(),
     }
-    context[
-        "n_seg"
-    ] = 1  # this will be initialized as None and make the user enter a value, for now use 2
+    context["n_seg"] = (
+        1  # this will be initialized as None and make the user enter a value, for now use 2
+    )
     # init_offsets = [None, None] # initialize at None, then optimize in autofit
     init_offsets = [0.0, 0.0]
     context["breakpoint1"] = None
@@ -739,45 +741,100 @@ def rctool_export_initialize(request):
 def create_export_rc_img(field_data, rc_data):
     # Initialize and prepaire
     pallet = ["#80B7AB", "#CC6677", "#003466"]
-    df_field = field_data.copy()
     df_field_active = field_data[field_data["toggle_point"] == "checked"]
     df_field_inactive = field_data[field_data["toggle_point"] == "unchecked"]
+
+    exponent = rc_data["parameters"][0]["exp"]
+
+    log_base_n = lambda x: np.log(x) / np.log(exponent)
+
     # create plot obj
     fig1, ax1 = plt.subplots(figsize=(11, 5), num=1)
     # scales etc
-    plt.yscale("log")
-    plt.xscale("log")
+    plt.yscale("function", functions=(log_base_n, np.exp))
+    plt.xscale("function", functions=(log_base_n, np.exp))
     ax1.grid(True, which="both")
     ax1.set_ylabel("Stage H (m)")
     ax1.set_xlabel("Discharge Q (m$^3$/s)")
     ax1.xaxis.set_major_formatter(ticker.FormatStrFormatter("%.3f"))
-    ax1.xaxis.set_major_locator(plt.MaxNLocator(10))
-    ax1.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.3f"))
+
+    # set bounds to field data plus/minus 10%
+    x_min = df_field_active["discharge"].min() * 0.9
+    x_max = df_field_active["discharge"].max() * 1.1
+    y_min = df_field_active["stage"].min() * 0.9
+    y_max = df_field_active["stage"].max() * 1.1
+
+    if x_min > rc_data["parameters"][0]["seg_bounds"][0][1]:
+        x_min = rc_data["parameters"][0]["seg_bounds"][0][1] * 0.9
+    if x_max < rc_data["parameters"][0]["seg_bounds"][1][1]:
+        x_max = rc_data["parameters"][0]["seg_bounds"][1][1] * 1.1
+    if y_min > rc_data["parameters"][0]["seg_bounds"][0][0]:
+        y_min = rc_data["parameters"][0]["seg_bounds"][0][0] * 0.9
+    if y_max < rc_data["parameters"][0]["seg_bounds"][1][0]:
+        y_max = rc_data["parameters"][0]["seg_bounds"][1][0] * 1.1
+
+    # if there are two segments, check if the bounds are within the field data
+    if len(rc_data["parameters"]) > 1:
+        if x_min > rc_data["parameters"][1]["seg_bounds"][0][1]:
+            x_min = rc_data["parameters"][1]["seg_bounds"][0][1] * 0.9
+        if x_max < rc_data["parameters"][1]["seg_bounds"][1][1]:
+            x_max = rc_data["parameters"][1]["seg_bounds"][1][1] * 1.1
+        if y_min > rc_data["parameters"][1]["seg_bounds"][0][0]:
+            y_min = rc_data["parameters"][1]["seg_bounds"][0][0] * 0.9
+        if y_max < rc_data["parameters"][1]["seg_bounds"][1][0]:
+            y_max = rc_data["parameters"][1]["seg_bounds"][1][0] * 1.1
+    ax1.set_xlim(x_min, x_max)
+    ax1.set_ylim(y_min, y_max)
+
+    # spread ticks evenly, calculate with log_base_n
+    ticks_x = np.array(
+        [
+            exponent**i
+            for i in np.linspace(
+                math.floor(log_base_n(x_min)),
+                math.ceil(log_base_n(x_max)),
+                10,
+            )
+        ]
+    )
+    # if there are too few y ticks, add more
+    ticks_y = np.array(
+        [
+            exponent**i
+            for i in np.linspace(
+                math.floor(log_base_n(y_min)),
+                math.ceil(log_base_n(y_max)),
+                10,
+            )
+        ]
+    )
+    ax1.xaxis.set_major_locator(ticker.FixedLocator(ticks_x))
+    ax1.yaxis.set_major_locator(ticker.FixedLocator(ticks_y))
+
     ax1.plot(
-        df_field_active["stage"],
         df_field_active["discharge"],
+        df_field_active["stage"],
         "o",
         color=pallet[0],
         label="field data",
     )
-    if len(df_field_inactive["stage"]) > 0:
-        ax1.plot(
-            df_field_inactive["stage"],
-            df_field_inactive["discharge"],
-            "o",
-            color="#661100",
-            edgecolors='#661100',
-            label="field data (inactive)",
-            facecolors='none',
-        )
+    # add data points for inactive
+    ax1.plot(
+        df_field_inactive["discharge"],
+        df_field_inactive["stage"],
+        "o",
+        color="#661100",
+        label="field data (inactive)",
+    )
+
     i = 1
     for segment_parameters in rc_data["parameters"]:
         seg_bounds = segment_parameters["seg_bounds"]
         y_seg = [seg_bounds[0][0], seg_bounds[1][0]]
         x_seg = [seg_bounds[0][1], seg_bounds[1][1]]
         ax1.plot(
-            y_seg,
             x_seg,
+            y_seg,
             ls="-",
             color=pallet[i],
             label=segment_parameters["label"],
@@ -794,14 +851,21 @@ def create_export_rc_img(field_data, rc_data):
 
 
 def create_export_res_img(field_data, rc_data):
-    res_df = field_data.copy()
+    df_field_active = field_data[field_data["toggle_point"] == "checked"]
     # create plot obj
     fig2, ax2 = plt.subplots(figsize=(11, 5), num=2)
     ax2.grid(True, which="both")
     # scales etc
     ax2.set_ylabel("Stage H (m)")
     ax2.set_xlabel("Discharge Error (%)")
-    ax2.plot(res_df["Discharge Error (%)"], res_df["stage"], "o", color="#80B7AB")
+    ax2.plot(
+        df_field_active["Discharge Error (%)"],
+        df_field_active["stage"],
+        "o",
+        color="#80B7AB",
+    )
+    # make 0 line thick
+    ax2.axvline(x=0, color="black", lw=0.5)
     tmpfile2 = io.BytesIO()
     fig2.savefig(tmpfile2)
     b64_2 = base64.b64encode(tmpfile2.getvalue()).decode()
@@ -846,7 +910,7 @@ def export_calculate_discharge_error(field_data_output_df, rc_output_dict):
         loc=4, column="Discharge Error (%)", value=error_perc_dat
     )
 
-    field_data_output_df["Discharge Error (%)"] = field_data_output_df[
+    field_data_output_df["Discharge Error (%)"] = -field_data_output_df[
         "Discharge Error (%)"
     ].round(decimals=2)
     return field_data_output_df
@@ -854,25 +918,29 @@ def export_calculate_discharge_error(field_data_output_df, rc_output_dict):
 
 def rctool_export_output(request):
     context = {}
-    floatlist = lambda strlist : list(map(float, strlist.split(',')))
+    floatlist = lambda strlist: list(map(float, strlist.split(",")))
 
     if request.method == "POST":
         export_form = export_rc_data(request.POST)
 
-        field_data_output_json = request.POST.get('fielddatacsv-to-output')
+        field_data_output_json = request.POST.get("fielddatacsv-to-output")
         field_data_output_df = pd.read_json(field_data_output_json)
         field_data_output_dict = field_data_output_df.to_dict()
-        field_data_output_df['datetime'] = field_data_output_df['datetime'].apply(str)
-        field_data_output_df['stage'] = field_data_output_df['stage'].round(decimals=3)
-        field_data_output_df['discharge'] = field_data_output_df['discharge'].round(decimals=3)
-        field_data_output_df['uncertainty'] = field_data_output_df['uncertainty'].round(decimals=3)
+        field_data_output_df["datetime"] = field_data_output_df["datetime"].apply(str)
+        field_data_output_df["stage"] = field_data_output_df["stage"].round(decimals=3)
+        field_data_output_df["discharge"] = field_data_output_df["discharge"].round(
+            decimals=3
+        )
+        field_data_output_df["uncertainty"] = field_data_output_df["uncertainty"].round(
+            decimals=3
+        )
         field_data_values = field_data_output_df.values.tolist()
 
-        rc_output = request.POST.get('rc_output')
+        rc_output = request.POST.get("rc_output")
         rc_output_dict = ast.literal_eval(rc_output)
-        
-        rc_output_dict['data'].append(field_data_values)
-        rc_output_df = pd.DataFrame.from_dict(rc_output_dict, orient='index')
+
+        rc_output_dict["data"].append(field_data_values)
+        rc_output_df = pd.DataFrame.from_dict(rc_output_dict, orient="index")
         rc_output_df = rc_output_df.transpose()
 
         if export_form.is_valid():
@@ -880,145 +948,209 @@ def rctool_export_output(request):
             fname = export_form.cleaned_data["export_filename"]
             if export_form.cleaned_data["export_station_name"]:
                 stname = export_form.cleaned_data["export_station_name"]
-                context['stname'] = stname
+                context["stname"] = stname
             if export_form.cleaned_data["export_comments"]:
                 comments = export_form.cleaned_data["export_comments"]
-                context['comments'] = comments
+                context["comments"] = comments
             if export_form.cleaned_data["export_date_applic_init"]:
                 app_period_start = export_form.cleaned_data["export_date_applic_init"]
-                context['app_period_start'] = app_period_start
+                context["app_period_start"] = app_period_start
             if export_form.cleaned_data["export_date_applic_final"]:
                 app_period_end = export_form.cleaned_data["export_date_applic_final"]
-                context['app_period_end'] = app_period_end
-            
-            context['current_time'] = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
-            context['rc'] = rc_output_dict
+                context["app_period_end"] = app_period_end
+
+            context["current_time"] = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
+            context["rc"] = rc_output_dict
 
             # Round output parameters
-            for idx in range(len(rc_output_dict['parameters'])):
-                rc_output_dict['parameters'][idx]['const'] = round(rc_output_dict['parameters'][idx]['const'], 4)
-                rc_output_dict['parameters'][idx]['exp'] = round(rc_output_dict['parameters'][idx]['exp'], 4)
+            for idx in range(len(rc_output_dict["parameters"])):
+                rc_output_dict["parameters"][idx]["const"] = round(
+                    rc_output_dict["parameters"][idx]["const"], 4
+                )
+                rc_output_dict["parameters"][idx]["exp"] = round(
+                    rc_output_dict["parameters"][idx]["exp"], 4
+                )
 
             # Format offset values for output equation
-            offsets = [0,0]
-            offsets[0] = rc_output_dict['parameters'][0]['offset']
-            if len(rc_output_dict['parameters']) > 1:
-                offsets[1] = rc_output_dict['parameters'][1]['offset']
-            context['offsets'] = offsets
+            offsets = [0, 0]
+            offsets[0] = rc_output_dict["parameters"][0]["offset"]
+            if len(rc_output_dict["parameters"]) > 1:
+                offsets[1] = rc_output_dict["parameters"][1]["offset"]
+            context["offsets"] = offsets
             # Format equation according to + or - offset (ie. if user enters a - offset, the equation will show (H + offset) instead of (H -- offset))
             offsets_val = offsets.copy()
             if offsets_val[0] < 0:
-                offsets_val[0] = ' + ' + str(abs(offsets_val[0]))
-                context['offsets_val'] = offsets_val
+                offsets_val[0] = " + " + str(abs(offsets_val[0]))
+                context["offsets_val"] = offsets_val
             else:
-                offsets_val[0] = ' - ' + str(abs(offsets_val[0]))
-                context['offsets_val'] = offsets_val
+                offsets_val[0] = " - " + str(abs(offsets_val[0]))
+                context["offsets_val"] = offsets_val
             if offsets_val[1] < 0:
-                offsets_val[1] = ' + ' + str(abs(offsets_val[1]))
-                context['offsets_val'] = offsets_val
+                offsets_val[1] = " + " + str(abs(offsets_val[1]))
+                context["offsets_val"] = offsets_val
             else:
-                offsets_val[1] = ' - ' + str(abs(offsets_val[1]))
-                context['offsets_val'] = offsets_val
+                offsets_val[1] = " - " + str(abs(offsets_val[1]))
+                context["offsets_val"] = offsets_val
 
-
-            if ftype == 'session settings':
+            if ftype == "session settings":
                 try:
                     # output HTTP response
                     response = HttpResponse(
-                        content_type='text/csv',
-                        headers={'Content-Disposition': 'attachment; filename="{0}.dat"'.format(fname)},
+                        content_type="text/csv",
+                        headers={
+                            "Content-Disposition": 'attachment; filename="{0}.dat"'.format(
+                                fname
+                            )
+                        },
                     )
                     # write to csv
                     rc_output_df.to_csv(path_or_buf=response)
                     return response
                 except Exception as e:
-                    messages.error(request,"Unable to process request. "+repr(e))
-            
-            elif ftype == 'session results (csv)':
+                    messages.error(request, "Unable to process request. " + repr(e))
+
+            elif ftype == "session results (csv)":
                 export_calculate_discharge_error(field_data_output_df, rc_output_dict)
-                field_table = {'headings': field_data_output_df.columns.values, 'data': field_data_output_df.values.tolist()}
-                
-                context['rc_img'] = create_export_rc_img(field_data_output_df, rc_output_dict)
-                context['res_img'] = create_export_res_img(field_data_output_df, rc_output_dict)
+                field_table = {
+                    "headings": field_data_output_df.columns.values,
+                    "data": field_data_output_df.values.tolist(),
+                }
+
+                context["rc_img"] = create_export_rc_img(
+                    field_data_output_df, rc_output_dict
+                )
+                context["res_img"] = create_export_res_img(
+                    field_data_output_df, rc_output_dict
+                )
 
                 # create paramters df for output
                 param_to_df = []
-                for segment_parameter in rc_output_dict['parameters']:
-                    segment_parameter['stage initial'] = segment_parameter['seg_bounds'][0][0]
-                    segment_parameter['stage final'] = segment_parameter['seg_bounds'][1][0]
-                    segment_parameter.pop('seg_bounds')
+                for segment_parameter in rc_output_dict["parameters"]:
+                    segment_parameter["stage initial"] = segment_parameter[
+                        "seg_bounds"
+                    ][0][0]
+                    segment_parameter["stage final"] = segment_parameter["seg_bounds"][
+                        1
+                    ][0]
+                    segment_parameter.pop("seg_bounds")
                     param_to_df.append(segment_parameter)
                 df_parameters = pd.DataFrame(param_to_df)
-                parameter_table = {'headings': df_parameters.columns.values, 'data': df_parameters.values.tolist()}
+                parameter_table = {
+                    "headings": df_parameters.columns.values,
+                    "data": df_parameters.values.tolist(),
+                }
 
                 # prepaire as output
 
                 try:
                     # output HTTP response
                     response = HttpResponse(
-                        content_type='text/csv',
-                        headers={'Content-Disposition': 'attachment; filename="{0}.csv"'.format(fname)},
+                        content_type="text/csv",
+                        headers={
+                            "Content-Disposition": 'attachment; filename="{0}.csv"'.format(
+                                fname
+                            )
+                        },
                     )
                     # # write to csv
                     # rc_output_df.to_csv(path_or_buf=response)
                     # return response
 
                     writer = csv.writer(response)
-                    writer.writerow(['RATING CURVE OUTPUT SUMMARY'])
-                    writer.writerow(['date created (utc): {}'.format(context['current_time'])])
+                    writer.writerow(["RATING CURVE OUTPUT SUMMARY"])
+                    writer.writerow(
+                        ["date created (utc): {}".format(context["current_time"])]
+                    )
                     if export_form.cleaned_data["export_station_name"]:
-                        writer.writerow(['location: {}'.format(export_form.cleaned_data["export_station_name"])])
-                    if export_form.cleaned_data["export_date_applic_init"] and export_form.cleaned_data["export_date_applic_final"]:
-                        writer.writerow(['period of applicability: {0} to {1}'.format(context['app_period_start'], context['app_period_end'])])
+                        writer.writerow(
+                            [
+                                "location: {}".format(
+                                    export_form.cleaned_data["export_station_name"]
+                                )
+                            ]
+                        )
+                    if (
+                        export_form.cleaned_data["export_date_applic_init"]
+                        and export_form.cleaned_data["export_date_applic_final"]
+                    ):
+                        writer.writerow(
+                            [
+                                "period of applicability: {0} to {1}".format(
+                                    context["app_period_start"],
+                                    context["app_period_end"],
+                                )
+                            ]
+                        )
                     if export_form.cleaned_data["export_comments"]:
-                        writer.writerow(['comments: {}'.format(export_form.cleaned_data["export_comments"])])
-                    writer.writerow('')
-                    writer.writerow(['MODEL PARAMETERS'])
-                    writer.writerow(parameter_table['headings'])
-                    for row in parameter_table['data']:
+                        writer.writerow(
+                            [
+                                "comments: {}".format(
+                                    export_form.cleaned_data["export_comments"]
+                                )
+                            ]
+                        )
+                    writer.writerow("")
+                    writer.writerow(["MODEL PARAMETERS"])
+                    writer.writerow(parameter_table["headings"])
+                    for row in parameter_table["data"]:
                         writer.writerow(row)
-                    writer.writerow('')
-                    writer.writerow(['MODEL INPUTS'])
-                    writer.writerow(field_table['headings'])
-                    for row in field_table['data']:
+                    writer.writerow("")
+                    writer.writerow(["MODEL INPUTS"])
+                    writer.writerow(field_table["headings"])
+                    for row in field_table["data"]:
                         writer.writerow(row)
 
                     return response
 
                 except Exception as e:
-                    messages.error(request,"Unable to process request. "+repr(e))
+                    messages.error(request, "Unable to process request. " + repr(e))
 
             else:
                 try:
                     # write to pdf option selected
 
                     # calculate residuals for output figures and table
-                    field_data_output_df = export_calculate_discharge_error(field_data_output_df, rc_output_dict)
-                    context['field_table'] = {'headings': field_data_output_df.columns.values, 'data': field_data_output_df.values.tolist()}
+                    field_data_output_df = export_calculate_discharge_error(
+                        field_data_output_df, rc_output_dict
+                    )
+                    context["field_table"] = {
+                        "headings": field_data_output_df.columns.values,
+                        "data": field_data_output_df.values.tolist(),
+                    }
                     # create figure for pdf
-                    context['rc_img'] = create_export_rc_img(field_data_output_df, rc_output_dict)
-                    context['res_img'] = create_export_res_img(field_data_output_df, rc_output_dict)
+                    context["rc_img"] = create_export_rc_img(
+                        field_data_output_df, rc_output_dict
+                    )
+                    context["res_img"] = create_export_res_img(
+                        field_data_output_df, rc_output_dict
+                    )
 
                     # prepaire and return output pdf
-                    template = get_template('rctool/rctool/export/rctool_export_pdf.html')
+                    template = get_template(
+                        "rctool/rctool/export/rctool_export_pdf.html"
+                    )
                     html = template.render(context)
-                    pdf = render_to_pdf('rctool/rctool/export/rctool_export_pdf.html', context)
-                    response = HttpResponse(pdf, content_type='application/pdf')
-                    content = "inline; filename='%s'" %(fname)
+                    pdf = render_to_pdf(
+                        "rctool/rctool/export/rctool_export_pdf.html", context
+                    )
+                    response = HttpResponse(pdf, content_type="application/pdf")
+                    content = "inline; filename='%s'" % (fname)
                     download = request.GET.get("download")
                     if download:
-                        content = "attachment; filename='%s.pdf'" %(fname)
-                    response['Content-Disposition'] = content
+                        content = "attachment; filename='%s.pdf'" % (fname)
+                    response["Content-Disposition"] = content
 
                     return response
 
                 except Exception as e:
-                    messages.error(request,"Unable to process request. "+repr(e))
+                    messages.error(request, "Unable to process request. " + repr(e))
 
-            context['form'] = export_form
-            context['rc_output'] = rc_output
+            context["form"] = export_form
+            context["rc_output"] = rc_output
 
             return render(request, "rctool/rctool/export/rctool_export.html", context)
     else:
         export_form = export_rc_data()
-    return render(request, "rctool/rctool/export/rctool_export.html", {"form":export_form})
+    return render(
+        request, "rctool/rctool/export/rctool_export.html", {"form": export_form}
+    )
