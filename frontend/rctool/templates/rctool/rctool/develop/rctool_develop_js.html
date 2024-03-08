@@ -1,11 +1,13 @@
 {% load static %} {% load custom_tags %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3ZSTk7kajkaj4D292NLuduDCO1c/NT8Id+jE58KYLKT7hXnbtryGmMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js" integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.2.3/dist/chartjs-plugin-dragdata.min.js"></script>
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/chart.umd.js' %}"></script>
+<script src="{% static 'js/hammer.min.js' %}"></script>
+<script src="{% static 'js/chartjs-plugin-zoom.min.js' %}"></script>
+<script src="{% static 'js/chartjs-plugin-dragdata.min.js' %}"></script>
+
 
 <script>
-
     /* -------------------------------------------------------------------------------------------------------------------------------------------
     A) INITIALIZE  & COLLECT DATA FROM VIEW
     ----------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -283,7 +285,7 @@
 
         // update status
         // displayStatus('<strong>status: </strong> manual adjustment applied...')
-        toggleAxisFormat(document.getElementById("toggle_axis_format").checked)
+        {% comment %} toggleAxisFormat(document.getElementById("toggle_axis_format").checked) {% endcomment %}
 
     };
 
@@ -396,10 +398,8 @@
     // PLEASE NOTE: - PAGE RELOADS IF USER HITS ENTER
     //              - There is a custom tag that reformats the table data, we dont need this I'll take it out
 
-    function toggleZoom(checked) {
-        if (checked == true) {
-            rcChart.resetZoom();
-        }
+    function toggleZoom() {
+        rcChart.resetZoom();
     };
       
     function togglePoint(idx, checked) {
@@ -699,215 +699,184 @@
     B.6) USER INPUT - TOGGLE AXIS FORMAT
     ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    function toggleAxisFormat(checked) {
+    function toggleAxisFormat_log10() {
+        axisFormat = 'logarithmic';
+        toggleAxisFormat(axisFormat)
+    }
+    function toggleAxisFormat_linear() {
+        axisFormat = 'linear';
+        toggleAxisFormat(axisFormat)
+    }
 
-        if (checked) {
+    function toggleAxisFormat_logbase() {
+        let exponent = rcParam[0].exp;
 
-            let exponent = rcParam[0].exp;
-
-            function logBase(n) {
-                Math.log(n) / Math.log(rcParam[0].exp);
-            }
-
-
-            // define new logarithmic scale based on this exponent
-            class LogBaseAxis extends Chart.Scale {
-                constructor(cfg) {
-                    super(cfg);
-                    this._startValue = undefined;
-                    this._valueRange = 0;
-                }
-
-                parse(raw, index) {
-                    const value = Chart.LinearScale.prototype.parse.apply(this, [raw, index]);
-                    return isFinite(value) && value > 0 ? value : null;
-                }
-
-                determineDataLimits() {
-                    const {
-                    min,
-                    max
-                    } = this.getMinMax(true);
-                    this.min = isFinite(min) ? Math.max(0, min) : null;
-                    this.max = isFinite(max) ? Math.max(0, max) : null;
-                }
-
-                buildTicks() {
-                    const ticks = [];
-                    if (this.min > this.max) {
-                        let temp = this.min;
-                        this.min = this.max;
-                        this.max = temp;
-                    }
-                    let exponent = rcParam[0].exp;
-                    let minPowerData = Math.log((this.min)) / Math.log(exponent);
-                    let maxPowerData = Math.log((this.max)) / Math.log(exponent);
-
-                    if (minPowerData > maxPowerData) {
-                        minPowerData = -minPowerData;
-                        maxPowerData = -maxPowerData;
-                    }
-
-                    let minPower = Math.floor(minPowerData);
-                    let maxPower = Math.ceil(maxPowerData);
-
-                    let numTicks = maxPower - minPower + 1;
-                    let powerStep = (maxPower - minPower) / 10;
-
-                    // iteratively find lowest power to plot a tick for
-                    let power = maxPower;
-                    while ((power > minPower) && (power >= minPowerData)) {
-                        power -= powerStep;
-                    }
-                    // add ticks from smallest to largest
-                    while (power <= (maxPower + powerStep)) {
-                        let tickVal = Math.pow(exponent, power);
-
-                        // if exponent is less than 1, take negative
-                        if (exponent < 1) {
-                            tickVal = Math.pow(exponent, -power);
-                        }
-
-                        // adjust to use rounded tick value based on log10 of value
-                        let roundMag = -Math.floor(Math.log10(tickVal));
-                        let tickValRound = Math.round(tickVal * 10 ** (roundMag + 2)) / 10 ** (roundMag + 2);
-
-                        ticks.push({
-                            value: tickValRound
-                        });
-
-                        power += powerStep;
-                    }
-
-                    try {
-                        this.min = ticks[0].value;
-                        this.max = ticks[ticks.length - 1].value;
-                    } catch (e) {
-                        // show temporary ticks:
-                        this.min = 0;
-                        this.max = 1;
-
-                        // display warning/error message on top
-                        updateWarningMessage(
-                            {'error_title': 'Error', 'error_text': 'No ticks found for logarithmic scale! Please adjust the exponent of the rating curve by changing your endpoints or triggering the autofit again!'},
-                            {'title':'none', 'url':'none'}
-                        );
-
-                        // force non-log scale:
-                        document.getElementById("toggle_axis_format").checked = false;
-                    }
-                    return ticks;
-                }
-
-                /**
-                    * @protected
-                    */
-                configure() {
-                    const start = this.min;
-
-                    super.configure();
-
-                    this._startValue = Math.log(start) / Math.log(rcParam[0].exp);
-                    this._valueRange = Math.log(this.max) / Math.log(rcParam[0].exp) - Math.log(start) / Math.log(rcParam[0].exp);
-                }
-
-                getPixelForValue(value) {
-                    if (value === undefined || value === 0) {
-                    value = this.min;
-                    }
-
-                    return this.getPixelForDecimal(value === this.min ? 0 :
-                    (Math.log(value) / Math.log(rcParam[0].exp) - this._startValue) / this._valueRange);
-                }
-
-                getValueForPixel(pixel) {
-                    const decimal = this.getDecimalForPixel(pixel);
-                    return Math.pow(rcParam[0].exp, this._startValue + decimal * this._valueRange);
-                }
-            }
-
-            LogBaseAxis.id = 'logBase';
-            LogBaseAxis.defaults = {};
-
-            Chart.register(LogBaseAxis);
-
-            axisFormat = 'logBase';
-
-            console.log('disallowed zoom and pan!')
-            // TODO: allow zoom and pan for logarithmic scale
-            // disallow zoom and pan:
-            rcChart.options.plugins.zoom = {
-                zoom: {
-                    wheel: {
-                        enabled: false
-                    },
-                    pinch: {
-                        enabled: false
-                    },
-                    mode: 'xy'
-                },
-                pan: {
-                    enabled: false,
-                    modifierKey: 'shift',
-                }
-            };
-            console.log('disallowed zoom and pan!')
-            // TODO: allow zoom and pan for logarithmic scale
-            // disallow zoom and pan:
-            rcChart.options.plugins.zoom = {
-                zoom: {
-                    wheel: {
-                        enabled: false
-                    },
-                    pinch: {
-                        enabled: false
-                    },
-                    mode: 'xy'
-                },
-                pan: {
-                    enabled: false,
-                    modifierKey: 'shift',
-                }
-            };
+        function logBase(n) {
+            Math.log(n) / Math.log(rcParam[0].exp);
         }
-        else {
-            axisFormat = 'linear';
 
-            // allow zoom and pan:
-            rcChart.options.plugins.zoom = {
-                zoom: {
-                    wheel: {
-                        enabled: true,
-                    },
-                    pinch: {
-                        enabled: true,
-                    },
-                    mode: 'xy'
-                },
-                pan: {
-                    enabled: true,
-                    modifierKey: 'shift',
-                }
-            };
+        // define new logarithmic scale based on this exponent
+        class LogBaseAxis extends Chart.Scale {
+            constructor(cfg) {
+                super(cfg);
+                this._startValue = undefined;
+                this._valueRange = 0;
+            }
 
-            // allow zoom and pan:
-            rcChart.options.plugins.zoom = {
-                zoom: {
-                    wheel: {
-                        enabled: true,
-                    },
-                    pinch: {
-                        enabled: true,
-                    },
-                    mode: 'xy'
-                },
-                pan: {
-                    enabled: true,
-                    modifierKey: 'shift',
+            parse(raw, index) {
+                const value = Chart.LinearScale.prototype.parse.apply(this, [raw, index]);
+                return isFinite(value) && value > 0 ? value : null;
+            }
+
+            determineDataLimits() {
+                const {
+                min,
+                max
+                } = this.getMinMax(true);
+                this.min = isFinite(min) ? Math.max(0, min) : null;
+                this.max = isFinite(max) ? Math.max(0, max) : null;
+
+                this.handleTickRangeOptions();
+            }
+
+            handleTickRangeOptions() {
+                const {minDefined, maxDefined} = this.getUserBounds();
+                let min = this.min;
+                let max = this.max;
+            
+                const setMin = v => (min = minDefined ? min : v);
+                const setMax = v => (max = maxDefined ? max : v);
+            
+                if (min === max) {
+                  if (min <= 0) { // includes null
+                    setMin(1);
+                    setMax(3);
+                  } else {
+                    setMin(changeExponent(min, -1));
+                    setMax(changeExponent(max, +1));
+                  }
                 }
-            };
+                if (min <= 0) {
+                    setMin(changeExponent(max, -1));
+                }
+                if (max <= 0) {
+                    setMax(changeExponent(min, +1));
+                }
+            
+                this.min = min;
+                this.max = max;
+            }
+
+            buildTicks() {
+                const ticks = [];
+                if (this.min > this.max) {
+                    let temp = this.min;
+                    this.min = this.max;
+                    this.max = temp;
+                }
+                let exponent = rcParam[0].exp;
+                let minPowerData = Math.log((this.min)) / Math.log(exponent);
+                let maxPowerData = Math.log((this.max)) / Math.log(exponent);
+
+                if (minPowerData > maxPowerData) {
+                    minPowerData = -minPowerData;
+                    maxPowerData = -maxPowerData;
+                }
+
+                let minPower = Math.floor(minPowerData);
+                let maxPower = Math.ceil(maxPowerData);
+
+                let numTicks = maxPower - minPower + 1;
+                let powerStep = (maxPower - minPower) / 10;
+
+                // iteratively find lowest power to plot a tick for
+                let power = maxPower;
+                while ((power > minPower) && (power >= minPowerData)) {
+                    power -= powerStep;
+                }
+                // add ticks from smallest to largest
+                while (power <= (maxPower + powerStep)) {
+                    let tickVal = Math.pow(exponent, power);
+
+                    // if exponent is less than 1, take negative
+                    if (exponent < 1) {
+                        tickVal = Math.pow(exponent, -power);
+                    }
+
+                    // adjust to use rounded tick value based on log10 of value
+                    let roundMag = -Math.floor(Math.log10(tickVal));
+                    let tickValRound = Math.round(tickVal * 10 ** (roundMag + 2)) / 10 ** (roundMag + 2);
+
+                    ticks.push({
+                        value: tickValRound
+                    });
+
+                    power += powerStep;
+                }
+
+                try {
+                    this.min = ticks[0].value;
+                    this.max = ticks[ticks.length - 1].value;
+                } catch (e) {
+                    // show temporary ticks:
+                    this.min = 0;
+                    this.max = 1;
+
+                    // display warning/error message on top
+                    updateWarningMessage(
+                        {'error_title': 'Error', 'error_text': 'No ticks found for logarithmic scale! Please adjust the exponent of the rating curve by changing your endpoints or triggering the autofit again!'},
+                        {'title':'none', 'url':'none'}
+                    );
+
+                    // force non-log scale:
+                    document.getElementById("toggle_axis_format").checked = false;
+                }
+                return ticks;
+            }
+
+            /**
+                * @protected
+                */
+            configure() {
+                const start = this.min;
+
+                super.configure();
+
+                this._startValue = Math.log(start) / Math.log(rcParam[0].exp);
+                this._valueRange = Math.log(this.max) / Math.log(rcParam[0].exp) - Math.log(start) / Math.log(rcParam[0].exp);
+            }
+
+            getPixelForValue(value) {
+                if (value === undefined || value === 0) {
+                    value = this.min;
+                }
+                if (value === null || isNaN(value)) {
+                  return NaN;
+                }
+
+                return this.getPixelForDecimal(value === this.min ? 0 :
+                (Math.log(value) / Math.log(rcParam[0].exp) - this._startValue) / this._valueRange);
+            }
+
+            getValueForPixel(pixel) {
+                const decimal = this.getDecimalForPixel(pixel);
+                return Math.pow(rcParam[0].exp, this._startValue + decimal * this._valueRange);
+            }
+        }
+
+        LogBaseAxis.id = 'LogBaseAxis';
+        LogBaseAxis.defaults = {
+            ...Chart.Scale.defaults,
         };
 
+        Chart.register(LogBaseAxis);
+
+        axisFormat = 'LogBaseAxis';
+
+        toggleAxisFormat(axisFormat)
+    }
+
+    function toggleAxisFormat(axisFormat) {
         rcChart.options.scales = {
                 x: {
                     type: axisFormat,
@@ -930,8 +899,53 @@
                 },
         };
 
-        rcChart.update();
+        if (axisFormat == 'LogBaseAxis') {
+            rcChart.options.plugins.zoom = {
+                zoom: {
+                    wheel: {
+                        enabled: false,
+                    },
+                    pinch: {
+                        enabled: false
+                    },
+                    mode: 'xy'
+                },
+                pan: {
+                    enabled: false,
+                    modifierKey: 'shift',
+                }
+            };
+        } else {
+            rcChart.options.plugins.zoom = {
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                    },
+                    pinch: {
+                        enabled: true
+                    },
+                    mode: 'xy'
+                },
+                pan: {
+                    enabled: true,
+                    modifierKey: 'shift',
+                }
+            };
+        }
 
+
+        // make button primary
+        document.getElementById("toggleAxisFormat_linear").classList.remove('btn-primary');
+        document.getElementById("toggleAxisFormat_log10").classList.remove('btn-primary');
+        document.getElementById("toggleAxisFormat_logbase").classList.remove('btn-primary');
+        if (axisFormat == 'linear') {
+            document.getElementById("toggleAxisFormat_linear").classList.add('btn-primary');
+        } else if (axisFormat == 'logarithmic') {
+            document.getElementById("toggleAxisFormat_log10").classList.add('btn-primary');
+        } else if (axisFormat == 'LogBaseAxis') {
+            document.getElementById("toggleAxisFormat_logbase").classList.add('btn-primary');
+        }
+        rcChart.update();
     };
 
 
@@ -1060,6 +1074,7 @@
                     },
                     // beginAtZero: true,
                     max: getMaxQ(rcParam),
+                    min: 0
                 },
                 y: {
                     type: axisFormat,
@@ -1069,6 +1084,7 @@
                     },
                     // beginAtZero: true,
                     max: getMaxH(rcParam),
+                    min: 0
                 }
             }
         rcChart.update();
@@ -1136,22 +1152,22 @@
                     },
                 },
                 zoom: {
-                  zoom: {
-                    wheel: {
-                      enabled: true,
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                        },
+                        pinch: {
+                            enabled: true
+                        },
+                        mode: 'xy',
+                        onZoom: function ({chart}) {
+                            // get axis type
+                        }
                     },
-                    pinch: {
-                      enabled: true
-                    },
-                    mode: 'xy',
-                    onZoom: function ({chart}) {
-                        document.getElementById("toggle_zoom").checked = false;
+                    pan: {
+                            enabled: true,
+                            modifierKey: 'shift',
                     }
-                  },
-                pan: {
-                        enabled: true,
-                        modifierKey: 'shift',
-                    },
                 },
                 // using the plugin https://github.com/chrispahm/chartjs-plugin-dragdata
                 dragData: {
@@ -1271,6 +1287,15 @@
                             let h_field = context.parsed.y
                             let q_field = context.parsed.x
 
+                            // check if point already has a label, somehow there is a rare case of duplication
+                            for (var idx in context.dataset.data){
+                                if (context.dataset.data[idx].x == q_field && context.dataset.data[idx].y == h_field){
+                                    if (idx < context.dataIndex){
+                                        return []
+                                    }
+                                }
+                            }
+
                             // get toggle state of toggle_detailed_tooltip
                             var toggle_detailed_tooltip = document.getElementById("toggle_detailed_tooltip").checked
 
@@ -1292,6 +1317,7 @@
                                                         h_model = calc_h_model(q_field, rcParam[seg - 1].const, rcParam[seg - 1].exp, rcParam[seg - 1].offset)
                                                         r_percent = calc_residual_percent(h_field, q_field, rcParam[seg - 1].const, rcParam[seg - 1].exp, rcParam[seg - 1].offset)
                                                         r_volumetric = r_percent/100 * q_field
+                                                        break;
                                                     }
                                                 }
                                             }
@@ -1302,9 +1328,6 @@
                                                 label.push(['H shift: ' + (h_model - h_field).toFixed(3) + ' m'])
                                                 label.push(['H shift: ' + (h_model - h_field).toFixed(3) + ' m'])
                                             }
-                                            //if (q_model !== null){
-                                            //    label.push(['Q model: ' + q_model.toFixed(2) + ' m³/s']);
-                                            //}
                                             if (r_percent !== null){
                                                 if (r_percent > 0){
                                                     // show + sign for positive values
@@ -1315,6 +1338,7 @@
                                                     label.push(['R volume:' + r_volumetric.toFixed(2) + ' m3/s']);
                                                 }
                                             }
+                                            break;
                                         }
                                     }
                                 } else {
@@ -1428,7 +1452,7 @@
     // MAKE SURE SCALE HAS BEEN UPDATED
     updateMaxBounds(rcParam);
 
-    toggleAxisFormat(document.getElementById("toggle_axis_format").checked)
+    {% comment %} toggleAxisFormat(document.getElementById("toggle_axis_format").checked) {% endcomment %}
 
 
     /*-----------------------------------------------------------------------------------------------------------------------------------------------
@@ -1509,7 +1533,17 @@
                             let h_field = context.parsed.y
                             let r_percent = context.parsed.x
 
+                            // check if point already has a label, somehow there is a rare case of duplication
+                            for (var idx in context.dataset.data){
+                                if (context.dataset.data[idx].x == r_percent && context.dataset.data[idx].y == h_field){
+                                    if (idx < context.dataIndex){
+                                        return []
+                                    }
+                                }
+                            }
                             label = [];
+
+                            let found = false;
                             for (var seg = 0; seg < rcParam.length; seg++){
                                 let q_model = calc_q_model(h_field, rcParam[seg].const, rcParam[seg].exp, rcParam[seg].offset)
                                 // r_percent = 100 * (q_field - q_model) / q_field
@@ -1535,8 +1569,12 @@
                                                 label.push(['R volume:' + r_volumetric.toFixed(2) + ' m3/s']);
                                             }
                                         }
+                                        found = true;
                                         break;
                                     }
+                                }
+                                if (found){
+                                    break;
                                 }
                             }
 

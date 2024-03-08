@@ -105,15 +105,18 @@
                         </div>
                         <div style="display:flex; justify-content:left;">
                             <div id="chart-settings-link" style="display:none; margin:-15px 0px 10px 0px;">
-                                <i class="fa fa-cog" aria-hidden="true" style="color: #A9A9A9; margin-right:4px;"></i>
+                                {% comment %} <i class="fa fa-cog" aria-hidden="true" style="color: #A9A9A9; margin-right:4px;"></i> {% endcomment %}
                                 <a class="chart-settings-text" href="#" onclick="toggleChartSettings()"> display settings</a>
                             </div>
                             <div id="chart-settings" style="display:flex; margin:-10px 0px -5px 0px;">
                                 <div style="margin: 0px;">
-                                    <input type="checkbox" id="toggle_zoom" name="toggle_zoom" onchange="toggleZoom(this.checked)" style="margin: 0px 0px 0px 10px;">
-                                    <label for='toggle_zoom' style="margin: 0px 10px 0px 0px"><p class="text-small">reset zoom</p></label>
-                                    <input type="checkbox" id="toggle_axis_format" name="toggle_axis_format" checked="checked" onchange="toggleAxisFormat(this.checked)" style="margin:0px;">
-                                    <label for='toggle_axis_format' style="margin: 0px 10px 0px 0px"><p class="text-small">logarithmic axis</p></label>
+                                    <button class="btn btn-sm" id="toggleZoom" onclick="toggleZoom()">reset zoom</button>
+                                    <div class="dropdown" style="display:inline-block;">
+                                        <p class="text-small" style="margin:0px 0px -1px 0px;">Axis scale:</p>
+                                        <button class="btn btn-sm" id="toggleAxisFormat_linear" onclick="toggleAxisFormat_linear()">linear</button>
+                                        <button class="btn btn-sm" id="toggleAxisFormat_logbase" onclick="toggleAxisFormat_logbase()">log(exp)</button>
+                                        <button class="btn btn-sm btn-primary" id="toggleAxisFormat_log10" onclick="toggleAxisFormat_log10()">log(10)</button>
+                                    </div>
                                     <input type="checkbox" id="toggle_detailed_tooltip" name="toggle_detailed_tooltip" checked="checked" style="margin:0px;">
                                     <label for='toggle_detailed_tooltip' style="margin: 0px 10px 0px 0px"><p class="text-small">hover info</p></label>
                                 </div>
