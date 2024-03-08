@@ -207,7 +207,9 @@ var developTour = new Tour({
     backdrop: true,
     delay: 750,
     backdropPadding: 10,
+    placement: "auto",
     smartPlacement: true,
+    template: "<div class='popover tour'><div class='arrow'></div><h3 class='popover-title'></h3><div class='popover-content' style='min-width: 250px'></div><div class='popover-navigation'><button class='btn btn-default' data-role='prev'>« Prev</button><span data-role='separator'>|</span><button class='btn btn-default' data-role='next'>Next »</button><button class='btn btn-default' data-role='end'>End tour</button></div></div>",
     onEnd: function (tour) {
             sessionStorage.setItem("tourStatus", false);
             $('#tour_request_status_id').val("1")
