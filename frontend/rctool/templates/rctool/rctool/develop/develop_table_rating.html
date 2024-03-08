@@ -9,8 +9,8 @@
                 <th class="table-cell">coefficient</th>
                 <th class="table-cell">exponent</th>
                 <th class="table-cell">offset</th>
-                <th class="table-cell">start point</th>
-                <th class="table-cell">end point</th>
+                <th class="table-cell">start point<br>(stage in m)</th>
+                <th class="table-cell">end point<br>(stage in m)</th>
                 <th class="table-cell">RMSE</th>
                 <th class="table-cell"><p id="comparison-header", style="color:#9ec1a3">compare</p></th>
             </tr>
@@ -62,10 +62,30 @@
                 </td>
                 <td class="table-cell" style="display:block">
                     <div id="add-curve">
-                        <button class="btn btn-success btn-sm" type="submit" href="#" onclick="addCompareCurve()" style="background-color: #9ec1a3 !important; border-color: #FFFFFF; width: 45px;" onkeydown="return event.key != 'Enter';"> + </button>
+                        <button 
+                            class="btn btn-success btn-sm" 
+                            type="submit" 
+                            href="#" 
+                            onclick="addCompareCurve()" 
+                            style="background-color: #9ec1a3 !important; border-color: #FFFFFF; width: 45px;" 
+                            onkeydown="return event.key != 'Enter';" 
+                            data-toggle="tooltip" 
+                            data-placement="top" 
+                            title="Input rating equation parameters to compare rating curves"
+                        > + </button>
                     </div>
                     <div id="remove-curve" style="display:none">
-                        <button class="btn btn-success btn-sm" type="submit" href="#" onclick="removeCompareCurve()" style="background-color: #CC6677 !important; border-color: #FFFFFF; width: 45px;" onkeydown="return event.key != 'Enter';"> - </button>
+                        <button 
+                            class="btn btn-success btn-sm" 
+                            type="submit" 
+                            href="#" 
+                            onclick="removeCompareCurve()" 
+                            style="background-color: #CC6677 !important; border-color: #FFFFFF; width: 45px;" 
+                            onkeydown="return event.key != 'Enter';"
+                            data-toggle="tooltip" 
+                            data-placement="top" 
+                            title="Remove rating curve from chart"
+                        > - </button>
                     </div>
                 </td>
             </tr>
