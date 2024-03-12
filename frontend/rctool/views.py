@@ -1060,6 +1060,22 @@ def rctool_export_output(request):
                     writer = csv.writer(response)
                     writer.writerow(["RATING CURVE OUTPUT SUMMARY"])
                     writer.writerow(
+                        [
+                            "Note: (see further right)",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "The rating equation was generated using the Hydrometric Rating Application (HydRA), a product of the BC Ministry of Environment and Climate Change.  All input (stage) and output (discharge) datasets including any discrete measurements of stage and discharge must be reviewed and graded according to the provincial hydrometric RISC standards.",
+                        ],
+                    )
+                    writer.writerow(
                         ["date created (utc): {}".format(context["current_time"])]
                     )
                     if export_form.cleaned_data["export_station_name"]:
