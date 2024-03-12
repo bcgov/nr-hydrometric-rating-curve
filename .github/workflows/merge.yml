@@ -1,0 +1,38 @@
+name: Merge
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - ".github/ISSUE_TEMPLATE/*"
+      - "**.md"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  deploys-test:
+    name: TEST Deployments
+    environment: test
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        name: [frontend, rctool]
+        include:
+          - name: frontend
+            file: frontend/openshift.nginx.deploy.yml
+          - name: rctool
+            file: frontend/openshift.deploy.yml
+    steps:
+      - uses: bcgov-nr/action-deployer-openshift@v2.1.0
+        with:
+          file: ${{ matrix.file }}
+          oc_namespace: ${{ secrets.OC_NAMESPACE }}
+          oc_server: ${{ vars.OC_SERVER }}
+          oc_token: ${{ secrets.OC_TOKEN }}
+          overwrite: true
+          parameters:
+            -p ZONE=test -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test
+            -p NAME=${{ github.event.repository.name }}
