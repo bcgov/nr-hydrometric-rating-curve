@@ -1,0 +1,27 @@
+name: PR Validate
+
+on:
+  pull_request:
+    types: [edited, opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-edit-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate PR
+    env:
+      DOMAIN: apps.silver.devops.gov.bc.ca
+      PREFIX: ${{ github.event.repository.name }}-${{ github.event.number }}
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.pr-validate.yml@v0.5.0
+    with:
+      markdown_links: |
+        [Frontend](https://${{ env.PREFIX }}-frontend.${{ env.DOMAIN }}/) available
+
+  results:
+    name: Validate Results
+    needs: [validate]
+    runs-on: ubuntu-22.04
+    steps:
+      - run: echo "Workflow completed successfully!"
