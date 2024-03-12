@@ -1,8 +1,9 @@
 <!-- PROJECT SHIELDS -->
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=bcgov_nr-hydrometric-rating-curve&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=bcgov_nr-hydrometric-rating-curve)
-[![Merge to Main](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/merge-main.yml/badge.svg)](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/merge-main.yml)
-[![Unit Tests and Analysis](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/unit-tests.yml)
+[![Analysis](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/analysis.yml/badge.svg)](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/analysis.yml)
+[![Merge](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/merge.yml/badge.svg)](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/merge.yml)
+[![Release](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/prod.yml/badge.svg)](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/prod.yml)
+[![Scheduled](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/scheduled.yml/badge.svg)](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/scheduled.yml)
 
 [![Issues](https://img.shields.io/github/issues/bcgov/nr-hydrometric-rating-curve)](/../../issues)
 [![Pull Requests](https://img.shields.io/github/issues-pr/bcgov/nr-hydrometric-rating-curve)](/../../pulls)
