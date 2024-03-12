@@ -28,7 +28,7 @@ jobs:
         with:
           package: ${{ matrix.package }}
           build_file: ${{ matrix.build_file }}
-          build_context: ./${{ matrix.package }}
+          build_context: ./frontend
           tag: ${{ github.event.number }}
           tag_fallback: test
           token: ${{ secrets.GITHUB_TOKEN }}
