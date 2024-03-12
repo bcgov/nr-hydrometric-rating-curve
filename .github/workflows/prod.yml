@@ -60,6 +60,5 @@ jobs:
         with:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.package }}
-          target: test
           tags: prod
           target: ${{ needs.vars.outputs.pr }}
