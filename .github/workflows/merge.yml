@@ -1,9 +1,8 @@
-name: Merge to Main
+name: Merge
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths-ignore:
       - ".github/ISSUE_TEMPLATE/*"
       - "**.md"
