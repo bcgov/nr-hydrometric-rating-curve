@@ -50,6 +50,11 @@
             .pdf-info-text {
                 color: 	#686868;
                 font-size:10.5px;
+                margin-right: 15px;
+            }
+            .pdf-info-small {
+                color: 	#686868;
+                font-size:8px;
                 margin: 0px;
             }
             .table {
@@ -72,11 +77,43 @@
                 font-size: 10.5px;
                 color: 	#686868;
             }
-            
+            @page {
+                size: letter;
+                @frame header_frame {           /* Static Frame */
+                    -pdf-frame-content: header_content;
+                    left: 50pt; width: 512pt; top: 40pt; height: 40pt;
+                }
+                @frame content_frame {          /* Content Frame */
+                    left: 50pt; width: 512pt; top: 70pt; height: 652pt;
+                }
+                @frame footer_frame {           /* Another static Frame */
+                    -pdf-frame-content: footer_content;
+                    left: 50pt; width: 512pt; top: 752pt; height: 40pt;
+                }
+            }
         </style>
     </head>
     <body>
+
+        <div id="header_content">
+            <table style="width:100%;">
+                <tr>
+                    <td class="pdf-info-small" style="text-align:left; vertical-align: top; width: 66%;">
+                        Hydrometric Rating Application (HydRA) - Rating Curve Output Summary. Generated on {{ current_time }} UTC
+                    </td>
+                    <td class="pdf-info-small" style="text-align:right; vertical-align: top; width: 33%;">
+                        BC Ministry of Environment and Climate Change Strategy
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="footer_content">
+            <p class="pdf-info-small">Note: The rating equation was generated using the Hydrometric Rating Application (HydRA), a product of the BC Ministry of Environment and Climate Change.  All input (stage) and output (discharge) datasets including any discrete measurements of stage and discharge must be reviewed and graded according to the provincial hydrometric RISC standards.</p>
+        </div>
+        
         <h2 class='pdf-header-title'>Rating Curve Output Summary</h2>
+        
+
         <h6 class="pdf-section-heading-text">Project Info</h6>
         <p class="pdf-info-text">date created (utc): {{ current_time }}</p>
         {% if stname %}
