@@ -1,6 +1,6 @@
 {
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "autodiscover": true,
   "autodiscoverFilter": "bcgov/nr-hydrometric-rating-curve",
