@@ -21,10 +21,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 RUN python manage.py collectstatic
 
+
 ### APP IMAGE ###
 FROM nginx:1 AS deploy
 WORKDIR /app
-
 
 # copy project
 COPY --from=BUILDER /app/staticfiles /static
