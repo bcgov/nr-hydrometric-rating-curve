@@ -3,25 +3,12 @@ name: PROD Release
 on:
   release:
     types: [published]
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
-  vars:
-    name: Set Variables
-    outputs:
-      pr: ${{ steps.pr.outputs.pr }}
-    runs-on: ubuntu-22.04
-    timeout-minutes: 1
-    steps:
-      # Get PR number for squash merges to main
-      - name: PR Number
-        id: pr
-        uses: bcgov-nr/action-get-pr@v0.0.1
-
   deploys:
     name: PROD Deployments
     environment: prod
@@ -43,11 +30,11 @@ jobs:
           oc_token: ${{ secrets.OC_TOKEN }}
           overwrite: true
           parameters:
-            -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test
+            -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:latest
 
   image-promotions:
     name: Promote Images
-    needs: [vars, deploys]
+    needs: [deploys]
     permissions:
       packages: write
     runs-on: ubuntu-22.04
@@ -61,4 +48,4 @@ jobs:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.package }}
           tags: prod
-          target: ${{ needs.vars.outputs.pr }}
+          target: latest
