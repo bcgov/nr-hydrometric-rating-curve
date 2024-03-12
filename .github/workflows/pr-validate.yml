@@ -11,10 +11,12 @@ concurrency:
 jobs:
   validate:
     name: Validate PR
+    env:
+      DOMAIN: apps.silver.devops.gov.bc.ca
     uses: bcgov/quickstart-openshift-helpers/.github/workflows/.pr-validate.yml@v0.5.0
     with:
       markdown_links: |
-        [Frontend](https://${{ github.event.repository.name }}-${{ github.event.number }}-frontend.apps.silver.devops.gov.bc.ca/) available
+        - [Frontend](https://${{ github.event.repository.name }}-${{ github.event.number }}-frontend.${{ env.DOMAIN /) available
 
   results:
     name: Validate Results
