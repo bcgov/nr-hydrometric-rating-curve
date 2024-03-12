@@ -57,3 +57,10 @@ jobs:
           parameters:
             -p MIN_REPLICAS=1 -p MAX_REPLICAS=1 -p ZONE=${{ github.event.number }}
             -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ github.event.number }}
+
+  results:
+    name: PR Results
+    needs: [deploys]
+    runs-on: ubuntu-22.04
+    steps:
+      - run: echo "Workflow completed successfully!"
