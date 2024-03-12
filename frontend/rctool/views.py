@@ -819,13 +819,14 @@ def create_export_rc_img(field_data, rc_data):
         label="field data",
     )
     # add data points for inactive
-    ax1.plot(
-        df_field_inactive["discharge"],
-        df_field_inactive["stage"],
-        "o",
-        color="#661100",
-        label="field data (inactive)",
-    )
+    if len(df_field_inactive) > 0:
+        ax1.plot(
+            df_field_inactive["discharge"],
+            df_field_inactive["stage"],
+            "o",
+            color="#661100",
+            label="field data (inactive)",
+        )
 
     i = 1
     for segment_parameters in rc_data["parameters"]:
