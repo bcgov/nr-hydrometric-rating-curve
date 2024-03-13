@@ -10,7 +10,7 @@ ENV PYTHONUNBUFFERED 1
 # use python venv to copy to the app image later
 ENV PATH="/venv/bin:$PATH"
 
-RUN apt-get update && \
+RUN apt-get update --no-install-recommends && \
     apt-get install -y gcc
 
 # set up venv
