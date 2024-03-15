@@ -10,15 +10,23 @@
 [![MIT License](https://img.shields.io/github/license/bcgov/nr-hydrometric-rating-curve.svg)](/LICENSE.md)
 ![Lifecycle:Maturing](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)
 
-# RATING CURVE APP
+# Hydrometric Rating Application (HydRA)
 
-##### Intro
-A hydrometric rating curve describes the mathematical relationship between stage and discharge. The rating curve app
-allows users to upload any stage and discharge datasets, develop and optimize rating models as well as
-save and compare results from previous sessions.
+## Intro
 
-###### Contributing Authors
+A hydrometric rating curve describes the mathematical relationship between stage and discharge for a given hydrometric station. Rating curves allow to convert stage measurements to discharge measurements based on previously measured stage and discharge data pairs. The Hydrometric Rating Application (HydRA) allows users to upload any stage and discharge datasets, develop and optimize rating models as well as save and compare results from previous sessions.
+
+The HydRA app is hosted in the BC Gov GitHub organization and is available at PLACEHOLDER. This repository contains all source code for the HydRA app and allows to run the app locally using docker.
+
+## Managing the app packages
+
+After cloning the repository, use the `poetry` python package manager to install the dependencies by running `poetry install` from the `frontend` directory. To update the dependencies, run `poetry update` or editate the `pyproject.toml` file.
+
+## Running the app locally
+
+- Create a `.env` file in the `frontend` directory of the project by copying the `.env.example` file and updating the values as needed. For development, the `DJANGO_DEBUG` variable should be set to `True`.
+- To run the django server locally, install docker and docker-compose. Run `docker compose -f ./frontend/docker-compose.dev.yml up --build` to start the development server. The app will be available at `http://localhost:8003`. Note: the non-dev version of the app is served via nginx at `http://localhost:{WEB_PORT}`.
+
+##### Contributing Authors
+
 NHC (Tyler De Jong, Tobias Müller), ENV X
-
-###### Updated
-2023-03-31
