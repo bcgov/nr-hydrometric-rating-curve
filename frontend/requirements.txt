@@ -33,7 +33,6 @@ pycparser==2.21 ; python_version >= "3.12" and python_version < "3.13" and platf
 pyhanko-certvalidator==0.26.3 ; python_version >= "3.12" and python_version < "3.13"
 pyhanko==0.23.1 ; python_version >= "3.12" and python_version < "3.13"
 pyparsing==3.1.2 ; python_version >= "3.12" and python_version < "3.13"
-pypdf2==3.0.1 ; python_version >= "3.12" and python_version < "3.13"
 pypdf==4.1.0 ; python_version >= "3.12" and python_version < "3.13"
 pypng==0.20220715.0 ; python_version >= "3.12" and python_version < "3.13"
 python-bidi==0.4.2 ; python_version >= "3.12" and python_version < "3.13"
