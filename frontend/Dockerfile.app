@@ -1,6 +1,6 @@
 ### BUILDER IMAGE ###
 # syntax=docker/dockerfile:1
-FROM python:3.10-slim AS BUILDER
+FROM python:3.12-slim AS BUILDER
 
 # set environment variables
 ENV LANG=C.UTF-8
@@ -21,7 +21,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 ### APP IMAGE ###
-FROM python:3.10-slim AS APP
+FROM python:3.12-slim AS APP
 WORKDIR /app
 
 # set environment variables
