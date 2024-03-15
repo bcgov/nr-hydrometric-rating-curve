@@ -2,16 +2,19 @@
 name = "frontend"
 version = "1.0.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = [
+    "Tobias Mueller <to.mueller@gmail.com",
+    "Tyler De Jong <TDeJong@nhcweb.com>",
+]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-django = "^4.1.7"
+django = "^4.2.8"
 scikit-learn = "^1.2.2"
 scipy = "^1.10.1"
 pypdf2 = "^3.0.1"
-pandas = "^1.5.3"
+pandas = "^2.2"
 lmfit = "^1.1.0"
 xhtml2pdf = "^0.2.9"
 matplotlib = "^3.7.1"
