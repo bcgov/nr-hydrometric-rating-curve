@@ -819,13 +819,14 @@ def create_export_rc_img(field_data, rc_data):
         label="field data",
     )
     # add data points for inactive
-    ax1.plot(
-        df_field_inactive["discharge"],
-        df_field_inactive["stage"],
-        "o",
-        color="#661100",
-        label="field data (inactive)",
-    )
+    if len(df_field_inactive) > 0:
+        ax1.plot(
+            df_field_inactive["discharge"],
+            df_field_inactive["stage"],
+            "o",
+            color="#661100",
+            label="field data (inactive)",
+        )
 
     i = 1
     for segment_parameters in rc_data["parameters"]:
@@ -1058,6 +1059,22 @@ def rctool_export_output(request):
 
                     writer = csv.writer(response)
                     writer.writerow(["RATING CURVE OUTPUT SUMMARY"])
+                    writer.writerow(
+                        [
+                            "Note: (see further right)",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "The rating equation was generated using the Hydrometric Rating Application (HydRA), a product of the BC Ministry of Environment and Climate Change.  All input (stage) and output (discharge) datasets including any discrete measurements of stage and discharge must be reviewed and graded according to the provincial hydrometric RISC standards.",
+                        ],
+                    )
                     writer.writerow(
                         ["date created (utc): {}".format(context["current_time"])]
                     )
