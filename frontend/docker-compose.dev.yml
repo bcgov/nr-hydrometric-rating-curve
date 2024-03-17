@@ -16,7 +16,4 @@ services:
       - "${WEB_PORT_INTERNAL}:${WEB_PORT_INTERNAL}"
     env_file:
       - .env
-    healthcheck:
-      test: ["CMD-SHELL", "python manage.py check"]
-      timeout: 15s
     restart: on-failure

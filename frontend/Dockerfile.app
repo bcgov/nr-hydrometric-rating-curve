@@ -36,7 +36,12 @@ RUN  chmod -R 777 /app
 RUN useradd -m rctool
 USER rctool
 
+
 # copy project
 COPY --from=BUILDER /venv /venv
+
+# healthcheck
+HEALTHCHECK --interval=60s --timeout=10s \
+    CMD python manage.py check
 
 CMD ["sh", "-c", "/app/start_app.sh"]

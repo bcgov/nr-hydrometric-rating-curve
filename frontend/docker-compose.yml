@@ -13,9 +13,6 @@ services:
       - .env
     depends_on:
       - web
-    healthcheck:
-      test: ["CMD-SHELL", "service nginx status"]
-      timeout: 10s
     logging:
       options:
         max-size: 10m
@@ -29,9 +26,6 @@ services:
     env_file:
       - .env
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "python manage.py check"]
-      timeout: 15s
     logging:
       options:
         max-size: 10m
