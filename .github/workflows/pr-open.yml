@@ -33,8 +33,6 @@ jobs:
           tag_fallback: test
           token: ${{ secrets.GITHUB_TOKEN }}
           triggers: ('frontend/')
-      - name: Run Django Tests
-        run: python ./frontend/manage.py test
 
   deploys:
     name: Deploys
@@ -59,6 +57,14 @@ jobs:
           parameters:
             -p MIN_REPLICAS=1 -p MAX_REPLICAS=1 -p ZONE=${{ github.event.number }}
             -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ github.event.number }}
+  test:
+    name: Test
+    needs: [deploys]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Run Django Tests in frontend docker container
+        run: |
+          docker exec -it frontend /bin/bash -c "python manage.py test"
 
   results:
     name: PR Results
