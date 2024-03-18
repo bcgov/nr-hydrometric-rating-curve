@@ -36,3 +36,4 @@ jobs:
           parameters:
             -p ZONE=test -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test
             -p NAME=${{ github.event.repository.name }}
+      - run: python manage.py test
