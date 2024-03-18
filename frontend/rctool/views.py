@@ -19,6 +19,10 @@ import base64
 import io, base64
 
 
+def healthcheck(request):
+    return HttpResponse("OK")
+
+
 def index(response):
     return render(response, "rctool/base.html", {})
 
@@ -49,24 +53,25 @@ def rctool_import(request, tour_request_id=0):
         # If user is on the tour, upload test data
         if tour_request_id == 1:
             context["form"] = import_rc_data()
-            try:
-                df = pd.read_csv(
-                    "test_files/capilano_field_data.csv"
-                )  # Using this for now while we work on the develop page
-                df["toggle_point"] = "checked"
-                df["datetime"] = df["datetime"].astype("str")
-                context["headings"] = list(df.columns.values)
-                context["table_data"] = df.values.tolist()
-                context["raw_field_data"] = df.to_json(date_format="iso")
-            except Exception as e:
-                messages.error(request, "An unexpected error occcured.")
+            # TODO: check if this test file load was necessary
+            # try:
+            #     df = pd.read_csv(
+            #         "test_files/capilano_field_data.csv"
+            #     )  # Using this for now while we work on the develop page
+            #     df["toggle_point"] = "checked"
+            #     df["datetime"] = df["datetime"].astype("str")
+            #     context["headings"] = list(df.columns.values)
+            #     context["table_data"] = df.values.tolist()
+            #     context["raw_field_data"] = df.to_json(date_format="iso")
+            # except Exception as e:
+            #     messages.error(request, "An unexpected error occcured.")
             return render(request, "rctool/rctool/import/rctool_import.html", context)
 
         # if not on a tour, upload their dataset
         import_form = import_rc_data(request.POST, request.FILES)
         if import_form.is_valid():
-            fheader_row = import_form.cleaned_data["header_row"] - 1
 
+            fheader_row = import_form.cleaned_data["header_row"] - 1
             try:
                 csv_file = import_form.cleaned_data["csv_upload"]
                 # Check if it is a csv file
@@ -114,7 +119,7 @@ def rctool_import(request, tour_request_id=0):
                 # handle possible uncertainty errors
                 if "uncertainty" not in df:
                     df["uncertainty"] = 0
-                df["uncertainty"].fillna(0.05, inplace=True)
+                df.fillna({"uncertainty": 0.05}, inplace=True)
 
                 # if user did not upload comments column, of if the user uploaded a column called comment
                 if "comment" not in df and "comments" not in df:
@@ -122,7 +127,7 @@ def rctool_import(request, tour_request_id=0):
                 if "comment" in df:
                     df["comments"] = df["comment"]
                     df = df.drop("comment", 1)
-                df["comments"].fillna("-", inplace=True)
+                df.fillna({"comments": "-"}, inplace=True)
                 # remove , from any comments (was causing issues)
                 df["comments"] = df["comments"].str.replace(",", " ;")
 
@@ -134,6 +139,7 @@ def rctool_import(request, tour_request_id=0):
                 context["form"] = import_form
 
             except Exception as e:
+                print("Unable to upload file. " + repr(e))
                 messages.error(request, "Unable to upload file. " + repr(e))
                 context["form"] = import_rc_data()
             return render(request, "rctool/rctool/import/rctool_import.html", context)
@@ -167,6 +173,7 @@ def autofit_data(
             df_field["toggle_point"].tolist(),
         )
     ]
+
     rc_data_output = [
         {"label": "field", "data": field_data}
     ]  # if n_seg = 0, this will be the output
@@ -390,7 +397,7 @@ def autofit_data(
 
         except Exception as e:
             # when 2 segs dosnt work...
-            print("ERROR!!", e)
+            print("Error in autofit_data ", e)
             sidepanel_message = {
                 "error_title": "Error Auto-Fitting Rating Curve",
                 "error_text": "Could not fit second segment, please specify a breakpoint and try again.",
@@ -599,6 +606,7 @@ def rctool_develop_initialize(request):
         #     context['max_offset'] = field_df_raw['stage'].min()
 
     except Exception as e:
+        print("Error in rctool_develop_initialize: " + repr(e))
         messages.error(request, "Unable to upload file. " + repr(e))
 
     return render(request, "rctool/rctool/develop/rctool_develop.html", context)
@@ -696,6 +704,7 @@ def rctool_develop_autofit(request):
         context["max_offset"] = df_passthrough["stage"].min()
 
     except Exception as e:
+        print("Error in rctool_develop_autofit: " + repr(e))
         messages.error(request, repr(e))
 
     return render(request, "rctool/rctool/develop/rctool_develop.html", context)
@@ -730,6 +739,7 @@ def rctool_export_initialize(request):
         context["adjust_seg"] = None
         context["breakpoint1"] = None
         context["fielddatacsv"] = df_passthrough.to_json(date_format="iso")
+        # convert json string to dict
         context["rc_output"] = ast.literal_eval(rc_output)
         # add filename to output dict
         context["rc_output"]["filename"] = [request.POST.get("filename_out")]
@@ -745,7 +755,6 @@ def create_export_rc_img(field_data, rc_data):
     df_field_inactive = field_data[field_data["toggle_point"] == "unchecked"]
 
     exponent = rc_data["parameters"][0]["exp"]
-
     log_base_n = lambda x: np.log(x) / np.log(exponent)
 
     # create plot obj
@@ -925,7 +934,7 @@ def rctool_export_output(request):
         export_form = export_rc_data(request.POST)
 
         field_data_output_json = request.POST.get("fielddatacsv-to-output")
-        field_data_output_df = pd.read_json(field_data_output_json)
+        field_data_output_df = pd.read_json(io.StringIO(field_data_output_json))
         field_data_output_dict = field_data_output_df.to_dict()
         field_data_output_df["datetime"] = field_data_output_df["datetime"].apply(str)
         field_data_output_df["stage"] = field_data_output_df["stage"].round(decimals=3)
@@ -1160,6 +1169,7 @@ def rctool_export_output(request):
                     return response
 
                 except Exception as e:
+                    print("Error in rctool_export_output: " + repr(e))
                     messages.error(request, "Unable to process request. " + repr(e))
 
             context["form"] = export_form
