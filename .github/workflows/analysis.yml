@@ -53,9 +53,32 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
 
+  tests:
+    name: Django Tests
+    if: ${{ ! github.event.pull_request.draft }}
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: frontend
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+           python-version: "3.12"
+      - name: Install requirements
+        run: |
+            pip install -r ./frontend/requirements.txt
+      - name: Run tests
+        run: |
+            cd frontend
+            python manage.py test
+            
   results:
     name: Analysis Results
-    needs: [codeql, trivy]
+    needs: [codeql, trivy, tests]
     runs-on: ubuntu-22.04
     steps:
       - run: echo "Workflow completed successfully!"
