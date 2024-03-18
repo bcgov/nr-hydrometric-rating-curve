@@ -60,6 +60,11 @@ jobs:
     defaults:
       run:
         working-directory: frontend
+    env:
+      DEBUG: "False"
+      ALLOWED_HOSTS: 'localhost,'
+      CSRF_TRUSTED_ORIGINS: 'https://localhost,https://localhost'
+      DJANGO_SECRET_KEY: 'temporary_debug_key'
     timeout-minutes: 15
     steps:
       - name: Checkout code
