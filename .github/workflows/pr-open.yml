@@ -33,6 +33,8 @@ jobs:
           tag_fallback: test
           token: ${{ secrets.GITHUB_TOKEN }}
           triggers: ('frontend/')
+      - name: Run Django Tests
+        run: python manage.py test
 
   deploys:
     name: Deploys
