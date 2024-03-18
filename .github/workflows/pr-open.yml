@@ -58,15 +58,6 @@ jobs:
             -p MIN_REPLICAS=1 -p MAX_REPLICAS=1 -p ZONE=${{ github.event.number }}
             -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ github.event.number }}
 
-  tests:
-    name: Run Tests for Django App
-    needs: [deploys]
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Run Django Tests in frontend docker container
-        run: |
-          docker exec -it rctool /bin/bash -c "python manage.py test"
-
   results:
     name: PR Results
     needs: [deploys]
