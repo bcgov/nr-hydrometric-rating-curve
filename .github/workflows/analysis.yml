@@ -60,6 +60,11 @@ jobs:
     defaults:
       run:
         working-directory: frontend
+    env:
+      DEBUG: "False"
+      ALLOWED_HOSTS: 'localhost,'
+      CSRF_TRUSTED_ORIGINS: 'http://localhost,https://localhost'
+      SECRET_KEY: 'temporary_debug_key'
     timeout-minutes: 15
     steps:
       - name: Checkout code
@@ -70,10 +75,9 @@ jobs:
            python-version: "3.12"
       - name: Install requirements
         run: |
-            pip install -r ./frontend/requirements.txt
+            pip install -r requirements.txt
       - name: Run tests
         run: |
-            cd frontend
             python manage.py test
             
   results:
