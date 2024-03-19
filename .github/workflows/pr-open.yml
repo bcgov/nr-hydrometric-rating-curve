@@ -30,7 +30,7 @@ jobs:
           build_file: ${{ matrix.build_file }}
           build_context: ./frontend
           tag: ${{ github.event.number }}
-          tag_fallback: test
+          tag_fallback: latest
           token: ${{ secrets.GITHUB_TOKEN }}
           triggers: ('frontend/')
 
