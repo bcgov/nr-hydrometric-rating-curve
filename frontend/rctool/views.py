@@ -53,18 +53,6 @@ def rctool_import(request, tour_request_id=0):
         # If user is on the tour, upload test data
         if tour_request_id == 1:
             context["form"] = import_rc_data()
-            # TODO: check if this test file load was necessary
-            # try:
-            #     df = pd.read_csv(
-            #         "test_files/capilano_field_data.csv"
-            #     )  # Using this for now while we work on the develop page
-            #     df["toggle_point"] = "checked"
-            #     df["datetime"] = df["datetime"].astype("str")
-            #     context["headings"] = list(df.columns.values)
-            #     context["table_data"] = df.values.tolist()
-            #     context["raw_field_data"] = df.to_json(date_format="iso")
-            # except Exception as e:
-            #     messages.error(request, "An unexpected error occcured.")
             return render(request, "rctool/rctool/import/rctool_import.html", context)
 
         # if not on a tour, upload their dataset
