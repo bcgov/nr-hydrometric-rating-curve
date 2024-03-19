@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: test-prod
   cancel-in-progress: false
 
 jobs:
