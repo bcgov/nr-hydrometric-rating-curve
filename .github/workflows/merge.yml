@@ -9,12 +9,25 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: test-prod
   cancel-in-progress: false
 
 jobs:
-  deploys-test:
+  vars:
+    name: Set Variables
+    outputs:
+      pr: ${{ steps.pr.outputs.pr }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 1
+    steps:
+      # Get PR number for squash merges to main
+      - name: PR Number
+        id: pr
+        uses: bcgov-nr/action-get-pr@v0.0.1
+
+  deploys:
     name: TEST Deployments
+    needs: [vars]
     environment: test
     runs-on: ubuntu-22.04
     strategy:
@@ -34,5 +47,22 @@ jobs:
           oc_token: ${{ secrets.OC_TOKEN }}
           overwrite: true
           parameters:
-            -p ZONE=test -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test
-            -p NAME=${{ github.event.repository.name }}
+            -p ZONE=test -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ needs.vars.outputs.pr }}
+
+  promotions:
+    name: Promote Images
+    needs: [deploys, vars]
+    permissions:
+      packages: write
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        package: [frontend, rctool]
+    timeout-minutes: 1
+    steps:
+      - uses: shrink/actions-docker-registry-tag@v4
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          tags: test
+          target: ${{ needs.vars.outputs.pr }}
