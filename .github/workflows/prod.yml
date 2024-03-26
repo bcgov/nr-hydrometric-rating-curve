@@ -5,8 +5,8 @@ on:
     types: [published]
 
 concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: true
+  group: test-prod
+  cancel-in-progress: false
 
 jobs:
   deploys:
@@ -30,9 +30,9 @@ jobs:
           oc_token: ${{ secrets.OC_TOKEN }}
           overwrite: true
           parameters:
-            -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:latest
+            -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test
 
-  image-promotions:
+  promotions:
     name: Promote Images
     needs: [deploys]
     permissions:
@@ -48,4 +48,4 @@ jobs:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.package }}
           tags: prod
-          target: latest
+          target: test

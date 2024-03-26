@@ -146,7 +146,7 @@
             </tr>
             <tr class="table-row" style="height:25px;">
                 <td class="table-cell">{{ rc.parameters.0.label }}</td>
-                <td class="table-cell-large">Q = {{ rc.parameters.0.const }} ( H {{ offsets_val.0 }} )<sup>{{ rc.parameters.0.exp }}</sup></td>
+                <td class="table-cell">Q = {{ rc.parameters.0.const }} ( H {{ offsets_val.0 }} )<sup>{{ rc.parameters.0.exp }}</sup></td>
                 <td class="table-cell">{{ rc.parameters.0.seg_bounds.0.0|floatformat:3 }} , {{ rc.parameters.0.seg_bounds.1.0|floatformat:3}}</td>
                 <td class="table-cell">{{ rc.parameters.0.rmse|floatformat:3 }}</td>
                 </td>
@@ -154,7 +154,7 @@
             {% if rc.parameters.1 %}
             <tr class="table-row" style="height:25px;">
                 <td class="table-cell">{{ rc.parameters.1.label }}</td>
-                <td class="table-cell-large">Q = {{ rc.parameters.1.const }}( H {{ offsets_val.1 }})<sup>{{ rc.parameters.1.exp }}</sup></td>
+                <td class="table-cell">Q = {{ rc.parameters.1.const }}( H {{ offsets_val.1 }})<sup>{{ rc.parameters.1.exp }}</sup></td>
                 <td class="table-cell">{{ rc.parameters.1.seg_bounds.0.0|floatformat:3 }} , {{ rc.parameters.1.seg_bounds.1.0|floatformat:3 }}</td>
                 <td class="table-cell">{{ rc.parameters.1.rmse|floatformat:3 }}</td>
                 </td>

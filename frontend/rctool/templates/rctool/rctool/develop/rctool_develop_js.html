@@ -211,7 +211,7 @@
             rcData[idx+1].data = newSegData;
             rcParam[idx].const = C;
             rcParam[idx].exp = slope;
-            rcParam[idx].offset = offset; // TODO REMOVE IF THIS HAS ALREADY BEEN UPDATED
+            rcParam[idx].offset = offset;
             rcParam[idx].rmse = rmse;
             rcParam[idx].seg_bounds = [[segmentData[0][0], segmentData[0][1]], [segmentData[1][0], segmentData[1][1]]];
             rcDict = {'data':rcData, 'parameters':rcParam};
@@ -305,7 +305,6 @@
                     if (this_chart.type == 'scatter'){
                         var startPoint = this_data.data[0]
                         var endPoint = this_data.data.slice(-1)[0]
-                        // TODO: find why we have to sort this
                         if (startPoint[0] < endPoint[0]){
                             this_chart.data[0].x = startPoint[1]
                             this_chart.data[0].y = startPoint[0]
