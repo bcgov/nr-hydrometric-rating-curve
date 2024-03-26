@@ -891,8 +891,8 @@ def export_calculate_discharge_error(field_data_output_df, rc_output_dict):
         result = -100 * ((const * (stage - offset) ** exp) - discharge) / discharge
         return np.array(result.tolist()).flatten()
 
-    df_error1 = field_data_output_df[field_data_output_df["stage"] <= breakpoint]
-    df_error2 = field_data_output_df[field_data_output_df["stage"] > breakpoint]
+    df_error1 = field_data_output_df[field_data_output_df["stage"] <= breakpoint].copy()
+    df_error2 = field_data_output_df[field_data_output_df["stage"] > breakpoint].copy()
 
     err_result1 = calc_error(
         segment_parameters[0]["const"],
@@ -915,15 +915,15 @@ def export_calculate_discharge_error(field_data_output_df, rc_output_dict):
         err_result2 = np.zeros(len(df_error2))
 
     # add list as column to df
-    df_error1["Discharge Error (%)"] = err_result1
-    df_error2["Discharge Error (%)"] = err_result2
+    df_error1.loc[:, "Discharge Error (%)"] = err_result1
+    df_error2.loc[:, "Discharge Error (%)"] = err_result2
 
     # merge dfs
     field_data_output_df = pd.concat([df_error1, df_error2])
     # round discharge error to 2 decimals
-    field_data_output_df["Discharge Error (%)"] = field_data_output_df[
+    field_data_output_df.loc[:, "Discharge Error (%)"] = field_data_output_df[
         "Discharge Error (%)"
-    ].round(decimals=2)
+    ].round(2)
     return field_data_output_df
 
 
