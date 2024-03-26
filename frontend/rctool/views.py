@@ -743,7 +743,13 @@ def create_export_rc_img(field_data, rc_data):
     df_field_inactive = field_data[field_data["toggle_point"] == "unchecked"]
 
     exponent = rc_data["parameters"][0]["exp"]
-    log_base_n = lambda x: np.log(x) / np.log(exponent)
+
+    # prevent divide by zero
+    def log_base_n(x, exponent=exponent):
+        if exponent == 0:
+            return np.log(x) / np.log(10)
+        else:
+            return np.log(x) / np.log(exponent)
 
     # create plot obj
     fig1, ax1 = plt.subplots(figsize=(11, 5), num=1)
@@ -849,7 +855,10 @@ def create_export_rc_img(field_data, rc_data):
 
 
 def create_export_res_img(field_data, rc_data):
-    df_field_active = field_data[field_data["toggle_point"] == "checked"]
+    # keep only active points
+    df_field_active = field_data.copy()
+    df_field_active = df_field_active[df_field_active["toggle_point"] == "checked"]
+
     # create plot obj
     fig2, ax2 = plt.subplots(figsize=(11, 5), num=2)
     ax2.grid(True, which="both")
@@ -862,6 +871,7 @@ def create_export_res_img(field_data, rc_data):
         "o",
         color="#80B7AB",
     )
+
     # make 0 line thick
     ax2.axvline(x=0, color="black", lw=0.5)
     tmpfile2 = io.BytesIO()
@@ -875,40 +885,43 @@ def export_calculate_discharge_error(field_data_output_df, rc_output_dict):
     # recalculate residual error percent
     error_perc_dat = []
     segment_parameters = rc_output_dict["parameters"]
-    breakpoint1 = float(segment_parameters[0]["seg_bounds"][1][0])
-    if len(segment_parameters) > 1:
-        df_error1 = field_data_output_df[field_data_output_df["stage"] <= breakpoint1]
-    else:
-        df_error1 = field_data_output_df.copy()
-    const1 = segment_parameters[0]["const"]
-    exp1 = segment_parameters[0]["exp"]
-    offset1 = segment_parameters[0]["offset"]
-    error_perc_dat1 = (
-        100
-        * ((const1 * (df_error1["stage"] - offset1) ** exp1) - df_error1["discharge"])
-        / df_error1["discharge"]
-    )
-    error_perc_dat = error_perc_dat + error_perc_dat1.tolist()
-    df_error2 = field_data_output_df[field_data_output_df["stage"] >= breakpoint1]
-    if len(df_error2["stage"]) > 1 and len(segment_parameters) > 1:
-        df_error2 = field_data_output_df[field_data_output_df["stage"] >= breakpoint1]
-        const2 = segment_parameters[1]["const"]
-        exp2 = segment_parameters[1]["exp"]
-        offset2 = segment_parameters[0]["offset"]
-        error_perc_dat2 = (
-            100
-            * (
-                (const2 * (df_error2["stage"] - offset2) ** exp2)
-                - df_error2["discharge"]
-            )
-            / df_error2["discharge"]
-        )
-        error_perc_dat = error_perc_dat + error_perc_dat2.tolist()
-    field_data_output_df.insert(
-        loc=4, column="Discharge Error (%)", value=error_perc_dat
+    breakpoint = float(segment_parameters[0]["seg_bounds"][1][0])
+
+    def calc_error(const, exp, offset, stage, discharge):
+        result = -100 * ((const * (stage - offset) ** exp) - discharge) / discharge
+        return np.array(result.tolist()).flatten()
+
+    df_error1 = field_data_output_df[field_data_output_df["stage"] <= breakpoint]
+    df_error2 = field_data_output_df[field_data_output_df["stage"] > breakpoint]
+
+    err_result1 = calc_error(
+        segment_parameters[0]["const"],
+        segment_parameters[0]["exp"],
+        segment_parameters[0]["offset"],
+        df_error1["stage"],
+        df_error1["discharge"],
     )
 
-    field_data_output_df["Discharge Error (%)"] = -field_data_output_df[
+    # for second segment
+    if len(segment_parameters) > 1:
+        err_result2 = calc_error(
+            segment_parameters[1]["const"],
+            segment_parameters[1]["exp"],
+            segment_parameters[0]["offset"],
+            df_error2["stage"],
+            df_error2["discharge"],
+        )
+    else:
+        err_result2 = np.zeros(len(df_error2))
+
+    # add list as column to df
+    df_error1["Discharge Error (%)"] = err_result1
+    df_error2["Discharge Error (%)"] = err_result2
+
+    # merge dfs
+    field_data_output_df = pd.concat([df_error1, df_error2])
+    # round discharge error to 2 decimals
+    field_data_output_df["Discharge Error (%)"] = field_data_output_df[
         "Discharge Error (%)"
     ].round(decimals=2)
     return field_data_output_df
@@ -920,7 +933,6 @@ def rctool_export_output(request):
 
     if request.method == "POST":
         export_form = export_rc_data(request.POST)
-
         field_data_output_json = request.POST.get("fielddatacsv-to-output")
         field_data_output_df = pd.read_json(io.StringIO(field_data_output_json))
         field_data_output_dict = field_data_output_df.to_dict()
@@ -1038,8 +1050,6 @@ def rctool_export_output(request):
                     "data": df_parameters.values.tolist(),
                 }
 
-                # prepaire as output
-
                 try:
                     # output HTTP response
                     response = HttpResponse(
@@ -1050,9 +1060,6 @@ def rctool_export_output(request):
                             )
                         },
                     )
-                    # # write to csv
-                    # rc_output_df.to_csv(path_or_buf=response)
-                    # return response
 
                     writer = csv.writer(response)
                     writer.writerow(["RATING CURVE OUTPUT SUMMARY"])
@@ -1120,45 +1127,43 @@ def rctool_export_output(request):
                     messages.error(request, "Unable to process request. " + repr(e))
 
             else:
-                try:
-                    # write to pdf option selected
+                # try:
+                # write to pdf option selected
 
-                    # calculate residuals for output figures and table
-                    field_data_output_df = export_calculate_discharge_error(
-                        field_data_output_df, rc_output_dict
-                    )
-                    context["field_table"] = {
-                        "headings": field_data_output_df.columns.values,
-                        "data": field_data_output_df.values.tolist(),
-                    }
-                    # create figure for pdf
-                    context["rc_img"] = create_export_rc_img(
-                        field_data_output_df, rc_output_dict
-                    )
-                    context["res_img"] = create_export_res_img(
-                        field_data_output_df, rc_output_dict
-                    )
+                # calculate residuals for output figures and table
+                field_data_output_df = export_calculate_discharge_error(
+                    field_data_output_df, rc_output_dict
+                )
+                context["field_table"] = {
+                    "headings": field_data_output_df.columns.values,
+                    "data": field_data_output_df.values.tolist(),
+                }
+                # create figure for pdf
+                context["rc_img"] = create_export_rc_img(
+                    field_data_output_df, rc_output_dict
+                )
+                context["res_img"] = create_export_res_img(
+                    field_data_output_df, rc_output_dict
+                )
 
-                    # prepaire and return output pdf
-                    template = get_template(
-                        "rctool/rctool/export/rctool_export_pdf.html"
-                    )
-                    html = template.render(context)
-                    pdf = render_to_pdf(
-                        "rctool/rctool/export/rctool_export_pdf.html", context
-                    )
-                    response = HttpResponse(pdf, content_type="application/pdf")
-                    content = "inline; filename='%s'" % (fname)
-                    download = request.GET.get("download")
-                    if download:
-                        content = "attachment; filename='%s.pdf'" % (fname)
-                    response["Content-Disposition"] = content
+                # prepaire and return output pdf
+                template = get_template("rctool/rctool/export/rctool_export_pdf.html")
+                html = template.render(context)
+                pdf = render_to_pdf(
+                    "rctool/rctool/export/rctool_export_pdf.html", context
+                )
+                response = HttpResponse(pdf, content_type="application/pdf")
+                content = "inline; filename='%s'" % (fname)
+                download = request.GET.get("download")
+                if download:
+                    content = "attachment; filename='%s.pdf'" % (fname)
+                response["Content-Disposition"] = content
 
-                    return response
+                return response
 
-                except Exception as e:
-                    print("Error in rctool_export_output: " + repr(e))
-                    messages.error(request, "Unable to process request. " + repr(e))
+                # except Exception as e:
+                #     print("Error in rctool_export_output: " + repr(e))
+                #     messages.error(request, "Unable to process request. " + repr(e))
 
             context["form"] = export_form
             context["rc_output"] = rc_output
