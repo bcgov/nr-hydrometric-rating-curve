@@ -3,7 +3,13 @@
 <nav class="navbar navbar-expand-sm navbar-dark" style="background-color: #003466">
     <div class="header-title-div justify-items-start"></div>
       <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'images/gov_logo.JPG' %}" class="logo-gov"></a>
-      <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'images/HydRALogo_text.png' %}" class="logo-hydra "></a>
+      <div class="header-title-div">
+        <h1 class="header-title" 
+          style="color: white; font-size: 1.5em; font-weight: bold; font-family:sans-serif; margin-top: 0.5em; margin-bottom: 0.5em; margin-left: 1em; margin-right: 1em; text-align: center; text-shadow:1px 1px 10px #000, 1px 1px 10px #000;
+          ">
+            HydRA
+          </h1>
+      </div>
     </div>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
