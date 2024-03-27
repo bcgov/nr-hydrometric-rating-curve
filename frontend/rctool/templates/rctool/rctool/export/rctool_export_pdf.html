@@ -143,12 +143,14 @@
                 <th class="table-header">equation</th>
                 <th class="table-header">stage range (m)</th>
                 <th class="table-header">RMSE</th>
+                <th class="table-header">MAPE</th>
             </tr>
             <tr class="table-row" style="height:25px;">
                 <td class="table-cell">{{ rc.parameters.0.label }}</td>
                 <td class="table-cell">Q = {{ rc.parameters.0.const }} ( H {{ offsets_val.0 }} )<sup>{{ rc.parameters.0.exp }}</sup></td>
                 <td class="table-cell">{{ rc.parameters.0.seg_bounds.0.0|floatformat:3 }} , {{ rc.parameters.0.seg_bounds.1.0|floatformat:3}}</td>
                 <td class="table-cell">{{ rc.parameters.0.rmse|floatformat:3 }}</td>
+                <td class="table-cell">{{ rc.parameters.0.mape|floatformat:1 }} %</td>
                 </td>
             </tr>
             {% if rc.parameters.1 %}
@@ -157,6 +159,7 @@
                 <td class="table-cell">Q = {{ rc.parameters.1.const }}( H {{ offsets_val.1 }})<sup>{{ rc.parameters.1.exp }}</sup></td>
                 <td class="table-cell">{{ rc.parameters.1.seg_bounds.0.0|floatformat:3 }} , {{ rc.parameters.1.seg_bounds.1.0|floatformat:3 }}</td>
                 <td class="table-cell">{{ rc.parameters.1.rmse|floatformat:3 }}</td>
+                <td class="table-cell">{{ rc.parameters.1.mape|floatformat:1 }} %</td>
                 </td>
             </tr>
             {% endif %}
