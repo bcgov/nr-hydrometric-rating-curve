@@ -143,6 +143,26 @@
         }
     }
 
+    function calculate_stats(q_field, q_model) {
+
+            // Calculate statistical parameters
+            var sumCumulativeDifferencePerc = 0;
+            var sumSquaredCumulativeDifference = 0;
+            q_model.forEach((item, index) => {
+                sumSquaredCumulativeDifference += (item - q_field[index]) ** 2
+                sumCumulativeDifferencePerc += Math.abs(item - q_field[index]) / q_field[index]
+            });
+
+
+            // Calculate root mean squared error (rmse)
+            rmse = Math.sqrt( (sumSquaredCumulativeDifference/ q_model.length) );
+
+            // Calculate mean absolute percentage error (mape)
+            mape = (sumCumulativeDifferencePerc / q_model.length) * 100;
+
+            return {'rmse': rmse, 'mape': mape}
+    }
+
     function adjustSeg(segmentBounds, offsets) {
         // INPUTS:
             // segmentBounds: dictionary where keys are segmentName and values are segmentData
@@ -177,25 +197,16 @@
 
             // 3.2 Calculate model data from new rc equation, collect and prepaire output
             var stage = fieldDataFiltered.map( item => (item[0]));
-            var oldQ = fieldDataFiltered.map( item => (item[1]));
-            var newQ = stage.map(s => C * (s - offset) ** slope);
+            var q_field = fieldDataFiltered.map( item => (item[1]));
+            var q_model = stage.map(s => C * (s - offset) ** slope);
             // Calculate statistical parameters; residuals
             var newResiduals = fieldDataFiltered.map(item => ( 100 * (C * (item[0] - offset) ** slope - item[1]) / item[1] ) );
 
             // Collect and prepaire output
             var newSegData = [];
-            for (let t = 0; t < newQ.length; t++) {
-                newSegData.push([stage[t], newQ[t], newResiduals[t]]);
+            for (let t = 0; t < q_model.length; t++) {
+                newSegData.push([stage[t], q_model[t], newResiduals[t]]);
             };
-
-            // Calculate statistical parameters; RMSE
-            var sumSquaredCumulative = 0;
-            for (var v = 0; v < newQ.length; v++) {
-                var currSumSquared = (newQ[v] - oldQ[v]) ** 2;
-                sumSquaredCumulative = sumSquaredCumulative + currSumSquared;
-            };
-            rmse = Math.sqrt( (sumSquaredCumulative/ newQ.length) );
-
 
             // sort list by stage (index)
             newSegData.sort(function(a,b) {
@@ -207,12 +218,15 @@
             // add boundary points to segment data (for plotting on rcChart)
             newSegData.unshift([segmentData[0][0], segmentData[0][1],  0]);
             newSegData.push([segmentData[1][0], segmentData[1][1], 0]);
+
+            stats = calculate_stats(q_field, q_model)
             // 3.4 Update rcData & rcParam variables
             rcData[idx+1].data = newSegData;
             rcParam[idx].const = C;
             rcParam[idx].exp = slope;
             rcParam[idx].offset = offset;
-            rcParam[idx].rmse = rmse;
+            rcParam[idx].rmse = stats['rmse'];
+            rcParam[idx].mape = stats['mape'];;
             rcParam[idx].seg_bounds = [[segmentData[0][0], segmentData[0][1]], [segmentData[1][0], segmentData[1][1]]];
             rcDict = {'data':rcData, 'parameters':rcParam};
 
@@ -230,6 +244,7 @@
             document.getElementById('table1-segment' + segNumStr + '-const').innerHTML = C.toFixed(2);
             document.getElementById('table1-segment' + segNumStr + '-exp').innerHTML = slope.toFixed(2);
             document.getElementById('table1-segment' + segNumStr + '-rmse').innerHTML = rmse.toFixed(3);
+            document.getElementById('table1-segment' + segNumStr + '-mape').innerHTML = mape.toFixed(1) + '%';
             document.getElementById("endpointSeg1H0").value = rcParam[0].seg_bounds[0][0].toFixed(3);
             document.getElementById("endpointSeg1Q0").value = rcParam[0].seg_bounds[0][1].toFixed(3);
             document.getElementById("endpointSeg1H1").value = rcParam[0].seg_bounds[1][0].toFixed(3);
@@ -282,11 +297,6 @@
 
         // check if exponent in realistic range
         checkExponent();
-
-        // update status
-        // displayStatus('<strong>status: </strong> manual adjustment applied...')
-        {% comment %} toggleAxisFormat(document.getElementById("toggle_axis_format").checked) {% endcomment %}
-
     };
 
     function updateChartFromGlobal(){
@@ -482,6 +492,19 @@
 
         // update residual chart
         for (var seg = 0; seg < rcParam.length; seg++) {
+            
+            // get field data for this segment
+            const fieldDataActive_seg = fieldDataActive.filter(item => ( item.y >= rcParam[seg].seg_bounds[0][0] && item.y <= rcParam[seg].seg_bounds[1][0]));
+            q_field_active_seg = fieldDataActive_seg.map(item => item.x);
+            h_field_active_seg = fieldDataActive_seg.map(item => item.y);
+
+            // calculate model data for this segment
+            q_model_active_seg = h_field_active_seg.map(s => calc_q_model(s, rcParam[seg].const, rcParam[seg].exp, rcParam[seg].offset));
+            stats_seg = calculate_stats(q_field_active_seg, q_model_active_seg)
+            // update HTML table with new stats
+            document.getElementById('table1-segment' + (seg + 1) + '-rmse').innerHTML = stats_seg['rmse'].toFixed(3);
+            document.getElementById('table1-segment' + (seg + 1) + '-mape').innerHTML = stats_seg['mape'].toFixed(1) + '%';
+
             var dataArray_residual = Object.keys(fielddatacsv.toggle_point).map((id, index) => {
                 return {
                     id: id,
@@ -966,14 +989,14 @@
         var fieldDataFiltered = rawFieldData.filter(item => ( item[0] >= compStartBounds && item[0] <= compEndBounds));
         // Calculate model data from new rc equation, collect and prepaire output
         var stage = fieldDataFiltered.map( item => (item[0]));
-        var fieldQ = fieldDataFiltered.map( item => (item[1]));
-        var compQ = stage.map(s => compConst * (s - compOffset) ** compExp);
+        var q_field_compare = fieldDataFiltered.map( item => (item[1]));
+        var q_model_compare = stage.map(s => compConst * (s - compOffset) ** compExp);
         // Calculate statistical parameters; residuals
         var compResiduals = fieldDataFiltered.map(item => ( 100 * (compConst * (item[0] - compOffset) ** compExp - item[1]) / item[1] ) );
         // Collect and prepaire output
         var compData = [];
-        for (let t = 0; t < compQ.length; t++) {
-            compData.push([stage[t], compQ[t], compResiduals[t]]);
+        for (let t = 0; t < q_model_compare.length; t++) {
+            compData.push([stage[t], q_model_compare[t], compResiduals[t]]);
         };
         // Add endpoints for RC chart (not for residual chart)
         lowerH = compStartBounds
@@ -985,12 +1008,8 @@
         compRcData.unshift([lowerH, lowerQ, 0])
         compRcData.push([upperH, upperQ, 0])
         // 3. Calculate statistical parameters; RMSE
-        var sumSquaredCumulative = 0;
-        for (var v = 0; v < compQ.length; v++) {
-            var currSumSquared = (compQ[v] - fieldQ[v]) ** 2;
-            sumSquaredCumulative = sumSquaredCumulative + currSumSquared;
-        };
-        compRmse = Math.sqrt((sumSquaredCumulative/ compQ.length)).toFixed(2);
+        stats_compare = calculate_stats(q_field_compare, q_model_compare)
+
         // 4. Prepaire output
         var compChartData = compRcData.map(item => ({ x: item[1], y: item[0] }));
         var compResChartData = compData.map(item => ({ x: item[2], y: item[0] }));
@@ -1001,7 +1020,8 @@
             addResidualPlot(compResChartData, compLabel, '#DDCC77')
         };
         // 6. Update table with new values and remove option to add new curve
-        document.getElementById('compare-curve-rmse').innerHTML = compRmse;
+        document.getElementById('compare-curve-rmse').innerHTML = stats_compare['rmse'].toFixed(3)
+        document.getElementById('compare-curve-mape').innerHTML = stats_compare['mape'].toFixed(1) + '%'
         document.getElementById('add-curve').style.display = 'none';
         document.getElementById('remove-curve').style.display = 'block';
         document.getElementById('comparison-header').style.color = '#000000';
@@ -1021,6 +1041,7 @@
         // document.getElementById('compareStartBounds').value = ''
         // document.getElementById('compareEndBounds').value = ''
         document.getElementById('compare-curve-rmse').innerHTML = '';
+        document.getElementById('compare-curve-mape').innerHTML = '';
         // 4. hide 'remove curve' button and display 'add curve button'
         document.getElementById('remove-curve').style.display = 'none';
         document.getElementById('add-curve').style.display = 'block';
