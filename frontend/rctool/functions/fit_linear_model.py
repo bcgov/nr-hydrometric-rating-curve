@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from lmfit import models, Parameters
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
 import math
 
 
@@ -71,9 +71,11 @@ def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *a
     # calculate statistical parameters to analyze goodness of fit
     unw_mse = mean_squared_error(df_data["Q"], unw_best)
     unw_rmse = math.sqrt(unw_mse)
+    unw_mape = mean_absolute_percentage_error(df_data["Q"], unw_best) * 100.0
 
     wgt_mse = mean_squared_error(df_data["Q"], wgt_best)
     wgt_rmse = math.sqrt(wgt_mse)
+    wgt_mape = mean_absolute_percentage_error(df_data["Q"], wgt_best) * 100.0
 
     # Process and ship output
     mdl_param = {
@@ -84,6 +86,7 @@ def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *a
             "seg_bounds": unw_seg_nodes,
             "offset": offset,
             "rmse": unw_rmse,
+            "mape": unw_mape,
         },
         "wgt": {
             "label": label,
@@ -92,6 +95,7 @@ def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *a
             "seg_bounds": wgt_seg_nodes,
             "offset": offset,
             "rmse": wgt_rmse,
+            "mape": wgt_mape,
         },
     }
 
@@ -103,6 +107,7 @@ def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *a
             "seg_bounds": wgt_seg_nodes,
             "offset": offset,
             "rmse": wgt_rmse,
+            "mape": wgt_mape,
         }
         wgt_data = [
             [a, b, c] for a, b, c in zip(df_data["H"].tolist(), wgt_best, wgt_residual)
@@ -117,6 +122,7 @@ def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *a
             "seg_bounds": unw_seg_nodes,
             "offset": offset,
             "rmse": unw_rmse,
+            "mape": unw_mape,
         }
         unw_data = [
             [a, b, c] for a, b, c in zip(df_data["H"].tolist(), unw_best, unw_residual)

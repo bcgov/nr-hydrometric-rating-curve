@@ -12,6 +12,7 @@
                 <th class="table-cell">start point<br>(stage in m)</th>
                 <th class="table-cell">end point<br>(stage in m)</th>
                 <th class="table-cell">RMSE</th>
+                <th class="table-cell">MAPE</th>
                 <th class="table-cell"><p id="comparison-header", style="color:#9ec1a3">compare</p></th>
             </tr>
             {% if rc.parameters %}
@@ -23,6 +24,7 @@
                     <td class="table-cell"><p id="table1-endpoint-Seg1H0">{{ rc.parameters.0.seg_bounds.0.0|floatformat:3 }}</p></td>
                     <td class="table-cell"><p id="table1-endpoint-Seg1H1">{{ rc.parameters.0.seg_bounds.1.0|floatformat:3 }}</p></td>
                     <td class="table-cell"><p id="table1-segment1-rmse">{{ rc.parameters.0.rmse|floatformat:3 }}</p></td>
+                    <td class="table-cell"><p id="table1-segment1-mape">{{ rc.parameters.0.mape|floatformat:1 }} %</p></td>
                     <td class="table-cell"><p></p></td>
                 </tr>
             {% endif %}
@@ -35,6 +37,7 @@
                     <td class="table-cell"><p id="table1-endpoint-Seg2H0">{{ rc.parameters.1.seg_bounds.0.0|floatformat:3 }}</p></td>
                     <td class="table-cell"><p id="table1-endpoint-Seg2H1">{{ rc.parameters.1.seg_bounds.1.0|floatformat:3 }}</p></td>
                     <td class="table-cell"><p id="table1-segment2-rmse">{{ rc.parameters.1.rmse|floatformat:3 }}</p></td>
+                    <td class="table-cell"><p id="table1-segment2-mape">{{ rc.parameters.1.mape|floatformat:1 }} %</p></td>
                     <td class="table-cell"><p></p></td>
                 </tr>
             {% endif %}
@@ -59,6 +62,9 @@
                 </td>
                 <td class="table-cell">
                     <p id="compare-curve-rmse" style="width: 45px;"></p>
+                </td>
+                <td class="table-cell">
+                    <p id="compare-curve-mape" style="width: 45px;"></p>
                 </td>
                 <td class="table-cell" style="display:block">
                     <div id="add-curve">
