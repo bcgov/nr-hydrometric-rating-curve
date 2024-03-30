@@ -30,7 +30,7 @@ jobs:
           oc_token: ${{ secrets.OC_TOKEN }}
           overwrite: true
           parameters:
-            -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test
+            -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test -p MAX_REPLICAS=3
 
   promotions:
     name: Promote Images
