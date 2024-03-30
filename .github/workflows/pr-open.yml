@@ -55,7 +55,7 @@ jobs:
           oc_token: ${{ secrets.OC_TOKEN }}
           overwrite: true
           parameters:
-            -p MIN_REPLICAS=1 -p MAX_REPLICAS=1 -p ZONE=${{ github.event.number }}
+            -p ZONE=${{ github.event.number }}
             -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ github.event.number }}
 
   results:
