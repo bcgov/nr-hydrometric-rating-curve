@@ -31,7 +31,7 @@ parameters:
     value: "1"
   - name: MAX_REPLICAS
     description: The maximum amount of replicas for the horizontal pod autoscaler.
-    value: "1"
+    value: "2"
   - name: REGISTRY
     description: Container registry to import from (internal is image-registry.openshift-image-registry.svc:5000)
     value: ghcr.io
