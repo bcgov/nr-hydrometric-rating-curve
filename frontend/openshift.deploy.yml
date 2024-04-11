@@ -121,7 +121,7 @@ objects:
                       name: "${NAME}-${ZONE}-rctool"
                       key: SECRET_KEY
                 - name: CSRF_TRUSTED_ORIGINS
-                  value: 'https://*.apps.silver.devops.gov.bc.ca,https://*.apps.silver.devops.gov.bc.ca'
+                  value: 'https://*.apps.silver.devops.gov.bc.ca,https://*.apps.silver.devops.gov.bc.ca,https://hydra.nrs.gov.bc.ca'
 
               ports:
                 - containerPort: 3000
