@@ -50,12 +50,6 @@ def rctool_import(request, tour_request_id=0):
                 "tour_request_status_id"
             )
 
-        # If user is on the tour, upload test data
-        if tour_request_id == 1:
-            context["form"] = import_rc_data()
-            return render(request, "rctool/rctool/import/rctool_import.html", context)
-
-        # if not on a tour, upload their dataset
         import_form = import_rc_data(request.POST, request.FILES)
         if import_form.is_valid():
 
