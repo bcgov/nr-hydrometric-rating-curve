@@ -44,18 +44,12 @@ def rctool_import(request, tour_request_id=0):
     context["tour_request_status_id"] = tour_request_id
 
     if request.method == "POST":
-
+        print(request)
         if request.POST.get("tour_request_status_id"):
             context["tour_request_status_id"] = request.POST.get(
                 "tour_request_status_id"
             )
 
-        # If user is on the tour, upload test data
-        if tour_request_id == 1:
-            context["form"] = import_rc_data()
-            return render(request, "rctool/rctool/import/rctool_import.html", context)
-
-        # if not on a tour, upload their dataset
         import_form = import_rc_data(request.POST, request.FILES)
         if import_form.is_valid():
 
@@ -162,11 +156,12 @@ def autofit_data(
         )
     ]
 
-    rc_data_output = [
-        {"label": "field", "data": field_data}
-    ]  # if n_seg = 0, this will be the output
+    rc_data_output = [{"label": "field", "data": field_data}]
+
+    # if n_seg = 0, this will be the output
     rc_param_output = None  # if n_seg = 0, this will be the output
     best_rc_data = None
+
     # remove if row already exists
     df_field = df_field.drop_duplicates(subset=["stage", "discharge"], keep="first")
 
@@ -174,9 +169,9 @@ def autofit_data(
     x_min = df_field["stage"].min()
     x_max = df_field["stage"].max()
     x_step = (x_max - x_min) / 50
-    min_fitting_points = math.ceil(
-        len(df_field["stage"]) * 0.15
-    )  # add constraint so fitting line has to pass through at least 20% of points
+    min_fitting_points = math.ceil(len(df_field["stage"]) * 0.15)
+
+    # add constraint so fitting line has to pass through at least 20% of points
     rmse_best = 10000.00  # initialize with something unrealistically high
 
     if n_seg == 1:
@@ -501,12 +496,9 @@ def rctool_develop_initialize(request):
                 context["toggle_breakpoint"] = "false"
                 context["toggle_weighted_fit"] = "false"
                 context["filename"] = df["filename"][0]
-                # get constraints fo input settings
+
+                # get constraints of input settings
                 context["max_offset"] = fielddatacsv_df["stage"].min()
-                # if parameter_rc_lst[0]['seg_bounds'][0][0] < fielddatacsv_df['stage'].min():
-                #     context['max_offset'] = parameter_rc_lst[0]['seg_bounds'][0][0]
-                # else:
-                #     context['max_offset'] = fielddatacsv_df['stage'].min()
 
                 df_filtered = fielddatacsv_df.drop_duplicates(
                     subset=["stage"], keep="first"
@@ -588,10 +580,6 @@ def rctool_develop_initialize(request):
 
         # max offset
         context["max_offset"] = field_df_raw["stage"].min()
-        # if context['rc']['parameters'][0]['seg_bounds'][0][0] < field_df_raw['stage'].min():
-        #     context['max_offset'] = context['rc']['parameters'][0]['seg_bounds'][0][0]
-        # else:
-        #     context['max_offset'] = field_df_raw['stage'].min()
 
     except Exception as e:
         print("Error in rctool_develop_initialize: " + repr(e))
@@ -1160,10 +1148,6 @@ def rctool_export_output(request):
                 response["Content-Disposition"] = content
 
                 return response
-
-                # except Exception as e:
-                #     print("Error in rctool_export_output: " + repr(e))
-                #     messages.error(request, "Unable to process request. " + repr(e))
 
             context["form"] = export_form
             context["rc_output"] = rc_output
