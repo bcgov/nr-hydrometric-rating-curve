@@ -49,6 +49,21 @@ jobs:
           parameters:
             -p ZONE=test -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ needs.vars.outputs.pr }} -p MAX_REPLICAS=3
 
+  zap_scan:
+    runs-on: ubuntu-22.04
+    needs: [deploys, vars]
+    name: Penetration Tests
+    env:
+      URL: ${{ github.event.repository.name }}-test-frontend.apps.silver.devops.gov.bc.ca
+    steps:
+      - name: ZAP Scan
+        uses: zaproxy/action-full-scan@v0.10.0
+        with:
+          allow_issue_writing: true
+          artifact_name: "zap_rctool"
+          cmd_options: "-a"
+          issue_title: "ZAP: rctool"
+          target: https://${{ env.URL }}
   promotions:
     name: Promote Images
     needs: [deploys, vars]
