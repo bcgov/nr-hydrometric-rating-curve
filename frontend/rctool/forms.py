@@ -30,6 +30,22 @@ class import_rc_data(forms.Form):
             }
         ),
     )
+
+    csv_separator = forms.ChoiceField(
+        label="separator",
+        widget=forms.Select(
+            attrs={
+                "class": "form-control form-control-sm",
+                "style": "font-size: 11.5px;",
+            }
+        ),
+        choices=[
+            (",", "comma"),
+            (";", "semicolon"),
+            ("\t", "tab"),
+        ],
+    )
+
     header_row = forms.IntegerField(
         label="header row number",
         widget=forms.NumberInput(

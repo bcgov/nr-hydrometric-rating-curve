@@ -26,10 +26,6 @@
 
                                     <div>
                                     <label class="form-label">session type</label><br>
-                                        {% comment %} <select class="form-control form-control-sm" id="input-session-type" name="input-session-type" onChange="toggleInputForm(this.value)">
-                                            <option value="new-session" selected><small>new data</small></option>
-                                            <option value="previous-session"><small>previous session</small></option>
-                                        </select> {% endcomment %}
                                         {{form.input_session_type}}
                                     </div>
                                     
@@ -37,12 +33,17 @@
                                         <label class="form-label">header row number</label>
                                         {{form.header_row}}
                                     </div>
+                                    
+                                    <div style="margin-top:15px;">
+                                        <label class="form-label">csv separator</label>
+                                        {{form.csv_separator}}
+                                    </div>
 
                                     <div style="margin-top:15px;">
                                         <input type="file" id="csvFile" accept=".csv"/>
                                         <br/>
                                         <small class="text-small">
-                                            *csv format only, download sample file here: <a href="{% static 'sample_data/sample_data.csv' %}" download>sample_data.csv</a>
+                                            *csv format only, download sample file here: <a href="{% static 'sample_data/sample_data.csv' %}" download>sample_data.csv</a>. Separator: comma, Header row: 1
                                         </small>
                                     </div>
 
@@ -78,6 +79,9 @@
                                 </table>
                             </div>
 
+                            <small class="text-small">
+                                If no uncertainty data is provided, missing values will be filled in as 0.05 (5%).
+                             </small>
                             <div id="error-messages">
                                 {% if messages %}
                                     {% for message in messages %}
@@ -164,20 +168,21 @@ if (sessionStorage.getItem("tourStatus") == 'true') {
     importTour.restart();
 };
 
-// on choosing a csv file, load it as json
-const csvFile = document.getElementById("csvFile");
-
 function loadCSV() {
     const reader = new FileReader();
     reader.onload = function(e) {
         const csv = e.target.result;
         const lines = csv.split("\n");
         const result = [];
+        const headerRow = document.getElementById("form-header-row").value - 1;
+        const separator = document.getElementById("id_csv_separator").value;
 
-        const headers = lines[0].replace(/\r/g, "").split(",");
+        console.log(separator)
+
+        const headers = lines[headerRow].replace(/\r/g, "").split(separator);
         console.log(headers)
 
-        for (let i = 1; i < lines.length; i++) {
+        for (let i = headerRow + 1; i < lines.length; i++) {
             const obj = {};
 
             const values = [];
@@ -190,7 +195,7 @@ function loadCSV() {
 
                 if (char === '"') {
                     insideQuotes = !insideQuotes;
-                } else if (char === ',' && !insideQuotes) {
+                } else if (char === separator && !insideQuotes) {
                     values.push(currentValue.trim());
                     currentValue = '';
                 } else {
@@ -201,7 +206,6 @@ function loadCSV() {
             // Add the last value (outside the loop)
             values.push(currentValue.trim());
 
-            console.log(values)
             for (let col = 0; col < headers.length; col++) {
                 if (values[col] === "" || values[col] === undefined) {
                     continue;
@@ -214,11 +218,12 @@ function loadCSV() {
                 continue;
             }
 
-            // filter out leading and trailing quotes
+            // filter out leading and trailing quotes replace internal comma and tab
             for (let key in obj) {
-                obj[key] = obj[key].replace(/^"|"$/g, "");
+                obj[key] = obj[key].replace(/^"|"$/g, "").replace(/,/g, ";").replace(/\t/g, ";");
             }
 
+            console.log(obj)
             result.push(obj);
         }
 
@@ -226,18 +231,22 @@ function loadCSV() {
         document.getElementById("csv_content").value = JSON.stringify(result);
 
     };
-    reader.readAsText(csvFile.files[0]);
+    reader.readAsText(document.getElementById("csvFile").files[0]);
 };
 
 
 function updateTable() {
     textData = document.getElementById("csv_content").value;
-    if (textData === "") {
+
+    try {
+        result = JSON.parse(textData);
+        headers = Object.keys(result[0]);
+    } catch (e) {
+        console.log(e);
+        clearTable();
         return;
     }
-    result = JSON.parse(textData);
 
-    headers = Object.keys(result[0]);
 
     // show the table in csv-data-table
     const table = document.getElementById("csv-data-table").getElementsByTagName("table")[0];
@@ -261,15 +270,46 @@ function updateTable() {
     document.getElementById("input-instructions").style.display = "none";
 }
 
-updateTable()
 
-csvFile.addEventListener("change", function() {
-    loadCSV();
-    // delay updateTable to allow time for the file to load
-    setTimeout(updateTable, 500);
-    updateTable();
-});
+function clearTable(){
+    const table = document.getElementById("csv-data-table").getElementsByTagName("table")[0];
+    table.innerHTML = `
+    <tr class="table-header">
+        <th class="table-cell">datetime</th>
+        <th class="table-cell">discharge</th>
+        <th class="table-cell">stage</th>
+        <th class="table-cell">uncertainty</th>
+        <th class="table-cell">comments</th>
+    </tr>
+    <tr class="table-row">
+        <td class="table-cell">YYYY-MM-DD HH:MM</td>
+        <td class="table-cell">number</td>
+        <td class="table-cell">number</td>
+        <td class="table-cell">decimal fraction (optional)</td>
+        <td class="table-cell">text (optional)</td>
+    </tr>
+    `;
+}
+function refreshTable() {
+    clearTable();
+    try {
+        loadCSV();
+        setTimeout(updateTable, 200);
+        updateTable();
+    } catch (e) {
+        console.log(e);
+        clearTable();
+    }
+}
 
+// on input field change, update the table
+document.getElementById("csvFile").addEventListener("change", refreshTable);
+document.getElementById("id_csv_separator").addEventListener("change", refreshTable);
+document.getElementById("id_csv_separator").addEventListener("change", refreshTable);
+document.getElementById("form-header-row").addEventListener("change", refreshTable);
+
+// on first load, update the table
+refreshTable()
 
 </script>
 {% endblock %}
