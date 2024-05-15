@@ -526,6 +526,12 @@ def rctool_develop_initialize(request):
             field_df_raw["toggle_point"] = "checked"
             field_df_raw["discharge"] = field_df_raw["discharge"].round(decimals=3)
             field_df_raw["stage"] = field_df_raw["stage"].round(decimals=3)
+
+            # fill in missing uncertainty values
+            if "uncertainty" not in field_df_raw:
+                field_df_raw["uncertainty"] = 0.05
+            field_df_raw.fillna({"uncertainty": 0.05}, inplace=True)
+
             field_df_raw["uncertainty"] = field_df_raw["uncertainty"].round(decimals=3)
             field_df_raw["datetime"] = field_df_raw["datetime"].apply(str)
             field_df_raw["comments"] = field_df_raw["comments"].apply(str)
