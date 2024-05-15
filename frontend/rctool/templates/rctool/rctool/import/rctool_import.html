@@ -173,21 +173,40 @@ function loadCSV() {
         const csv = e.target.result;
         const lines = csv.split("\n");
         const result = [];
-        const headers = lines[0].split(",");
 
-        // filter out leading and trailing quotes, '\r', make headers lowercase
-        for (let i = 0; i < headers.length; i++) {
-            headers[i] = headers[i].replace(/^"|"$/g, "").replace(/\r/g, "").toLowerCase();
-        }
+        const headers = lines[0].replace(/\r/g, "").split(",");
+        console.log(headers)
 
         for (let i = 1; i < lines.length; i++) {
             const obj = {};
-            const currentline = lines[i].split(",");
-            for (let j = 0; j < headers.length; j++) {
-                if (currentline[j] === "" || currentline[j] === undefined) {
+
+            const values = [];
+            const line = lines[i].replace(/\r/g, "");
+            let currentValue = '';
+            let insideQuotes = false;
+
+            for (let j = 0; j < line.length; j++) {
+                const char = line[j];
+
+                if (char === '"') {
+                    insideQuotes = !insideQuotes;
+                } else if (char === ',' && !insideQuotes) {
+                    values.push(currentValue.trim());
+                    currentValue = '';
+                } else {
+                    currentValue += char;
+                }
+            }
+
+            // Add the last value (outside the loop)
+            values.push(currentValue.trim());
+
+            console.log(values)
+            for (let col = 0; col < headers.length; col++) {
+                if (values[col] === "" || values[col] === undefined) {
                     continue;
                 }
-                obj[headers[j]] = currentline[j]
+                obj[headers[col]] = values[col]
             }
 
             // skip empty rows
@@ -209,6 +228,7 @@ function loadCSV() {
     };
     reader.readAsText(csvFile.files[0]);
 };
+
 
 function updateTable() {
     textData = document.getElementById("csv_content").value;
