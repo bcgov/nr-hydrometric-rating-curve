@@ -44,22 +44,20 @@ def rctool_import(request, tour_request_id=0):
     context["tour_request_status_id"] = tour_request_id
 
     if request.method == "POST":
-        print(request)
         if request.POST.get("tour_request_status_id"):
             context["tour_request_status_id"] = request.POST.get(
                 "tour_request_status_id"
             )
 
         import_form = import_rc_data(request.POST, request.FILES)
+        print(import_form)
         if import_form.is_valid():
 
             fheader_row = import_form.cleaned_data["header_row"] - 1
             try:
                 csv_file = import_form.cleaned_data["csv_upload"]
                 # Check if it is a csv file
-                if not csv_file.name.endswith(".csv") and not csv_file.name.endswith(
-                    ".dat"
-                ):
+                if not csv_file.name.endswith(".csv"):
                     messages.error(request, "Error: incorrect file type.")
                 # Check if file size is too large
                 if csv_file.multiple_chunks() or csv_file.size > 200000:
@@ -84,6 +82,9 @@ def rctool_import(request, tour_request_id=0):
                     "Comments",
                     "Comment",
                 ]
+
+                raise Exception("Debug.")
+
                 df = pd.read_csv(
                     csv_file,
                     usecols=lambda c: c.lower() in ok_columns,
@@ -415,8 +416,10 @@ def rctool_develop_initialize(request):
     context = {}
 
     if request.method == "POST":
+        input_session_type = request.POST.get("input_session_type")
+
         # if a previous session is initiaizing...
-        try:
+        if input_session_type == "load":
             import_form = import_rc_data(request.POST, request.FILES)
             if import_form.is_valid():
                 fheader_row = import_form.cleaned_data["header_row"] - 1
@@ -509,21 +512,32 @@ def rctool_develop_initialize(request):
                 return render(
                     request, "rctool/rctool/develop/rctool_develop.html", context
                 )
-        except:
-            pass
 
-        # if new session...
-        field_data_json = request.POST.get("pass-field-to-develop")
-        field_df_raw = pd.read_json(field_data_json)
-        field_df_raw["toggle_point"] = "checked"
-        field_df_raw["discharge"] = field_df_raw["discharge"].round(decimals=3)
-        field_df_raw["stage"] = field_df_raw["stage"].round(decimals=3)
-        field_df_raw["uncertainty"] = field_df_raw["uncertainty"].round(decimals=3)
-        field_df_raw["datetime"] = field_df_raw["datetime"].apply(str)
-        context["tour_request_status_id"] = request.POST.get("tour_request_status_id")
-        context["develop_tour_request_status_id"] = request.POST.get(
-            "pass-tour-status-to-develop"
-        )
+        elif input_session_type == "new":
+            # if new session...
+            field_data_json = request.POST.get("csv_content")
+
+            # load field data from json
+
+            field_df_raw = pd.read_json(io.StringIO(field_data_json))
+            # convert first row to lower case
+            field_df_raw.columns = [x.lower() for x in field_df_raw.columns]
+
+            field_df_raw["toggle_point"] = "checked"
+            field_df_raw["discharge"] = field_df_raw["discharge"].round(decimals=3)
+            field_df_raw["stage"] = field_df_raw["stage"].round(decimals=3)
+            field_df_raw["uncertainty"] = field_df_raw["uncertainty"].round(decimals=3)
+            field_df_raw["datetime"] = field_df_raw["datetime"].apply(str)
+            field_df_raw["comments"] = field_df_raw["comments"].apply(str)
+            context["tour_request_status_id"] = request.POST.get(
+                "tour_request_status_id"
+            )
+            context["develop_tour_request_status_id"] = request.POST.get(
+                "pass-tour-status-to-develop"
+            )
+        else:
+            messages.error(request, "Error: incorrect input session type.")
+
     else:
         # redirect to import as no data was passed
         return render(request, "rctool/rctool/import/rctool_import.html", context)
@@ -552,38 +566,38 @@ def rctool_develop_initialize(request):
     context["breakpoint_min"] = df_filtered["stage"].nsmallest(2).iloc[-1]
     context["breakpoint_max"] = df_filtered["stage"].nlargest(2).iloc[-1]
 
-    try:
-        [context["rc"], context["sidepanel_message"]] = autofit_data(
-            field_df_raw,
-            init_offsets,
-            context["breakpoint1"],
-            context["rc_data"],
-            context["n_seg"],
-            weighted,
-        )
-        context["offsets"] = [
-            context["rc"]["parameters"][0]["offset"],
-            context["rc"]["parameters"][0]["offset"],
-        ]
-        offsets_val = [
-            float(context["rc"]["parameters"][0]["offset"]),
-            float(context["rc"]["parameters"][0]["offset"]),
-        ]
+    print(field_df_raw.head())
+    [context["rc"], context["sidepanel_message"]] = autofit_data(
+        field_df_raw,
+        init_offsets,
+        context["breakpoint1"],
+        context["rc_data"],
+        context["n_seg"],
+        weighted,
+    )
+    context["offsets"] = [
+        context["rc"]["parameters"][0]["offset"],
+        context["rc"]["parameters"][0]["offset"],
+    ]
+    offsets_val = [
+        float(context["rc"]["parameters"][0]["offset"]),
+        float(context["rc"]["parameters"][0]["offset"]),
+    ]
 
-        if offsets_val[0] < 0:
-            offsets_val[0] = " + " + str(abs(offsets_val[0]))
-            offsets_val[1] = " + 0.00 "
-        else:
-            offsets_val[0] = " - " + str(abs(offsets_val[0]))
-            offsets_val[1] = " - 0.00 "
-        context["offsets_val"] = offsets_val
+    if offsets_val[0] < 0:
+        offsets_val[0] = " + " + str(abs(offsets_val[0]))
+        offsets_val[1] = " + 0.00 "
+    else:
+        offsets_val[0] = " - " + str(abs(offsets_val[0]))
+        offsets_val[1] = " - 0.00 "
+    context["offsets_val"] = offsets_val
 
-        # max offset
-        context["max_offset"] = field_df_raw["stage"].min()
+    # max offset
+    context["max_offset"] = field_df_raw["stage"].min()
 
-    except Exception as e:
-        print("Error in rctool_develop_initialize: " + repr(e))
-        messages.error(request, "Unable to upload file. " + repr(e))
+    # except Exception as e:
+    #     print("Error in rctool_develop_initialize: " + repr(e))
+    #     messages.error(request, "Unable to upload file. " + repr(e))
 
     return render(request, "rctool/rctool/develop/rctool_develop.html", context)
 

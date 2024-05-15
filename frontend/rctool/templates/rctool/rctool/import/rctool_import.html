@@ -19,85 +19,74 @@
                 <div class="card-body pt-3" style="display: flex;">
                     <div class="row">
                         <div class="card-body-left col-lg-5 col-md-12">
-                            <form method="POST" id="import-data-form" enctype="multipart/form-data">
-                                <div class="form-group" style="margin-bottom:25px;">
+
+                            <form action="{% url 'rctool_develop_initialize' %}" method="post">
+                                <div class="form-group" style="margin-bottom:25px;font-size:11.5px;">
                                     {% csrf_token %}
-                                    <label class="form-label" style="font-size:11.5px;">import</label><br>
-                                    <select class="form-control form-control-sm" id="input-session-type" name="input-session-type" onChange="toggleInputForm(this.value)">
-                                        <option value="new-session" selected><small>new data</small></option>
-                                        <option value="previous-session"><small>previous session</small></option>
-                                    </select>
-                                    <div id="toggle-div">
-                                        <label for="header row" class="form-label" style="margin-top:15px; font-size:11.5px;">header row number</label>
+
+                                    <div>
+                                    <label class="form-label">session type</label><br>
+                                        {% comment %} <select class="form-control form-control-sm" id="input-session-type" name="input-session-type" onChange="toggleInputForm(this.value)">
+                                            <option value="new-session" selected><small>new data</small></option>
+                                            <option value="previous-session"><small>previous session</small></option>
+                                        </select> {% endcomment %}
+                                        {{form.input_session_type}}
+                                    </div>
+                                    
+                                    <div style="margin-top:15px;">
+                                        <label class="form-label">header row number</label>
                                         {{form.header_row}}
                                     </div>
-                                    <label class="form-label" style="margin-top:15px; font-size:11.5px">load data</label>
-                                    {{form.csv_upload}}
 
-                                    <small class="text-small">
-                                        *csv format only, download sample file here: <a href="{% static 'sample_data/sample_data.csv' %}" download>sample_data.csv</a>
-                                    </small>
+                                    <div style="margin-top:15px;">
+                                        <input type="file" id="csvFile" accept=".csv"/>
+                                        <br/>
+                                        <small class="text-small">
+                                            *csv format only, download sample file here: <a href="{% static 'sample_data/sample_data.csv' %}" download>sample_data.csv</a>
+                                        </small>
+                                    </div>
+
+
+                                    <input type="hidden" id="csv_content" name="csv_content" value="">
                                 </div>
-                                <div class="form-group">
-                                    <button class="btn btn-primary btn-block" style="background-color: #6c747e !important; border-color: #FFFFFF;" type="submit" id="enter-data-button" value="submit"><small>load</small></button>
-                                </div>
+                                
+                                <button class="btn btn-primary btn-block" style="background-color: #6c747e !important; border-color: #FFFFFF;" type="submit"  id="enter-data-button"><small>submit</small></button>
                             </form>
                         </div>
 
                         <div class="card-body-right col-lg-7 col-md-12">
-                            {% if not table_data %}
-                                <p id="input-instructions" style="font-size:11.5px;">
-                                    Please upload in csv format with the specific column names and format specified below.
-                                </p>
-                                <div id="example-data">
-                                    <table class="table">
-                                        <tr class="table-header">
-                                            <th class="table-cell">datetime</th>
-                                            <th class="table-cell">discharge</th>
-                                            <th class="table-cell">stage</th>
-                                            <th class="table-cell">uncertainty</th>
-                                            <th class="table-cell">comments</th>
-                                        </tr>
-                                        <tr class="table-row">
-                                            <td class="table-cell">YYYY-MM-DD HH:MM</td>
-                                            <td class="table-cell">number</td>
-                                            <td class="table-cell">number</td>
-                                            <td class="table-cell">decimal fraction (optional)</td>
-                                            <td class="table-cell">text (optional)</td>
-                                        </tr>
-                                        <tr class="table-row">
-                                            <td class="table-cell">YYYY-MM-DD HH:MM</td>
-                                            <td class="table-cell">number</td>
-                                            <td class="table-cell">number</td>
-                                            <td class="table-cell">decimal fraction (optional)</td>
-                                            <td class="table-cell">text (optional)</td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            {% endif %}
-                            {% if messages %}
-                            {% for message in messages %}
-                            <div>
-                                <strong class="error-text">{{message|safe}}</strong>
+                            <p id="input-instructions" style="font-size:11.5px;">
+                                Please upload in csv format with the specific column names and format specified below.
+                            </p>
+                            
+                            <div id="csv-data-table" style="display: flex; margin-top:15px;">
+                                <table class="table">
+                                    <tr class="table-header">
+                                        <th class="table-cell">datetime</th>
+                                        <th class="table-cell">discharge</th>
+                                        <th class="table-cell">stage</th>
+                                        <th class="table-cell">uncertainty</th>
+                                        <th class="table-cell">comments</th>
+                                    </tr>
+                                    <tr class="table-row">
+                                        <td class="table-cell">YYYY-MM-DD HH:MM</td>
+                                        <td class="table-cell">number</td>
+                                        <td class="table-cell">number</td>
+                                        <td class="table-cell">decimal fraction (optional)</td>
+                                        <td class="table-cell">text (optional)</td>
+                                    </tr>
+                                </table>
                             </div>
-                            {% endfor %}
-                            {% endif %}
-                            {% if table_data %}
-                            {% include 'rctool/components/table.html' %}
-                            <div class='import-button-container' style="display: flex; margin-top:15px;">
-                                <div style="flex:1; margin-right:10px;">
-                                    <form method="POST" action="../../develop/initialize" id="import-form">
-                                        {% csrf_token %}
-                                        <input type="hidden" id="pass-filename-to-develop" name="pass-filename-to-develop" value="{{ filename }}">
-                                        <input type="hidden" id="pass-field-to-develop" name="pass-field-to-develop" value="{{ raw_field_data }}">
-                                        <button class='btn btn-success btn-block' id="submit-import" type="submit" onclick="location.href='{% url 'rctool_develop_initialize' %}'" name='savebtn' style="background-color: #8FBC8F !important; border-color: #FFFFFF;"><small>next</small></button>
-                                    </form>
-                                </div>
-                                <div style='flex:1; margin-left:10px;'>
-                                    <a class="btn btn-danger btn-block" href="{% url 'rctool_import' 0 %}" style="background-color: #cc3333 !important; border-color: #cc3333;"><small>cancel</small></a>
-                                </div>
+
+                            <div id="error-messages">
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <div>
+                                            <strong class="error-text">{{message|safe}}</strong>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -174,6 +163,93 @@ if (sessionStorage.getItem("tourStatus") == 'true') {
     importTour.start(sessionStorage.getItem("tourStatus"));
     importTour.restart();
 };
+
+// on choosing a csv file, load it as json
+const csvFile = document.getElementById("csvFile");
+
+function loadCSV() {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const csv = e.target.result;
+        const lines = csv.split("\n");
+        const result = [];
+        const headers = lines[0].split(",");
+
+        // filter out leading and trailing quotes, '\r', make headers lowercase
+        for (let i = 0; i < headers.length; i++) {
+            headers[i] = headers[i].replace(/^"|"$/g, "").replace(/\r/g, "").toLowerCase();
+        }
+
+        for (let i = 1; i < lines.length; i++) {
+            const obj = {};
+            const currentline = lines[i].split(",");
+            for (let j = 0; j < headers.length; j++) {
+                if (currentline[j] === "" || currentline[j] === undefined) {
+                    continue;
+                }
+                obj[headers[j]] = currentline[j]
+            }
+
+            // skip empty rows
+            if (obj["datetime"] === undefined || obj["datetime"] === "") {
+                continue;
+            }
+
+            // filter out leading and trailing quotes
+            for (let key in obj) {
+                obj[key] = obj[key].replace(/^"|"$/g, "");
+            }
+
+            result.push(obj);
+        }
+
+        // set the csv content to the hidden form field
+        document.getElementById("csv_content").value = JSON.stringify(result);
+
+    };
+    reader.readAsText(csvFile.files[0]);
+};
+
+function updateTable() {
+    textData = document.getElementById("csv_content").value;
+    if (textData === "") {
+        return;
+    }
+    result = JSON.parse(textData);
+
+    headers = Object.keys(result[0]);
+
+    // show the table in csv-data-table
+    const table = document.getElementById("csv-data-table").getElementsByTagName("table")[0];
+    table.innerHTML = "";
+    const headerRow = table.insertRow();
+    for (let header of headers) {
+        const cell = headerRow.insertCell();
+        cell.textContent = header;
+        cell.classList.add("table-cell");
+    }
+    for (let row of result) {
+        const tableRow = table.insertRow();
+        for (let header of headers) {
+            const cell = tableRow.insertCell();
+            cell.textContent = row[header];
+            cell.classList.add("table-cell");
+        }
+    }
+
+    // hide input-instructions
+    document.getElementById("input-instructions").style.display = "none";
+}
+
+updateTable()
+
+csvFile.addEventListener("change", function() {
+    loadCSV();
+    // delay updateTable to allow time for the file to load
+    setTimeout(updateTable, 500);
+    updateTable();
+});
+
 
 </script>
 {% endblock %}

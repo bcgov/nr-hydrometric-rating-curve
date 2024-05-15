@@ -54,6 +54,8 @@ def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *a
     df_data["U"] = df_data["U"].apply(lambda x: x / 100.0)
     # set weights as 1 - % unc
     df_data["W"] = df_data["U"].apply(lambda x: 1 - x)
+
+    print(df_data)
     # try weighting
     result = plm.fit(df_data["Q"], params, x=df_data["H0"], weights=df_data["W"])
     wgt_const = result.best_values["amplitude"]
