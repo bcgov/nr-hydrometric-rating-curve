@@ -48,84 +48,6 @@ def rctool_import(request, tour_request_id=0):
             context["tour_request_status_id"] = request.POST.get(
                 "tour_request_status_id"
             )
-
-        import_form = import_rc_data(request.POST, request.FILES)
-        print(import_form)
-        if import_form.is_valid():
-
-            fheader_row = import_form.cleaned_data["header_row"] - 1
-            try:
-                csv_file = import_form.cleaned_data["csv_upload"]
-                # Check if it is a csv file
-                if not csv_file.name.endswith(".csv"):
-                    messages.error(request, "Error: incorrect file type.")
-                # Check if file size is too large
-                if csv_file.multiple_chunks() or csv_file.size > 200000:
-                    messages.error(
-                        request,
-                        "Uploaded file is too big (%.2f MB)."
-                        % (csv_file.size / (1000 * 1000),),
-                    )  # change file limit size?
-
-                ok_columns = [
-                    "datetime",
-                    "stage",
-                    "discharge",
-                    "uncertainty",
-                    "comments",
-                    "comment",
-                    "Datetime",
-                    "DateTime",
-                    "Stage",
-                    "Discharge",
-                    "Uncertainty",
-                    "Comments",
-                    "Comment",
-                ]
-
-                raise Exception("Debug.")
-
-                df = pd.read_csv(
-                    csv_file,
-                    usecols=lambda c: c.lower() in ok_columns,
-                    header=fheader_row,
-                    skip_blank_lines=True,
-                )
-                df.columns = [x.lower() for x in df.columns]
-                df = df[df["stage"].notna()]
-                df = df[df["discharge"].notna()]
-
-                # get filename
-                csv_filename, ext = os.path.splitext(csv_file.name)
-                context["filename"] = csv_filename
-
-                # handle possible uncertainty errors
-                if "uncertainty" not in df:
-                    df["uncertainty"] = 0
-                df.fillna({"uncertainty": 0.05}, inplace=True)
-
-                # if user did not upload comments column, of if the user uploaded a column called comment
-                if "comment" not in df and "comments" not in df:
-                    df["comments"] = "-"
-                if "comment" in df:
-                    df["comments"] = df["comment"]
-                    df = df.drop("comment", 1)
-                df.fillna({"comments": "-"}, inplace=True)
-                # remove , from any comments (was causing issues)
-                df["comments"] = df["comments"].str.replace(",", " ;")
-
-                df.dropna(subset=["stage", "discharge"], inplace=True)
-                df["datetime"] = df["datetime"].astype("str")
-                context["headings"] = list(df.columns.values)
-                context["table_data"] = df.values.tolist()
-                context["raw_field_data"] = df.to_json(date_format="iso")
-                context["form"] = import_form
-
-            except Exception as e:
-                print("Unable to upload file. " + repr(e))
-                messages.error(request, "Unable to upload file. " + repr(e))
-                context["form"] = import_rc_data()
-            return render(request, "rctool/rctool/import/rctool_import.html", context)
     else:
         context["form"] = import_rc_data()
 
@@ -557,7 +479,6 @@ def rctool_develop_initialize(request):
     context["breakpoint_min"] = df_filtered["stage"].nsmallest(2).iloc[-1]
     context["breakpoint_max"] = df_filtered["stage"].nlargest(2).iloc[-1]
 
-    print(field_df_raw.head())
     [context["rc"], context["sidepanel_message"]] = autofit_data(
         field_df_raw,
         init_offsets,

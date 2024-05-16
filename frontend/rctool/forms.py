@@ -29,6 +29,7 @@ class import_rc_data(forms.Form):
                 "style": "font-size: 11.5px; height: 200px;",
             }
         ),
+        required=False,
     )
 
     session_content = forms.CharField(
@@ -39,6 +40,7 @@ class import_rc_data(forms.Form):
                 "style": "font-size: 11.5px; height: 200px;",
             }
         ),
+        required=False,
     )
 
     csv_separator = forms.ChoiceField(
@@ -68,20 +70,6 @@ class import_rc_data(forms.Form):
             }
         ),
     )
-
-    # define form actions
-    def clean(self):
-        cleaned_data = super().clean()
-        csv_content = cleaned_data.get("csv_content")
-        header_row = cleaned_data.get("header_row")
-
-        # check if csv content is empty
-        if csv_content == "":
-            self.add_error("csv_content", "csv content is empty")
-
-        # check if header row is out of range
-        if header_row < 1:
-            self.add_error("header_row", "header row is out of range")
 
 
 class develop_rc(forms.Form):
