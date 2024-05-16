@@ -20,7 +20,7 @@ The HydRA app is hosted in the BC Gov GitHub organization and is available at PL
 
 ## Managing the app packages
 
-After cloning the repository, use the `poetry` python package manager to install the dependencies by running `poetry install` from the `frontend` directory. To update the dependencies, run `poetry update` or editate the `pyproject.toml` file.
+After cloning the repository, use the `poetry` python package manager to install the dependencies by running `poetry install` from the `frontend` directory. To update the dependencies, run `poetry update` or edit the `pyproject.toml` file. To export the dependencies to a `requirements.txt` file for the docker image, run `poetry export -f requirements.txt --output requirements.txt`.
 
 ## Running the app locally
 
