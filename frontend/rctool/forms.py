@@ -31,6 +31,16 @@ class import_rc_data(forms.Form):
         ),
     )
 
+    session_content = forms.CharField(
+        label="session content",
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control form-control-sm",
+                "style": "font-size: 11.5px; height: 200px;",
+            }
+        ),
+    )
+
     csv_separator = forms.ChoiceField(
         label="separator",
         widget=forms.Select(

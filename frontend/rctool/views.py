@@ -421,97 +421,82 @@ def rctool_develop_initialize(request):
         # if a previous session is initiaizing...
         if input_session_type == "load":
             import_form = import_rc_data(request.POST, request.FILES)
-            if import_form.is_valid():
-                fheader_row = import_form.cleaned_data["header_row"] - 1
-                csv_file = import_form.cleaned_data["csv_upload"]
-                if not csv_file.name.endswith(".csv") and not csv_file.name.endswith(
-                    ".dat"
-                ):
-                    messages.error(request, "Error: incorrect file type.")
-                if csv_file.multiple_chunks() or csv_file.size > 20000:
-                    messages.error(
-                        request,
-                        "Uploaded file is too big (%.2f MB)."
-                        % (csv_file.size / (1000 * 1000),),
-                    )  # change file limit size?
-                df = pd.read_csv(csv_file)
+            session_content = request.POST.get("session_content")
 
-                # preprocess data from previous session
-                data_raw_lst = df["data"].values.tolist()
-                data_raw_lst = list(map(ast.literal_eval, data_raw_lst))
-                data_rc_lst = data_raw_lst[:-1]  # extract rc data from data dict
-                fielddatacsv_dat = data_raw_lst[-1]
-                fielddatacsv_df = pd.DataFrame(
-                    fielddatacsv_dat,
-                    columns=[
-                        "datetime",
-                        "discharge",
-                        "stage",
-                        "uncertainty",
-                        "comments",
-                        "toggle_point",
-                    ],
-                )
-                parameter_raw_lst = df["parameters"].values.tolist()
-                parameter_rc_lst = parameter_raw_lst[
-                    :-2
-                ]  # remove problematic nan value
-                parameter_rc_lst = list(map(ast.literal_eval, parameter_rc_lst))
+            df = pd.read_json(io.StringIO(session_content))
 
-                offsets = [0, 0]
-                offsets[0] = parameter_rc_lst[0]["offset"]
+            # preprocess data from previous session
+            data_raw_lst = df["data"].values.tolist()
+            data_raw_lst = list(map(ast.literal_eval, data_raw_lst))
+            data_rc_lst = data_raw_lst[:-1]  # extract rc data from data dict
+            fielddatacsv_dat = data_raw_lst[-1]
+            fielddatacsv_df = pd.DataFrame(
+                fielddatacsv_dat,
+                columns=[
+                    "datetime",
+                    "discharge",
+                    "stage",
+                    "uncertainty",
+                    "comments",
+                    "toggle_point",
+                ],
+            )
+            parameter_raw_lst = df["parameters"].values.tolist()
+            parameter_rc_lst = parameter_raw_lst[:-2]  # remove problematic nan value
+            parameter_rc_lst = list(map(ast.literal_eval, parameter_rc_lst))
 
-                if len(parameter_rc_lst) > 1:
-                    offsets[1] = parameter_rc_lst[1]["offset"]
-                context["offsets"] = offsets
-                # Format equation according to + or - offset (ie. if user enters a - offset, the equation will show (H + offset) instead of (H -- offset))
-                offsets_val = offsets.copy()
-                if offsets_val[0] < 0:
-                    offsets_val[0] = " + " + str(abs(offsets_val[0]))
-                    context["offsets_val"] = offsets_val
-                else:
-                    offsets_val[0] = " - " + str(abs(offsets_val[0]))
-                    context["offsets_val"] = offsets_val
-                if offsets_val[1] < 0:
-                    offsets_val[1] = " + " + str(abs(offsets_val[1]))
-                    context["offsets_val"] = offsets_val
-                else:
-                    offsets_val[1] = " - " + str(abs(offsets_val[1]))
-                    context["offsets_val"] = offsets_val
+            offsets = [0, 0]
+            offsets[0] = parameter_rc_lst[0]["offset"]
 
-                # round off values in parameters dict
-                rc_param_rounded = []
-                for rcparam_dict in parameter_rc_lst:
-                    rcparam_dict["const"] = round(rcparam_dict["const"], 4)
-                    rcparam_dict["exp"] = round(rcparam_dict["exp"], 4)
-                    rc_param_rounded.append(rcparam_dict)
+            if len(parameter_rc_lst) > 1:
+                offsets[1] = parameter_rc_lst[1]["offset"]
+            context["offsets"] = offsets
+            # Format equation according to + or - offset (ie. if user enters a - offset, the equation will show (H + offset) instead of (H -- offset))
+            offsets_val = offsets.copy()
+            if offsets_val[0] < 0:
+                offsets_val[0] = " + " + str(abs(offsets_val[0]))
+                context["offsets_val"] = offsets_val
+            else:
+                offsets_val[0] = " - " + str(abs(offsets_val[0]))
+                context["offsets_val"] = offsets_val
+            if offsets_val[1] < 0:
+                offsets_val[1] = " + " + str(abs(offsets_val[1]))
+                context["offsets_val"] = offsets_val
+            else:
+                offsets_val[1] = " - " + str(abs(offsets_val[1]))
+                context["offsets_val"] = offsets_val
 
-                rc_dict = {"data": data_rc_lst, "parameters": rc_param_rounded}
-                context["fielddatacsv"] = fielddatacsv_df.to_json(date_format="iso")
-                context["rc"] = rc_dict
-                context["table_dict"] = {
-                    "headings": fielddatacsv_df.columns.values,
-                    "data": fielddatacsv_df.values.tolist(),
-                }
-                context["n_seg"] = len(parameter_rc_lst)
-                context["breakpoint1"] = None
-                context["tour_request_status_id"] = 0
-                context["toggle_breakpoint"] = "false"
-                context["toggle_weighted_fit"] = "false"
-                context["filename"] = df["filename"][0]
+            # round off values in parameters dict
+            rc_param_rounded = []
+            for rcparam_dict in parameter_rc_lst:
+                rcparam_dict["const"] = round(rcparam_dict["const"], 4)
+                rcparam_dict["exp"] = round(rcparam_dict["exp"], 4)
+                rc_param_rounded.append(rcparam_dict)
 
-                # get constraints of input settings
-                context["max_offset"] = fielddatacsv_df["stage"].min()
+            rc_dict = {"data": data_rc_lst, "parameters": rc_param_rounded}
+            context["fielddatacsv"] = fielddatacsv_df.to_json(date_format="iso")
+            context["rc"] = rc_dict
+            context["table_dict"] = {
+                "headings": fielddatacsv_df.columns.values,
+                "data": fielddatacsv_df.values.tolist(),
+            }
+            context["n_seg"] = len(parameter_rc_lst)
+            context["breakpoint1"] = None
+            context["tour_request_status_id"] = 0
+            context["toggle_breakpoint"] = "false"
+            context["toggle_weighted_fit"] = "false"
+            context["filename"] = df["filename"][0]
 
-                df_filtered = fielddatacsv_df.drop_duplicates(
-                    subset=["stage"], keep="first"
-                )
-                context["breakpoint_min"] = df_filtered["stage"].nsmallest(2).iloc[-1]
-                context["breakpoint_max"] = df_filtered["stage"].nlargest(2).iloc[-1]
+            # get constraints of input settings
+            context["max_offset"] = fielddatacsv_df["stage"].min()
 
-                return render(
-                    request, "rctool/rctool/develop/rctool_develop.html", context
-                )
+            df_filtered = fielddatacsv_df.drop_duplicates(
+                subset=["stage"], keep="first"
+            )
+            context["breakpoint_min"] = df_filtered["stage"].nsmallest(2).iloc[-1]
+            context["breakpoint_max"] = df_filtered["stage"].nlargest(2).iloc[-1]
+
+            return render(request, "rctool/rctool/develop/rctool_develop.html", context)
 
         elif input_session_type == "new":
             # if new session...
@@ -1034,12 +1019,8 @@ def rctool_export_output(request):
                     "data": field_data_output_df.values.tolist(),
                 }
 
-                context["rc_img"] = create_export_rc_img(
-                    field_data_output_df, rc_output_dict
-                )
-                context["res_img"] = create_export_res_img(
-                    field_data_output_df, rc_output_dict
-                )
+                context["rc_img"] = None
+                context["res_img"] = None
 
                 # create paramters df for output
                 param_to_df = []

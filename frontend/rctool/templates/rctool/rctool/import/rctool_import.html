@@ -14,32 +14,31 @@
 
     <div style="background-color: #FFFFFF; padding-left:10px; padding-right:10px;">
         <div class="row justify-content-md-center" style="padding: 20px;">
-            <div class="card">
-                <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px;">Import Data</h6>
+            <div class="card col-lg-8 col-md-12 px-0">
+                <h6 class="card-header text-center" style="background-color: #758fa8; color: #FFFFFF; height:30px; font-size:12.5px; padding-top:7px; ">Import Data</h6>
                 <div class="card-body pt-3" style="display: flex;">
                     <div class="row">
-                        <div class="card-body-left col-lg-5 col-md-12">
-
+                        <div class="card-body-left" style="font-size:11.5px">
                             <form action="{% url 'rctool_develop_initialize' %}" method="post">
-                                <div class="form-group" style="margin-bottom:25px;font-size:11.5px;">
+                                <div class="form-group" style="margin-bottom:25px;">
                                     {% csrf_token %}
 
-                                    <div>
-                                    <label class="form-label">session type</label><br>
+                                    <div style="min-width:250px;" id="input-session-type">
+                                        <label class="form-label">session type</label><br>
                                         {{form.input_session_type}}
                                     </div>
                                     
-                                    <div style="margin-top:15px;">
+                                    <div style="margin-top:15px;" id="headerrow_div">
                                         <label class="form-label">header row number</label>
                                         {{form.header_row}}
                                     </div>
                                     
-                                    <div style="margin-top:15px;">
+                                    <div style="margin-top:15px;" id="csv_separator_div">
                                         <label class="form-label">csv separator</label>
                                         {{form.csv_separator}}
                                     </div>
 
-                                    <div style="margin-top:15px;">
+                                    <div style="margin-top:15px;" id="csv_load_div">
                                         <input type="file" id="csvFile" accept=".csv"/>
                                         <br/>
                                         <small class="text-small">
@@ -47,18 +46,23 @@
                                         </small>
                                     </div>
 
+                                    <div style="margin-top:15px;display: none;"  id="session_load_div">
+                                        <input type="file" id="sessionFile" accept=".dat"/>
+                                    </div>
+
 
                                     <input type="hidden" id="csv_content" name="csv_content" value="">
+                                    <input type="hidden" id="session_content" name="session_content" value="">
                                 </div>
                                 
-                                <button class="btn btn-primary btn-block" style="background-color: #6c747e !important; border-color: #FFFFFF;" type="submit"  id="enter-data-button"><small>submit</small></button>
+                                <button class="btn btn-primary btn-block" style="background-color: #6c747e !important; border-color: #FFFFFF;" type="submit" id="enter-data-button" disabled><small>submit</small></button>
                             </form>
                         </div>
 
-                        <div class="card-body-right col-lg-7 col-md-12">
-                            <p id="input-instructions" style="font-size:11.5px;">
+                        <div class="card-body-right" style="font-size:11.5px;">
+                            <div class="card" id="input-instructions" style="border: 0px; padding: 2px;">
                                 Please upload in csv format with the specific column names and format specified below.
-                            </p>
+                            </div>
                             
                             <div id="csv-data-table" style="display: flex; margin-top:15px;">
                                 <table class="table">
@@ -78,10 +82,11 @@
                                     </tr>
                                 </table>
                             </div>
-
-                            <small class="text-small">
-                                If no uncertainty data is provided, missing values will be filled in as 0.05 (5%).
-                             </small>
+                            <div id="csv-data-table-footer">
+                                <small class="text-small">
+                                    If no uncertainty data is provided, missing values will be filled in as 0.05 (5%).
+                                 </small>
+                            </div>
                             <div id="error-messages">
                                 {% if messages %}
                                     {% for message in messages %}
@@ -105,18 +110,45 @@
 <script>
 
 // IMPORT FUNCTIONS
-function toggleInputForm(toggleFormVal) {
-    var toggleDiv = document.getElementById("toggle-div");
-        if (toggleFormVal === "new-session") {
-            document.getElementById('example-data').style.display = "block";
-            toggleDiv.style.display = "block";
-            document.getElementById("input-instructions").innerHTML = "Please upload in csv format with column names; 'datetime', 'discharge', 'stage', 'uncertainty', and 'comments'"
-        } else {
-            toggleDiv.style.display = "none";
-            document.getElementById('example-data').style.display = "none";
-            document.getElementById("input-instructions").innerHTML = "Please upload .dat file from previous session."
-            document.getElementById("import-data-form").action = '../../develop/initialize'
+function toggleInputForm() {
+    var toggleDiv = document.getElementById("id_input_session_type");
+    
+    if (toggleDiv.options[toggleDiv.selectedIndex].value === "new") {
+        // show csv input
+        document.getElementById("headerrow_div").style.display = "block";
+        document.getElementById("csv_separator_div").style.display = "block";
+        document.getElementById("csv_load_div").style.display = "block";
+        document.getElementById('csv-data-table').style.display = "block";
+        document.getElementById('csv-data-table-footer').style.display = "block";
+
+        // hide session input
+        document.getElementById("session_load_div").style.display = "none";
+
+        // adjust text
+        document.getElementById("input-instructions").innerHTML = "Please upload in csv format with column names; 'datetime', 'discharge', 'stage', 'uncertainty', and 'comments'"
+
+        // call refreshTable to update the table
+        refreshTable();
+    } else {
+        // hide csv input
+        document.getElementById("headerrow_div").style.display = "none";
+        document.getElementById("csv_separator_div").style.display = "none";
+        document.getElementById("csv_load_div").style.display = "none";
+        document.getElementById('csv-data-table').style.display = "none";
+        document.getElementById('csv-data-table-footer').style.display = "none";
+
+        // show session input
+        document.getElementById("session_load_div").style.display = "block";
+
+        // adjust text
+        document.getElementById("input-instructions").innerHTML = "Please upload .dat file from previous session."
+
+        // call refreshSession to update the inputs
+        refreshSession();
+
     };
+
+
 };
 
 // INITIALIZATION MESSAGE
@@ -168,6 +200,30 @@ if (sessionStorage.getItem("tourStatus") == 'true') {
     importTour.restart();
 };
 
+function parseCSVLine(line, separator = ','){
+    const values = [];
+    let currentValue = '';
+    let insideQuotes = false;
+
+    for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+
+        if (char === '"') {
+            insideQuotes = !insideQuotes;
+        } else if (char === separator && !insideQuotes) {
+            values.push(currentValue.trim());
+            currentValue = '';
+        } else {
+            currentValue += char;
+        }
+    }
+
+    // Add the last value (outside the loop)
+    values.push(currentValue.trim());
+
+    return values;
+}
+
 function loadCSV() {
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -177,34 +233,11 @@ function loadCSV() {
         const headerRow = document.getElementById("form-header-row").value - 1;
         const separator = document.getElementById("id_csv_separator").value;
 
-        console.log(separator)
-
         const headers = lines[headerRow].replace(/\r/g, "").split(separator);
-        console.log(headers)
 
         for (let i = headerRow + 1; i < lines.length; i++) {
             const obj = {};
-
-            const values = [];
-            const line = lines[i].replace(/\r/g, "");
-            let currentValue = '';
-            let insideQuotes = false;
-
-            for (let j = 0; j < line.length; j++) {
-                const char = line[j];
-
-                if (char === '"') {
-                    insideQuotes = !insideQuotes;
-                } else if (char === separator && !insideQuotes) {
-                    values.push(currentValue.trim());
-                    currentValue = '';
-                } else {
-                    currentValue += char;
-                }
-            }
-
-            // Add the last value (outside the loop)
-            values.push(currentValue.trim());
+            values = parseCSVLine(lines[i].replace(/\r/g, ""), separator)
 
             for (let col = 0; col < headers.length; col++) {
                 if (values[col] === "" || values[col] === undefined) {
@@ -265,10 +298,6 @@ function updateTable() {
             cell.classList.add("table-cell");
         }
     }
-
-    // hide input-instructions
-    document.getElementById("input-instructions").style.display = "none";
-
     // allow form submission
     document.getElementById("enter-data-button").disabled = false;
 }
@@ -309,14 +338,61 @@ function refreshTable() {
     }
 }
 
-// on input field change, update the table
+function loadSession() {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const session = e.target.result;
+        const lines = session.split("\n");
+        const result = [];
+        const headers = lines[0].split(",");
+        
+        for (let i = 1; i < lines.length; i++) {
+            const currentLine = lines[i].split(",");
+            const obj = {};
+            values = parseCSVLine(lines[i].replace(/\r/g, ""), ',')
+            
+            for (let j = 0; j < headers.length; j++) {
+                obj[headers[j]] = values[j];
+            }
+
+            // skip empty rows
+            if (obj["data"] === undefined || obj["data"] === "") {
+                continue;
+            }
+        
+            result.push(obj);
+        }
+
+        // set the session content to the hidden form field
+        document.getElementById("session_content").value = JSON.stringify(result);
+    };
+
+    reader.readAsText(document.getElementById("sessionFile").files[0]);
+}
+
+function refreshSession() {
+    document.getElementById("enter-data-button").disabled = false;
+    loadSession();
+
+}
+
+// on input field change, update things
+document.getElementById("id_input_session_type").addEventListener("change", function() {
+    toggleInputForm();
+    refreshTable();
+});
+
+// new csv file uploaded
 document.getElementById("csvFile").addEventListener("change", refreshTable);
-document.getElementById("id_csv_separator").addEventListener("change", refreshTable);
 document.getElementById("id_csv_separator").addEventListener("change", refreshTable);
 document.getElementById("form-header-row").addEventListener("change", refreshTable);
 
-// on first load, update the table
+// session file loaded
+document.getElementById("sessionFile").addEventListener("change", refreshSession);
+
+// on first load, update things
 refreshTable()
+refreshSession()
 
 </script>
 {% endblock %}
