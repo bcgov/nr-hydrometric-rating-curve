@@ -16,9 +16,8 @@ RUN apt-get update --no-install-recommends && \
 RUN python -m venv /venv
 
 # install requirements
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
+RUN pip install .
 RUN python manage.py collectstatic
 
 
@@ -37,13 +36,13 @@ RUN chown -R nginx:nginx /app && chmod -R 777 /app && \
     chown -R nginx:nginx /etc/nginx/conf.d && chmod -R 777 /etc/nginx/conf.d && \
     chown -R nginx:nginx /etc/nginx/nginx.conf && chmod -R 777 /etc/nginx/nginx.conf
 RUN touch /var/run/nginx.pid && \
-        chown -R nginx:nginx /var/run/nginx.pid && chmod -R 777 /var/run/nginx.pid
+    chown -R nginx:nginx /var/run/nginx.pid && chmod -R 777 /var/run/nginx.pid
 
 USER nginx
 
 
 # healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
-        CMD service nginx status
+    CMD service nginx status
 
 CMD ["sh", "-c", "/app/start_nginx.sh"]
