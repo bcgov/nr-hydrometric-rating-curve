@@ -11,14 +11,16 @@ ENV PYTHONUNBUFFERED 1
 ENV PATH="/venv/bin:$PATH"
 
 RUN apt-get update --no-install-recommends && \
-    apt-get install -y gcc
+    apt-get install -y gcc 
 
 # set up venv
 RUN python -m venv /venv
 
 # install requirements
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pyproject.toml ./
+COPY README.md ./
+COPY rctool/ ./rctool
+RUN pip install . --no-cache-dir
 
 ### APP IMAGE ###
 FROM python:3.12-slim AS APP
