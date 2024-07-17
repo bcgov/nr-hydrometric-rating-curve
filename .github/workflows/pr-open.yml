@@ -47,7 +47,7 @@ jobs:
           - name: rctool
             file: frontend/openshift.deploy.yml
     steps:
-      - uses: bcgov-nr/action-deployer-openshift@v2.3.0
+      - uses: bcgov-nr/action-deployer-openshift@v3.0.0
         with:
           file: ${{ matrix.file }}
           oc_namespace: ${{ secrets.OC_NAMESPACE }}
