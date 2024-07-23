@@ -24,7 +24,7 @@ jobs:
             build_file: ./frontend/Dockerfile.app
     steps:
       - uses: actions/checkout@v4
-      - uses: bcgov-nr/action-builder-ghcr@v2.0.2
+      - uses: bcgov-nr/action-builder-ghcr@v2.2.0
         with:
           package: ${{ matrix.package }}
           build_file: ${{ matrix.build_file }}
