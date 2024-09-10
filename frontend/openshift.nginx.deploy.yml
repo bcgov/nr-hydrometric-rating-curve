@@ -55,24 +55,33 @@ objects:
             name: ${REGISTRY}/${PROMOTE}
           referencePolicy:
             type: Local
-  - apiVersion: apps/v1
-    kind: Deployment
+  - apiVersion: v1
+    kind: DeploymentConfig
     metadata:
       labels:
         app: ${NAME}-${ZONE}
       name: ${NAME}-${ZONE}-${COMPONENT}
     spec:
       replicas: 1
+      triggers:
+        - type: ConfigChange
+        - type: ImageChange
+          imageChangeParams:
+            automatic: true
+            containerNames:
+              - ${NAME}
+            from:
+              kind: ImageStreamTag
+              name: ${NAME}-${ZONE}-${COMPONENT}:${IMAGE_TAG}
       selector:
-        matchLabels:
-          deployment: ${NAME}-${ZONE}-${COMPONENT}
+        deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
       strategy:
-        type: RollingUpdate
+        type: Rolling
       template:
         metadata:
           labels:
             app: ${NAME}-${ZONE}
-            deployment: ${NAME}-${ZONE}-${COMPONENT}
+            deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
         spec:
           containers:
             - image: ${NAME}-${ZONE}-${COMPONENT}:${IMAGE_TAG}
@@ -123,7 +132,7 @@ objects:
           port: 80
           targetPort: 3000
       selector:
-        deployment: ${NAME}-${ZONE}-${COMPONENT}
+        deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
   - apiVersion: route.openshift.io/v1
     kind: Route
     metadata:
@@ -148,7 +157,7 @@ objects:
     spec:
       scaleTargetRef:
         apiVersion: apps.openshift.io/v1
-        kind: Deployment
+        kind: DeploymentConfig
         name: ${NAME}-${ZONE}-${COMPONENT}
       minReplicas: ${{MIN_REPLICAS}}
       maxReplicas: ${{MAX_REPLICAS}}
