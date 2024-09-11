@@ -60,7 +60,10 @@ jobs:
 
   results:
     name: PR Results
-    needs: [deploys]
+    needs: [builds, deploys]
+    if: always()
     runs-on: ubuntu-22.04
     steps:
-      - run: echo "Workflow completed successfully!"
+      - if: contains(needs.*.result, 'failure')
+        run: echo "At least one job has failed." && exit 1
+      - run: echo "Success!"
