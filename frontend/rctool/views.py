@@ -441,7 +441,12 @@ def rctool_develop_initialize(request):
 
             field_df_raw["uncertainty"] = field_df_raw["uncertainty"].round(decimals=3)
             field_df_raw["datetime"] = field_df_raw["datetime"].apply(str)
+
+            if  "comments" not in field_df_raw:
+                field_df_raw["comments"] = ""
+                
             field_df_raw["comments"] = field_df_raw["comments"].apply(str)
+
             context["tour_request_status_id"] = request.POST.get(
                 "tour_request_status_id"
             )
