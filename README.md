@@ -16,7 +16,7 @@
 
 A hydrometric rating curve describes the mathematical relationship between stage and discharge for a given hydrometric station. Rating curves allow to convert stage measurements to discharge measurements based on previously measured stage and discharge data pairs. The Hydrometric Rating Application (HydRA) allows users to upload any stage and discharge datasets, develop and optimize rating models as well as save and compare results from previous sessions.
 
-The HydRA app is hosted in the BC Gov GitHub organization and is available at PLACEHOLDER. This repository contains all source code for the HydRA app and allows to run the app locally using docker.
+The HydRA app is hosted in the BC Gov GitHub organization and is available [here](https://hydra.nrs.gov.bc.ca/). This repository contains all source code for the HydRA app and allows to run the app locally using docker.
 
 ## Managing the app packages
 
