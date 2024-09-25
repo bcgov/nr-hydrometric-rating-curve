@@ -27,6 +27,10 @@ After cloning the repository, use the `poetry` python package manager to install
 - Create a `.env` file in the `frontend` directory of the project by copying the `.env.example` file and updating the values as needed. For development, the `DJANGO_DEBUG` variable should be set to `True`.
 - To run the django server locally, install docker and docker-compose. Run `docker compose -f ./frontend/docker-compose.dev.yml up --build` to start the development server. The app will be available at `http://localhost:8003`. Note: the non-dev version of the app is served via nginx at `http://localhost:{WEB_PORT}`.
 
+## Running tests locally
+
+To run Django tests, it is easiest to build the Docker container and attach to the running shell. The command `python manage.py test` executes the tests in Django.
+
 ##### Contributing Authors
 
 NHC (Tyler De Jong, Tobias Müller), ENV X
