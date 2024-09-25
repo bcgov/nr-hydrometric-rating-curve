@@ -24,7 +24,7 @@ jobs:
             build_file: ./frontend/Dockerfile.app
     steps:
       - uses: actions/checkout@v4
-      - uses: bcgov-nr/action-builder-ghcr@v2.0.2
+      - uses: bcgov-nr/action-builder-ghcr@v2.2.0
         with:
           package: ${{ matrix.package }}
           build_file: ${{ matrix.build_file }}
@@ -47,7 +47,7 @@ jobs:
           - name: rctool
             file: frontend/openshift.deploy.yml
     steps:
-      - uses: bcgov-nr/action-deployer-openshift@v2.3.0
+      - uses: bcgov-nr/action-deployer-openshift@v3.0.0
         with:
           file: ${{ matrix.file }}
           oc_namespace: ${{ secrets.OC_NAMESPACE }}
@@ -60,7 +60,10 @@ jobs:
 
   results:
     name: PR Results
-    needs: [deploys]
+    needs: [builds, deploys]
+    if: always()
     runs-on: ubuntu-22.04
     steps:
-      - run: echo "Workflow completed successfully!"
+      - if: contains(needs.*.result, 'failure')
+        run: echo "At least one job has failed." && exit 1
+      - run: echo "Success!"

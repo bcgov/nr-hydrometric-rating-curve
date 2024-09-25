@@ -1,10 +1,9 @@
 [tool.poetry]
-name = "frontend"
+name = "rctool"
 version = "1.0.0"
 description = ""
 authors = [
-    "Tobias Mueller <to.mueller@gmail.com",
-    "Tyler De Jong <TDeJong@nhcweb.com>",
+    "Tobias Mueller <to.mueller@gmail.com, Tyler De Jong <TDeJong@nhcweb.com>",
 ]
 readme = "README.md"
 
@@ -17,9 +16,9 @@ pandas = "^2.2.1"
 lmfit = "^1.2.2"
 xhtml2pdf = "^0.2.15"
 matplotlib = "^3.8.3"
-gunicorn = "^22.0.0"
+gunicorn = "^23.0.0"
 pip = "^24.0"
-
+setuptools = "^75.0.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -971,7 +971,7 @@ def rctool_export_output(request):
                         },
                     )
 
-                    writer = csv.writer(response)
+                    writer = csv.writer(response, quoting=csv.QUOTE_ALL)
                     writer.writerow(["RATING CURVE OUTPUT SUMMARY"])
                     writer.writerow(
                         [
