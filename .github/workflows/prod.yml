@@ -12,7 +12,7 @@ jobs:
   deploys:
     name: PROD Deployments
     environment: prod
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         name: [frontend, rctool]
@@ -37,7 +37,7 @@ jobs:
     needs: [deploys]
     permissions:
       packages: write
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         package: [frontend, rctool]

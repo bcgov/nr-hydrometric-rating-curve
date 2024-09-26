@@ -17,7 +17,7 @@ jobs:
     name: Set Variables
     outputs:
       pr: ${{ steps.pr.outputs.pr }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
       # Get PR number for squash merges to main
@@ -29,7 +29,7 @@ jobs:
     name: TEST Deployments
     needs: [vars]
     environment: test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         name: [frontend, rctool]
@@ -50,7 +50,7 @@ jobs:
             -p ZONE=test -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ needs.vars.outputs.pr }} -p MAX_REPLICAS=3
 
   zap_scan:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [deploys, vars]
     name: Penetration Tests
     env:
@@ -69,7 +69,7 @@ jobs:
     needs: [deploys, vars]
     permissions:
       packages: write
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         package: [frontend, rctool]
