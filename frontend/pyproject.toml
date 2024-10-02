@@ -19,7 +19,7 @@ matplotlib = "^3.8.3"
 gunicorn = "^23.0.0"
 pip = "^24.0"
 setuptools = "^75.0.0"
-numpy = ">2.1,<2.2.0"
+numpy = ">1.26.0,<2.0.0"
 
 [build-system]
 requires = ["poetry-core"]
