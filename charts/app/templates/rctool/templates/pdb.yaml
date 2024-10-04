@@ -1,0 +1,14 @@
+{{- if and .Values.rctool.pdb  .Values.rctool.pdb.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "rctool.fullname" . }}
+  labels:
+    {{- include "rctool.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "rctool.selectorLabels" . | nindent 6 }}
+  minAvailable: {{ .Values.rctool.pdb.minAvailable }}
+{{- end }}

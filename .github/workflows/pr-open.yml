@@ -34,29 +34,19 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           triggers: ('frontend/')
 
+  # https://github.com/bcgov/quickstart-openshift-helpers
   deploys:
     name: Deploys
-    needs: [builds]
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        name: [frontend, rctool]
-        include:
-          - name: frontend
-            file: frontend/openshift.nginx.deploy.yml
-          - name: rctool
-            file: frontend/openshift.deploy.yml
-    steps:
-      - uses: bcgov-nr/action-deployer-openshift@v3.0.1
-        with:
-          file: ${{ matrix.file }}
-          oc_namespace: ${{ secrets.OC_NAMESPACE }}
-          oc_server: ${{ vars.OC_SERVER }}
-          oc_token: ${{ secrets.OC_TOKEN }}
-          overwrite: true
-          parameters:
-            -p ZONE=${{ github.event.number }}
-            -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ github.event.number }}
+    needs: [ builds ]
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.7.1
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_token: ${{ secrets.OC_TOKEN }}
+    with:
+      triggers: ('frontend/')
+      params: --set global.secrets.persist=false
+      oc_server: ${{ vars.OC_SERVER }}
+
 
   results:
     name: PR Results

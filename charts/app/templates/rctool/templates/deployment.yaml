@@ -1,0 +1,116 @@
+{{- if .Values.rctool.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rctool.fullname" . }}
+  labels:
+    {{- include "rctool.labels" . | nindent 4 }}
+spec:
+  strategy:
+    type: {{ .Values.rctool.deploymentStrategy }}
+  {{- if not .Values.rctool.autoscaling.enabled }}
+  replicas: {{ .Values.rctool.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "rctool.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+      labels:
+        {{- include "rctool.labels" . | nindent 8 }}
+    spec:
+      {{- if .Values.rctool.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.rctool.podSecurityContext | nindent 12 }}
+      {{- end }}
+      containers:
+          - name: {{ include "rctool.fullname" . }}
+            {{- if .Values.rctool.securityContext }}
+            securityContext:
+              {{- toYaml .Values.rctool.securityContext | nindent 12 }}
+            {{- end }}
+            image: "{{.Values.global.registry}}/{{.Values.global.repository}}/rctool:{{ .Values.global.tag | default .Chart.AppVersion }}"
+            imagePullPolicy: {{ default "Always" .Values.rctool.imagePullPolicy }}
+            envFrom:
+              - secretRef:
+                  name: {{.Release.Name}}-rctool
+            env:
+              - name: WEB_PORT_INTERNAL
+                value: "3000"
+              -
+                name: ALLOWED_HOSTS
+                value: "*"
+              -
+                name: DEBUG
+                value: "False"
+              -
+                name: GUNICORN_WORKERS
+                value: "2"
+              -
+                name: GUNICORN_LIMIT_REQ_LINE
+                value: "4094"
+              -
+                name: GUNICORN_LIMIT_REQ_FIELDSIZE
+                value: "8190"
+              - name: GUNICORN_TIMEOUT
+                value: "1800"
+              -
+                name: CSRF_TRUSTED_ORIGINS
+                value: 'https://*.apps.silver.devops.gov.bc.ca,https://*.apps.silver.devops.gov.bc.ca,https://hydra.nrs.gov.bc.ca'
+            ports:
+              - name: http
+                containerPort: {{ .Values.rctool.service.targetPort }}
+                protocol: TCP
+            readinessProbe:
+              httpGet:
+                path: /rctool
+                port: http
+                scheme: HTTP
+              initialDelaySeconds: 10
+              periodSeconds: 5
+              timeoutSeconds: 2
+              successThreshold: 1
+              failureThreshold: 30
+            livenessProbe:
+              successThreshold: 1
+              failureThreshold: 3
+              httpGet:
+                path: /rctool
+                port: 3000
+                scheme: HTTP
+              initialDelaySeconds: 60
+              periodSeconds: 60
+              timeoutSeconds: 5
+            resources: # this is optional
+              limits:
+                cpu: 250m
+                memory: 500Mi
+              requests:
+                cpu: 50m
+                memory: 250Mi
+      {{- with .Values.rctool.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.rctool.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - {{ include "rctool.fullname" . }}
+                  - key: app.kubernetes.io/instance
+                    operator: In
+                    values:
+                      - {{ .Release.Name }}
+              topologyKey: "kubernetes.io/hostname"
+
+{{- end }}

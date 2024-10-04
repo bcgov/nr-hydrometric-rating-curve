@@ -1,0 +1,18 @@
+{{- if .Values.rctool.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rctool.fullname" . }}
+  labels:
+    {{- include "rctool.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.rctool.service.type }}
+  ports:
+    - port: {{ .Values.rctool.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "rctool.selectorLabels" . | nindent 4 }}
+{{- end }}

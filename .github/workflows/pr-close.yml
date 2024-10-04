@@ -17,5 +17,5 @@ jobs:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
-      cleanup: label
+      cleanup: helm
       packages: frontend rctool

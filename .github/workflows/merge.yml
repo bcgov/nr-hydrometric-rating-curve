@@ -25,33 +25,21 @@ jobs:
         id: pr
         uses: bcgov-nr/action-get-pr@v0.0.1
 
-  deploys:
-    name: TEST Deployments
-    needs: [vars]
-    environment: test
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        name: [frontend, rctool]
-        include:
-          - name: frontend
-            file: frontend/openshift.nginx.deploy.yml
-          - name: rctool
-            file: frontend/openshift.deploy.yml
-    steps:
-      - uses: bcgov-nr/action-deployer-openshift@v3.0.1
-        with:
-          file: ${{ matrix.file }}
-          oc_namespace: ${{ secrets.OC_NAMESPACE }}
-          oc_server: ${{ vars.OC_SERVER }}
-          oc_token: ${{ secrets.OC_TOKEN }}
-          overwrite: true
-          parameters:
-            -p ZONE=test -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ needs.vars.outputs.pr }} -p MAX_REPLICAS=3
+  deploy-test:
+    name: Deploy (test)
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.7.1
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_token: ${{ secrets.OC_TOKEN }}
+    with:
+      environment: test
+      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
+
+
 
   zap_scan:
     runs-on: ubuntu-22.04
-    needs: [deploys, vars]
+    needs: [deploy-test, vars]
     name: Penetration Tests
     env:
       URL: ${{ github.event.repository.name }}-test-frontend.apps.silver.devops.gov.bc.ca
@@ -66,7 +54,7 @@ jobs:
           target: https://${{ env.URL }}
   promotions:
     name: Promote Images
-    needs: [deploys, vars]
+    needs: [deploy-test, vars]
     permissions:
       packages: write
     runs-on: ubuntu-22.04
