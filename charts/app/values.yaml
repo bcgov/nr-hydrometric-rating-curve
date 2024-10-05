@@ -106,5 +106,4 @@ frontend:
         - NET_BIND_SERVICE
     runAsNonRoot: true
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
 
