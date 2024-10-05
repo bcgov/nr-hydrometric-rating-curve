@@ -54,6 +54,7 @@ rctool:
         - NET_BIND_SERVICE
     runAsNonRoot: true
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
 
 frontend:
   # -- enable or disable a component deployment.
@@ -105,4 +106,5 @@ frontend:
         - NET_BIND_SERVICE
     runAsNonRoot: true
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
 
