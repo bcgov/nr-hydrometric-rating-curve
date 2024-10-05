@@ -45,6 +45,7 @@ rctool:
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
+    runAsNonRoot: true
   containerSecurityContext:
     capabilities:
       drop:
@@ -95,6 +96,7 @@ frontend:
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
+    runAsNonRoot: true
   containerSecurityContext:
     capabilities:
       drop:
