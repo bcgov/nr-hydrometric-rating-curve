@@ -30,7 +30,7 @@ rctool:
     #-- the minimum number of replicas.
     minReplicas: 3
     #-- the maximum number of replicas.
-    maxReplicas: 7
+    maxReplicas: 5
     #-- the target cpu utilization percentage, is from request cpu and NOT LIMIT CPU.
     targetCPUUtilizationPercentage: 80
   #-- the service for the component. for inter namespace communication, use the service name as the hostname.
@@ -70,7 +70,7 @@ frontend:
     #-- the minimum number of replicas.
     minReplicas: 3
     #-- the maximum number of replicas.
-    maxReplicas: 7
+    maxReplicas: 5
     #-- the target cpu utilization percentage, is from request cpu and NOT LIMIT CPU.
     targetCPUUtilizationPercentage: 80
   #-- the service for the component. for inter namespace communication, use the service name as the hostname.
