@@ -10,27 +10,15 @@ concurrency:
 
 jobs:
   deploys:
-    name: PROD Deployments
-    environment: prod
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        name: [frontend, rctool]
-        include:
-          - name: frontend
-            file: frontend/openshift.nginx.deploy.yml
-          - name: rctool
-            file: frontend/openshift.deploy.yml
-    steps:
-      - uses: bcgov-nr/action-deployer-openshift@v3.0.1
-        with:
-          file: ${{ matrix.file }}
-          oc_namespace: ${{ secrets.OC_NAMESPACE }}
-          oc_server: ${{ vars.OC_SERVER }}
-          oc_token: ${{ secrets.OC_TOKEN }}
-          overwrite: true
-          parameters:
-            -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test -p MAX_REPLICAS=3
+    name: Deploy (test)
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.7.1
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_token: ${{ secrets.OC_TOKEN }}
+    with:
+      environment: prod
+      tag: test
+      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
 
   promotions:
     name: Promote Images
