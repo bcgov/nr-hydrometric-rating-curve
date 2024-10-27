@@ -11,7 +11,7 @@ concurrency:
 jobs:
   deploys:
     name: Deploy (test)
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.8.1
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.8.2
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
