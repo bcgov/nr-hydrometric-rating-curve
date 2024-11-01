@@ -42,7 +42,10 @@
                                         <div class="carousel-item" style="margin-bottom:15px;">
                                             <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Uploading Data</h6>
                                             <small class='text-description'>
-                                                Users may input their hydrometric observations by uploading a .csv file.  Use the comments section to indicate meta-data such as measurement quality or control condition.  HydRA will plot all stage and discharge observations and then automatically fit a rating curve using the rating equation.
+                                                Users may input their hydrometric observations by uploading a .csv file.  
+                                                Use the comments section to indicate meta-data such as measurement quality or control condition. 
+                                                If the uncertainty field is left blank, HydRA assumes discharge measurement uncertainty of 10%.
+                                                HydRA will plot all stage and discharge observations and then automatically fit a rating curve using the rating equation.
                                             </small>
                                             <div style="display: flex; align-items: center; justify-content: center;">
                                                 <img src="{% static 'images/intro01_table.jpg' %}" class="slideshow-figure" style="height: 200px;">
@@ -80,6 +83,61 @@
                                             </div>
                                         </div>
                                         <div class="carousel-item" style="margin-bottom:15px;">
+                                            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Fit for a Stream</h6>
+                                            <small class='text-description'>
+                                                The HydRA app offers the option to auto-fit rating curves by finding the best equation describing the uploaded field data.  The auto-fit function uses a power law model with weights based on discharge measurement uncertainty.  A least square method is used to define the auto-fit, this fit may be optimized by adjusting applicable measurements or offsets.
+                                            </small>
+                                            <br>
+                                            TODO: Link to code and weights/powerlaw model
+
+                                            Weights: https://lmfit.github.io/lmfit-py/model.html#lmfit.model.weights
+
+                                            Power Law Model: https://lmfit.github.io/lmfit-py/builtin_models.html#lmfit.models.PowerLawModel
+                                            PLACEHOLDER IMAGE!
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/intro01_graph.jpg' %}" class="slideshow-figure" style="height: 200px;">
+                                            </div>
+                                        </div>
+                                        <div class="carousel-item" style="margin-bottom:15px;">
+                                            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">To Fit and to Fiddle</h6>
+                                            <div style="margin-bottom:5px;">
+                                                <small class='text-description'>
+                                                    Common metrics can be used to assess the performance of your hydrometric rating curve.  These include the following: 
+                                                </small>
+                                            </div>
+                                            <div style="margin-bottom:15px;">
+                                                <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="The square root of the mean of the squared differences between observed and predicted values.">Root Mean Square Error</a><br>
+                                                <small class='text-description'>
+                                                    The Root Mean Square Error (RMSE) is given by the equation below where <em>Q</em> is discharge and <em>N</em> is number of measurements. 
+                                                    This provides an indication of the average error between observed and predicted discharge values.<br>
+                                                    In general, a lower RMSE means a better “fit” of the dataset.  
+                                                    HydRA auto-fits the rating curve parameters to, in part, minimize the RMSE.  However, there are many sources of uncertainty in hydrometric data and many ways to adjust the “fit” of a rating curve.  
+                                                    Multiple rating curve parameter interpretations may be compared using the RMSE to assess which is the best fit.
+                                                </small>
+                                            </div>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/RMSE.JPG' %}" style="height:65px">
+                                            </div>
+                                            <div style="margin-bottom:15px;">
+                                                <a class='key-term' href='#' "The difference between the predicted and the observed value, divided by the observed value, then multiplied by 100.">Percent Error</a><br>
+                                                <small class='text-description'>Percent error is calculated by the following equation where <em>Q</em> is discharge and an example is shown by the figure below. This plot is useful for analyzing the error distribution and identifying outliers.</small>                          
+                                            </div>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/error_percent.JPG' %}" style="height:40px; margin-bottom:10px;">
+                                            </div>
+                                            <div style="display: flex; align-items: center; justify-content: center;">
+                                                <img src="{% static 'images/fig_rating_error_legend.JPG' %}" class="slideshow-figure">
+                                            </div>
+                                            <div style="margin-bottom:15px;">
+                                                <a class='key-term' href='#'>Mean Average Percentage Error</a><br>
+                                                TODO: change At to Qobserved etc.
+                                                <small class='text-description'>The Mean Average Percentage Error (MAPE) is calculated like the Percent Error, but averaged over all observed values. <b>At</b> is the actual value (e.g. Q observed), while <b>Ft</b> is the forecasted value (e.g. Q predicted)</small>             
+                                                <div style="display: flex; align-items: center; justify-content: center;">
+                                                    <img src="{% static 'images/MAPE.png' %}" style="height:45px">
+                                                </div>             
+                                            </div>
+                                        </div>
+                                        <div class="carousel-item" style="margin-bottom:15px;">
                                             <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Time for a Break</h6>
                                             <small class='text-description'>Stage-discharge relations may have multiple rating</small>
                                             <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="Region of a stage-discharge relation.">segments</a>
@@ -95,27 +153,39 @@
                                             </div>
                                         </div>
                                         <div class="carousel-item" style="margin-bottom:15px;">
-                                            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Performance</h6>
-                                            <div style="margin-bottom:5px;">
-                                                <small class='text-description'>The HydRa app offers the option to auto-fit rating curves by finding the best equation describing the uploaded field data. This is done by calculating common metrics used to assess the performance of hydrometric rating curves:</small>
-                                            </div>
-                                            <div style="margin-bottom:15px;">
-                                                <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="The square root of the mean of the squared differences between observed and predicted values.">Root Mean Square Error</a><br>
-                                                <small class='text-description'>The root mean square error (RMSE) is given by the equation below where <em>Q</em> is discharge and <em>N</em> is number of measurements. This provides an indication of the average error between observed and predicted discharge values.</small>
-                                            </div>
-                                            <div style="display: flex; align-items: center; justify-content: center;">
-                                                <img src="{% static 'images/RMSE.JPG' %}" style="height:65px">
-                                            </div>
-                                            <div style="margin-bottom:15px;">
-                                                <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="The difference between the predicted and the observed value, divided by the observed value, then multiplied by 100.">Percent Error</a><br>
-                                                <small class='text-description'>Percent error is calculated by the following equation where <em>Q</em> is discharge and an example is shown by the figure below. This plot is useful for analyzing the error distribution and identifying outliers.</small>                          
-                                            </div>
-                                            <div style="display: flex; align-items: center; justify-content: center;">
-                                                <img src="{% static 'images/error_percent.JPG' %}" style="height:40px; margin-bottom:10px;">
-                                            </div>
-                                            <div style="display: flex; align-items: center; justify-content: center;">
-                                                <img src="{% static 'images/fig_rating_error_legend.JPG' %}" class="slideshow-figure">
-                                            </div>
+                                            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">If the curve fits, use it</h6>
+                                            <p>
+                                                <small class='text-description'>
+                                                    <b>Step 1: </b>
+                                                    Upload field visit information for your period of interest including all relevant fields 
+                                                </small>
+                                            </p>
+                                            <p>
+                                                <small class='text-description'>
+                                                    <b>Step 2: </b>
+                                                    Input the offset as the gauge height, or stage, at zero flow 
+                                                </small>
+                                            </p>
+                                            <p>
+                                                <small class='text-description'>
+                                                    <b>Step 3: </b>
+                                                    Assess the quality of the auto-fit by adjusting curve parameters such as: end points, applicable measurements, offsets.  Consult field visit notes, photos and discharge measurement meta-data to assess further.  If applicable, add any breakpoints to account for channel complexity at higher or lower stages.  Consider comparing multiple interpretations of the fit using the RMSE and MAPE parameters 
+                                                    <br>
+                                                    <i>*Note: this may take some time, session settings can be saved in the export tab </i>
+                                                </small>
+                                            </p>
+                                            <p>
+                                                <small class='text-description'>
+                                                    <b>Step 4: </b>
+                                                    Export rating curve parameters as a .pdf or .csv 
+                                                </small>
+                                            </p>
+                                            <p>
+                                                <small class='text-description'>
+                                                    <b>Step 5: </b>
+                                                    Use input values of stage with your rating curve equation to produce modelled discharge, remember to grade your output dataset according to provincial hydrometric RISC standards 
+                                                </small>
+                                            </p>
                                         </div>
                                         <div class="carousel-item" style="margin-bottom:25px;">
                                             <div class="col-md-8 mx-auto">
