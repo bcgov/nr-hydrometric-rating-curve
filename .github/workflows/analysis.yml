@@ -82,8 +82,10 @@ jobs:
             
   results:
     name: Analysis Results
-    # needs: [codeql, trivy, tests] # Restore trivy when it's working again
-    needs: [codeql, tests]
+    if: always()
+    needs: [codeql, tests] # Restore trivy when it's working again
     runs-on: ubuntu-22.04
     steps:
-      - run: echo "Workflow completed successfully!"
+      - if: contains(needs.*.result, 'failure')
+        run: echo "At least one job has failed." && exit 1
+      - run: echo "Success!"
