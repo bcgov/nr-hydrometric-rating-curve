@@ -82,6 +82,7 @@ jobs:
             
   results:
     name: Analysis Results
+    if: always()
     needs: [codeql, tests] # Restore trivy when it's working again
     runs-on: ubuntu-22.04
     steps:
