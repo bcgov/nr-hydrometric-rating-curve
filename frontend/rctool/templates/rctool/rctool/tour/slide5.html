@@ -1,0 +1,43 @@
+{% load static %}
+
+
+<div class="carousel-item" style="margin-bottom:15px;">
+    <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">To Fit and to Fiddle</h6>
+    <div style="margin-bottom:5px;">
+        <small class='text-description'>
+            Common metrics can be used to assess the performance of your hydrometric rating curve.  These include the following: 
+        </small>
+    </div>
+    <div style="margin-bottom:15px;">
+        <a class='key-term' href='#' data-toggle="tooltip" data-placement="top" title="The square root of the mean of the squared differences between observed and predicted values.">Root Mean Square Error</a><br>
+        <small class='text-description'>
+            The Root Mean Square Error (RMSE) is given by the equation below where <em>Q</em> is discharge and <em>N</em> is number of measurements. 
+            This provides an indication of the average error between observed and predicted discharge values.<br>
+            In general, a lower RMSE means a better “fit” of the dataset.  
+            HydRA auto-fits the rating curve parameters to, in part, minimize the RMSE.  However, there are many sources of uncertainty in hydrometric data and many ways to adjust the “fit” of a rating curve.  
+            Multiple rating curve parameter interpretations may be compared using the RMSE to assess which is the best fit.
+        </small>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center;">
+        <img src="{% static 'images/RMSE.png' %}" style="height:60px">
+    </div>
+    <div style="margin-bottom:15px;">
+        <a class='key-term' href='#' "The difference between the predicted and the observed value, divided by the observed value, then multiplied by 100.">Percent Error</a><br>
+        <small class='text-description'>Percent error is calculated by the following equation where <em>Q</em> is discharge and an example is shown by the figure below. This plot is useful for analyzing the error distribution and identifying outliers.</small>                          
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center;">
+        <img src="{% static 'images/QPE.png' %}" style="height:60px; margin-bottom:10px;">
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center;">
+        <img src="{% static 'images/fig_rating_error_legend.JPG' %}" class="slideshow-figure">
+    </div>
+    <div style="margin-bottom:15px;">
+        <a class='key-term' href='#'>Mean Average Percentage Error</a><br>
+        <small class='text-description'>
+            The Mean Average Percentage Error (MAPE) is calculated similarly to the Percent Error, but averaged over all observed values.
+        </small>             
+        <div style="display: flex; align-items: center; justify-content: center;">
+            <img src="{% static 'images/MAPE.png' %}" style="height:60px">
+        </div>             
+    </div>
+</div>

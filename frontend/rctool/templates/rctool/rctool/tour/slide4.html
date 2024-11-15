@@ -1,0 +1,20 @@
+{% load static %}
+
+
+<div class="carousel-item" style="margin-bottom:15px;">
+    <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Fit for a Stream</h6>
+    <small class='text-description'>
+        The HydRA app offers the option to auto-fit rating curves by finding the best equation describing the uploaded field data.  The auto-fit function uses a power law model with weights based on discharge measurement uncertainty.  A least square method is used to define the auto-fit, this fit may be optimized by adjusting applicable measurements or offsets.
+    </small>
+    <br>
+    <small class='text-description'>
+        The uncertainty for each discharge measurement is used to weigh the importance of each measurement in the fit.
+        Implementation details of the power law model can be found in the <a href="https://github.com/bcgov/nr-hydrometric-rating-curve">open source code</a> of HydRA
+        and the documentation for the <a href="https://lmfit.github.io/lmfit-py/builtin_models.html#lmfit.models.PowerLawModel" target="_blank">lmfit</a> library and its  
+        <a href="https://lmfit.github.io/lmfit-py/model.html#lmfit.model.weights">weights</a>. 
+    </small>
+    
+    <div style="display: flex; align-items: center; justify-content: center;">
+        <img src="{% static 'images/intro01_graph.jpg' %}" class="slideshow-figure" style="height: 200px;">
+    </div>
+</div>

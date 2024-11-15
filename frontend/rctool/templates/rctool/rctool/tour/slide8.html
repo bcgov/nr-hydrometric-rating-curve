@@ -1,0 +1,14 @@
+{% load static %}
+
+<div class="carousel-item" style="margin-bottom:25px;">
+    <div class="col-md-8 mx-auto">
+        <div class="text-box" style="margin-bottom: 20px;">
+            <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Data Review</h6>
+            <small class='text-description'>HydRA is designed to ONLY produce a rating curve equation and summary report.  The complete hydrometric data review process should include the review, correction, and grading of the input stage dataset and the output discharge dataset according to the <a href="https://www2.gov.bc.ca/assets/gov/environment/natural-resource-stewardship/nr-laws-policy/risc/man_bc_hydrometric_stand_v2.pdf" target="_blank">2018 BC Hydrometric RISC standards</a>
+            </br></br>Applying RISC grades to the output discharge dataset may depend on the performance of the rating equation in predicting discharge or the range of discharge observed during the rating period.  All hydrometric data should be reviewed and graded by a qualified professional according to the RISC standards.  For more information, consult RISC Table 1-1.</small>
+        </div>
+        <div>
+            <a class="btn btn-secondary btn-block custom-button" style="background-color: #6c747e !important; border-color: #FFFFFF;" href="{% url 'rctool_import' 1 %}"><small>Get Started</small></a>
+        </div>
+    </div>
+</div>
