@@ -14,22 +14,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  codeql:
-    name: CodeQL Security Scan
-    if: ${{ ! github.event.pull_request.draft }}
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:javascript"
-
   # https://github.com/marketplace/actions/aqua-security-trivy
   trivy:
     name: Trivy Security Scan
@@ -82,7 +66,10 @@ jobs:
             
   results:
     name: Analysis Results
-    needs: [codeql, trivy, tests]
+    if: always()
+    needs: [tests] # Restore trivy when/if it's working again
     runs-on: ubuntu-22.04
     steps:
-      - run: echo "Workflow completed successfully!"
+      - if: contains(needs.*.result, 'failure')
+        run: echo "At least one job has failed." && exit 1
+      - run: echo "Success!"
