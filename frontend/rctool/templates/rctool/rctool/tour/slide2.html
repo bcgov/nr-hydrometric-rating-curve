@@ -1,0 +1,17 @@
+{% load static %}
+
+<div class="carousel-item" style="margin-bottom:15px;">
+    <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">Uploading Data</h6>
+    <small class='text-description'>
+        Users may input their hydrometric observations by uploading a .csv file.  
+        Use the comments section to indicate meta-data such as measurement quality or control condition. 
+        If the uncertainty field is left blank, HydRA assumes discharge measurement uncertainty of 10%.
+        HydRA will plot all stage and discharge observations and then automatically fit a rating curve using the rating equation.
+    </small>
+    <div style="display: flex; align-items: center; justify-content: center;">
+        <img src="{% static 'images/intro01_table.jpg' %}" class="slideshow-figure" style="height: 200px;">
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center;">
+        <img src="{% static 'images/intro01_graph.jpg' %}" class="slideshow-figure" style="height: 200px;">
+    </div>
+</div>

@@ -1,0 +1,30 @@
+{% load static %}
+
+<div class="carousel-item">
+    <div class="text-box" style="margin-bottom:20px;">
+        <h6 style="color: #003466; margin-bottom: 10px; font-weight:bold;">The Rating Equation</h6>
+        <small class='text-description'>Stage-discharge ratings are generally based on Manning's simplified hydraulic equation below where <em>Q</em> is </small>
+        <a class='key-term' style="font-weight:normal;" href='#' data-toggle="tooltip" data-placement="bottom" title="Volume of water transported in a certain amount of time.">discharge</a>                                            
+        <small class='text-description'>, <em>H</em> is </small>
+        <a class='key-term' style="font-weight:normal;" href='#' data-toggle="tooltip" data-placement="bottom" title="Water height above the bed.">stage</a>                                            
+        <small class='text-description'>, <em>h<sub>0</sub></em> is the </small>
+        <a class='key-term' style="font-weight:normal;" href='#' data-toggle="tooltip" data-placement="bottom" title="Gauge height at zero flow.">offset</a>                                                                                      
+        <small class='text-description'>, C is the </small>
+        <a class='key-term' style="font-weight:normal;" href='#' data-toggle="tooltip" data-placement="bottom" title="Calibration parameter influenced by channel characteristics.">coefficient</a>
+        <small class='text-description'>, and b is the </small>
+        <a class='key-term' style="font-weight:normal;" href='#' data-toggle="tooltip" data-placement="bottom" title="Calibration parameter influenced by the control geometry.">exponent.</a>
+    </div>
+    <div style="text-align:center;">
+        <small class='text-equation'>Q = C ( H - h<sub>0</sub> ) <sup>b</sup></small>
+    </div>
+    <div class="text-box" style="margin-top:20px; margin-bottom:20px;">
+        <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Gauge height at zero flow."><em>h<sub>0</sub></em> - offset:</a>
+        <small class='text-description'>Gauge height at zero flow. This is typically set by the user as the height of the bed.</small><br>
+        <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Calibration parameter influenced by channel characteristics."><em>C</em> - coefficient:</a>
+        <small class='text-description'>Calibration parameter influenced by channel characteristics such as width, slope, bed roughness.</small><br>
+        <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Calibration parameter influenced by the control geometry."><em>b</em> - exponent:</a>
+        <small class='text-description'>Calibration parameter influenced by the control geometry. </small>
+        <a class='key-term' href='#' data-toggle="tooltip" data-placement="bottom" title="Features downstream of the gauge which influence flow.">Controls</a>
+        <small class='text-description'> are natural or constructed features located downstream of the gauge which influence flow.</small>
+    </div>
+</div>
