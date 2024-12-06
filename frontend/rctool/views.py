@@ -425,8 +425,12 @@ def rctool_develop_initialize(request):
             field_data_json = request.POST.get("csv_content")
 
             # load field data from json
+            try:
+                field_df_raw = pd.read_json(io.StringIO(field_data_json))
+            except Exception as e:
+                messages.error(request, "Error: CSV file is could not be parsed.")
+                return render(request, "rctool/rctool/import/rctool_import.html", context)
 
-            field_df_raw = pd.read_json(io.StringIO(field_data_json))
             # convert first row to lower case
             field_df_raw.columns = [x.lower() for x in field_df_raw.columns]
 
