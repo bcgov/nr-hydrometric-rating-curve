@@ -345,7 +345,12 @@ def rctool_develop_initialize(request):
             import_form = import_rc_data(request.POST, request.FILES)
             session_content = request.POST.get("session_content")
 
-            df = pd.read_json(io.StringIO(session_content))
+            try:
+                df = pd.read_json(io.StringIO(session_content))
+            except Exception as e:
+                messages.error(request, "Error: session file could not be parsed.")
+                return render(request, "rctool/rctool/import/rctool_import.html", context)
+            
 
             # preprocess data from previous session
             data_raw_lst = df["data"].values.tolist()
@@ -425,8 +430,12 @@ def rctool_develop_initialize(request):
             field_data_json = request.POST.get("csv_content")
 
             # load field data from json
+            try:
+                field_df_raw = pd.read_json(io.StringIO(field_data_json))
+            except Exception as e:
+                messages.error(request, "Error: CSV file could not be parsed.")
+                return render(request, "rctool/rctool/import/rctool_import.html", context)
 
-            field_df_raw = pd.read_json(io.StringIO(field_data_json))
             # convert first row to lower case
             field_df_raw.columns = [x.lower() for x in field_df_raw.columns]
 
