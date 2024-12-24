@@ -84,12 +84,9 @@ spec:
               periodSeconds: 60
               timeoutSeconds: 5
             resources: # this is optional
-              limits:
-                cpu: 250m
-                memory: 500Mi
               requests:
                 cpu: 50m
-                memory: 250Mi
+                memory: 350Mi
       {{- with .Values.rctool.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

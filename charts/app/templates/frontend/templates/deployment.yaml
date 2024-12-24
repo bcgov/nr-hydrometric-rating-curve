@@ -64,12 +64,9 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 5
           resources:
-            limits:
-              cpu: 50m
-              memory: 60Mi
             requests:
-              cpu: 10m
-              memory: 20Mi
+              cpu: 20m
+              memory: 50Mi
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
