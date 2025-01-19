@@ -14,7 +14,7 @@ jobs:
     env:
       # https://tecadmin.net/getting-yesterdays-date-in-bash/
       CUTOFF: "1 week ago"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Install CLI tools from OpenShift Mirror
@@ -59,7 +59,7 @@ jobs:
           done
 
   zap_scan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Penetration Tests
     env:
       URL: ${{ github.event.repository.name }}-test-frontend.apps.silver.devops.gov.bc.ca

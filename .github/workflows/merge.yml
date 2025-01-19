@@ -17,7 +17,7 @@ jobs:
     name: Set Variables
     outputs:
       pr: ${{ steps.pr.outputs.pr }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
       # Get PR number for squash merges to main
@@ -38,7 +38,7 @@ jobs:
 
 
   zap_scan:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [deploy-test, vars]
     name: Penetration Tests
     env:
@@ -57,7 +57,7 @@ jobs:
     needs: [deploy-test, vars]
     permissions:
       packages: write
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         package: [frontend, rctool]
