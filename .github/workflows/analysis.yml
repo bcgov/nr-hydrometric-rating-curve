@@ -18,7 +18,7 @@ jobs:
   trivy:
     name: Trivy Security Scan
     if: ${{ ! github.event.pull_request.draft }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
   tests:
     name: Django Tests
     if: ${{ ! github.event.pull_request.draft }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
@@ -68,7 +68,7 @@ jobs:
     name: Analysis Results
     if: always()
     needs: [tests] # Restore trivy when/if it's working again
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - if: contains(needs.*.result, 'failure')||contains(needs.*.result, 'canceled')
         run: echo "At least one job has failed." && exit 1
