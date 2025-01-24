@@ -686,7 +686,7 @@ def create_export_rc_img(field_data, rc_data):
         if exponent == 0:
             return np.log(x) / np.log(10)
         else:
-            return np.log(x) / np.log(exponent)
+            return np.log(x, where=x > 0) / np.log(exponent)
 
     # create plot obj
     fig1, ax1 = plt.subplots(figsize=(11, 5), num=1)
