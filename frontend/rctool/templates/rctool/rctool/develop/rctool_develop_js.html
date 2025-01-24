@@ -1005,7 +1005,7 @@
         var q_field_compare = fieldDataFiltered.map( item => (item[1]));
         var q_model_compare = stage.map(s => compConst * (s - compOffset) ** compExp);
         // Calculate statistical parameters; residuals
-        var compResiduals = fieldDataFiltered.map(item => ( 100 * (compConst * (item[0] - compOffset) ** compExp - item[1]) / item[1] ) );
+        var compResiduals = fieldDataFiltered.map(item => ( -100 * (compConst * (item[0] - compOffset) ** compExp - item[1]) / item[1] ) );
         // Collect and prepare output
         var compData = [];
         for (let t = 0; t < q_model_compare.length; t++) {
@@ -1034,10 +1034,8 @@
         // 4. Prepare output
         var compChartData = stageInterpolated.map((item, index) => ({ x: q_model_interpolated[index], y: item }));
         var compResChartData = compData.map(item => ({ x: item[2], y: item[0] }));
-
         // 4.1 Sort by x value
         compChartData.sort((a, b) => a.x - b.x);
-        compResChartData.sort((a, b) => a.x - b.x);
 
         // 5. If data is calculated, plot on RC chart and residual chart
         if (compChartData.length > 1) {
