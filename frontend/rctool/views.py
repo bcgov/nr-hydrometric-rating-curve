@@ -42,8 +42,10 @@ def parse_context(context):
     for key, value in context.items():
         # check for np.float64 in context caused by numpy v2 new handling of floats
         if "np.float64" in str(value):
+            print(value)
             raise ValueError("np.float64 found in context value")
         if "np.float64" in str(key):
+            print(key)
             raise ValueError("np.float64 found in context key")
     return context
     
@@ -144,6 +146,7 @@ def autofit_data(
         try:
             # check if breakpoint exists and is within bounds of fitting data
             if breakpointH and breakpointH > x_min and breakpointH < x_max:
+                breakpointH = float(breakpointH)
                 # create dataframes to fit rating segments
                 df_lower = df_field[df_field["stage"] <= breakpointH]
                 df_upper = df_field[
@@ -159,7 +162,7 @@ def autofit_data(
                     )
 
                     # calculate breakpoint Q value from breakpoint H value
-                    breakpointQ = (
+                    breakpointQ = float(
                         mdl_param_lower["const"]
                         * (breakpointH - mdl_param_lower["offset"])
                         ** mdl_param_lower["exp"]
@@ -235,13 +238,13 @@ def autofit_data(
                             df_lower, offsets[0], "model segment 1", weighted
                         )
 
-                        intersect_point_H = round(k, 4)
-                        intersect_point_Q = round(
+                        intersect_point_H = float(round(k, 4))
+                        intersect_point_Q = float(round(
                             mdl_param_lower["const"]
                             * (intersect_point_H - mdl_param_lower["offset"])
                             ** mdl_param_lower["exp"],
                             4,
-                        )
+                        ))
 
                         # add breakpoint to lower data and parameters
                         mdl_data_lower[0]["data"].append(
@@ -288,19 +291,19 @@ def autofit_data(
 
                 # add boundary points for 1.5 the max stage and 0.75 the lowest stage
                 if offsets[0] <= df_field["stage"].min() * 0.75:
-                    lower_point_H = round(df_field["stage"].min() * 0.75, 4)
+                    lower_point_H = float(round(df_field["stage"].min() * 0.75, 4))
                     lower_point_Q = (
                         best_rc_param[0]["const"]
                         * (lower_point_H - offsets[0]) ** best_rc_param[0]["exp"]
                     )
                     if round(lower_point_Q, 4) != 0:
-                        lower_point_Q = round(lower_point_Q, 4)
-                    upper_point_H = round(df_field["stage"].max() * 1.5, 4)
-                    upper_point_Q = round(
+                        lower_point_Q = float(round(lower_point_Q, 4))
+                    upper_point_H = float(round(df_field["stage"].max() * 1.5, 4))
+                    upper_point_Q = float(round(
                         best_rc_param[1]["const"]
                         * (upper_point_H - offsets[1]) ** best_rc_param[1]["exp"],
                         4,
-                    )
+                    ))
                     best_rc_data[0]["data"].insert(0, [lower_point_H, lower_point_Q, 0])
                     best_rc_param[0]["seg_bounds"][0] = [lower_point_H, lower_point_Q]
                     best_rc_data[1]["data"].append([upper_point_H, upper_point_Q, 0])
@@ -423,7 +426,7 @@ def rctool_develop_initialize(request):
             context["filename"] = df["filename"][0]
 
             # get constraints of input settings
-            context["max_offset"] = fielddatacsv_df["stage"].min()
+            context["max_offset"] = float(fielddatacsv_df["stage"].min())
 
             df_filtered = fielddatacsv_df.drop_duplicates(
                 subset=["stage"], keep="first"
@@ -528,7 +531,7 @@ def rctool_develop_initialize(request):
     context["offsets_val"] = offsets_val
 
     # max offset
-    context["max_offset"] = field_df_raw["stage"].min()
+    context["max_offset"] = float(field_df_raw["stage"].min())
 
     # except Exception as e:
     #     print("Error in rctool_develop_initialize: " + repr(e))
@@ -626,7 +629,7 @@ def rctool_develop_autofit(request):
             weighted,
         )
         # max offset
-        context["max_offset"] = df_passthrough["stage"].min()
+        context["max_offset"] = float(df_passthrough["stage"].min())
 
     except Exception as e:
         print("Error in rctool_develop_autofit: " + repr(e))
