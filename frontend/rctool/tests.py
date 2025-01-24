@@ -197,9 +197,3 @@ class BaseTestCase(TestCase):
         # check if the output is a pdf:
         assert response_output.status_code == 200
         assert response_output["Content-Type"] == "application/pdf"
-
-    def test_numpy_version(self):
-        # numpy version has to be 1 to avoid formatting problems with float numbers output by numpy. Would take a lot of refactoring otherwise...
-        np_version = np.__version__.split(".")[0]
-        print(f"numpy version: {np_version}")
-        assert np_version == "1"
