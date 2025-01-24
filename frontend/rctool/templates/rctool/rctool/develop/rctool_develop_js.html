@@ -369,6 +369,8 @@
 
             // in case a manual segment is defined, skip it
             if (param == undefined) {
+                // TODO: this breaks interpolation for the manual segment
+                // FIX: get parameters from the correct data, rcDict shouldn't be used here
                 continue
             }
 
