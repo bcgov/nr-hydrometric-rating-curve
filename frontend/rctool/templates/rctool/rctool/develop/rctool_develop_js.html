@@ -214,7 +214,13 @@
             });
 
             // 3.3 Update residualData
-            residualData[idx+1].data = newSegData;
+            try {
+                residualData[idx+1].data = newSegData;
+            } catch {
+                // this is likely a manual segment, skip it
+                continue
+            }
+
             // add boundary points to segment data (for plotting on rcChart)
             newSegData.unshift([segmentData[0][0], segmentData[0][1],  0]);
             newSegData.push([segmentData[1][0], segmentData[1][1], 0]);
@@ -360,6 +366,11 @@
             data_line = rcChart.data.datasets[l_idx].data;
             offset_thisline = offsetData[rc_trueidx]
             param = rcDict.parameters[rc_trueidx]
+
+            // in case a manual segment is defined, skip it
+            if (param == undefined) {
+                continue
+            }
 
             // create an array that will be used to calculate the line point positions
             const arr = [];
@@ -1199,6 +1210,11 @@
 
                         if (dataset.label === 'field') {
                             // prevent dragging
+                            return false
+                        }
+                        
+                        // prevent dragging of manually added comparison curves
+                        if (dataset.backgroundColor === '#DDCC77') {
                             return false
                         }
 
