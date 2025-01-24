@@ -187,7 +187,7 @@ def autofit_data(
                     mdl_data_upper[0]["data"].insert(0, [breakpointH, breakpointQ, 0])
                     mdl_param_upper["seg_bounds"][0] = [breakpointH, breakpointQ]
 
-                    # prepaire output
+                    # prepare output
                     best_rc_data = mdl_data_lower + mdl_data_upper
                     best_rc_param = [mdl_param_lower, mdl_param_upper]
 
@@ -674,7 +674,7 @@ def rctool_export_initialize(request):
 
 
 def create_export_rc_img(field_data, rc_data):
-    # Initialize and prepaire
+    # Initialize and prepare
     pallet = ["#80B7AB", "#CC6677", "#003466"]
     df_field_active = field_data[field_data["toggle_point"] == "checked"]
     df_field_inactive = field_data[field_data["toggle_point"] == "unchecked"]
@@ -1079,7 +1079,7 @@ def rctool_export_output(request):
                     field_data_output_df, rc_output_dict
                 )
 
-                # prepaire and return output pdf
+                # prepare and return output pdf
                 template = get_template("rctool/rctool/export/rctool_export_pdf.html")
                 html = template.render(context)
                 pdf = render_to_pdf(

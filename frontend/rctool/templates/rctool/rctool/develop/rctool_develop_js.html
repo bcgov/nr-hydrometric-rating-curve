@@ -195,14 +195,14 @@
             var fieldDataFiltered = rawFieldData.filter(item => ( item[0] >= segmentData[0][0] && item[0] <= segmentData[1][0]));
 
 
-            // 3.2 Calculate model data from new rc equation, collect and prepaire output
+            // 3.2 Calculate model data from new rc equation, collect and prepare output
             var stage = fieldDataFiltered.map( item => (item[0]));
             var q_field = fieldDataFiltered.map( item => (item[1]));
             var q_model = stage.map(s => C * (s - offset) ** slope);
             // Calculate statistical parameters; residuals
             var newResiduals = fieldDataFiltered.map(item => ( 100 * (C * (item[0] - offset) ** slope - item[1]) / item[1] ) );
 
-            // Collect and prepaire output
+            // Collect and prepare output
             var newSegData = [];
             for (let t = 0; t < q_model.length; t++) {
                 newSegData.push([stage[t], q_model[t], newResiduals[t]]);
@@ -987,13 +987,13 @@
         // Get filtered field data within segment bounds (used with to calculate RMSE and residuals)
         var rawFieldData = rcData[0]['data'];
         var fieldDataFiltered = rawFieldData.filter(item => ( item[0] >= compStartBounds && item[0] <= compEndBounds));
-        // Calculate model data from new rc equation, collect and prepaire output
+        // Calculate model data from new rc equation, collect and prepare output
         var stage = fieldDataFiltered.map( item => (item[0]));
         var q_field_compare = fieldDataFiltered.map( item => (item[1]));
         var q_model_compare = stage.map(s => compConst * (s - compOffset) ** compExp);
         // Calculate statistical parameters; residuals
         var compResiduals = fieldDataFiltered.map(item => ( 100 * (compConst * (item[0] - compOffset) ** compExp - item[1]) / item[1] ) );
-        // Collect and prepaire output
+        // Collect and prepare output
         var compData = [];
         for (let t = 0; t < q_model_compare.length; t++) {
             compData.push([stage[t], q_model_compare[t], compResiduals[t]]);
@@ -1010,7 +1010,7 @@
         // 3. Calculate statistical parameters; RMSE
         stats_compare = calculate_stats(q_field_compare, q_model_compare)
 
-        // 4. Prepaire output
+        // 4. Prepare output
         var compChartData = compRcData.map(item => ({ x: item[1], y: item[0] }));
         var compResChartData = compData.map(item => ({ x: item[2], y: item[0] }));
 
