@@ -37,9 +37,9 @@ def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *a
             params.add(constraint_name, expr=constraint_expression)
 
     result = plm.fit(df_data["Q"], params, x=df_data["H0"])
-
-    unw_const = result.best_values["amplitude"]
-    unw_exp = result.best_values["exponent"]
+    
+    unw_const = float(result.best_values["amplitude"])
+    unw_exp = float(result.best_values["exponent"])
     unw_best = result.best_fit
 
     unw_residual = list(
@@ -57,8 +57,8 @@ def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *a
 
     # try weighting
     result = plm.fit(df_data["Q"], params, x=df_data["H0"], weights=df_data["W"])
-    wgt_const = result.best_values["amplitude"]
-    wgt_exp = result.best_values["exponent"]
+    wgt_const = float(result.best_values["amplitude"])
+    wgt_exp = float(result.best_values["exponent"])
     wgt_best = result.best_fit
     wgt_sigs = result.eval_uncertainty(sigma=2)
     wgt_residual = list(
@@ -111,7 +111,7 @@ def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *a
             "mape": wgt_mape,
         }
         wgt_data = [
-            [a, b, c] for a, b, c in zip(df_data["H"].tolist(), wgt_best, wgt_residual)
+            [float(a), float(b), float(c)] for a, b, c in zip(df_data["H"].tolist(), wgt_best, wgt_residual)
         ]
         mdl_data = [{"label": label, "data": wgt_data}]
     else:
@@ -126,7 +126,7 @@ def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *a
             "mape": unw_mape,
         }
         unw_data = [
-            [a, b, c] for a, b, c in zip(df_data["H"].tolist(), unw_best, unw_residual)
+            [float(a), float(b), float(c)] for a, b, c in zip(df_data["H"].tolist(), unw_best, unw_residual)
         ]
         mdl_data = [{"label": label, "data": unw_data}]
 

@@ -1,6 +1,6 @@
 ### BUILDER IMAGE ###
 # syntax=docker/dockerfile:1
-FROM python:3.12-slim AS BUILDER
+FROM python:3.13-slim AS BUILDER
 
 # set environment variables
 ENV LANG=C.UTF-8
@@ -23,7 +23,7 @@ COPY rctool/ ./rctool
 RUN pip install . --no-cache-dir
 
 ### APP IMAGE ###
-FROM python:3.12-slim AS APP
+FROM python:3.13-slim AS APP
 WORKDIR /app
 
 # set environment variables

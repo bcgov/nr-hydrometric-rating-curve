@@ -38,7 +38,17 @@ def about(response):
 def rctool_tour_intro(response, tour_request_id=0):
     return render(response, "rctool/rctool/tour/rctool_tour_intro.html", {})
 
-
+def parse_context(context):
+    for key, value in context.items():
+        # check for np.float64 in context caused by numpy v2 new handling of floats
+        if "np.float64" in str(value):
+            print(value)
+            raise ValueError("np.float64 found in context value")
+        if "np.float64" in str(key):
+            print(key)
+            raise ValueError("np.float64 found in context key")
+    return context
+    
 def rctool_import(request, tour_request_id=0):
     context = {}
     context["tour_request_status_id"] = tour_request_id
@@ -51,7 +61,7 @@ def rctool_import(request, tour_request_id=0):
     else:
         context["form"] = import_rc_data()
 
-    return render(request, "rctool/rctool/import/rctool_import.html", context)
+    return render(request, "rctool/rctool/import/rctool_import.html", parse_context(context))
 
 
 def autofit_data(
@@ -109,19 +119,19 @@ def autofit_data(
             # will cause issues, dont extend segment endpoints
             pass
         else:
-            lower_point_H = round(df_field["stage"].min() * 0.75, 4)
-            lower_point_Q = (
+            lower_point_H = float(round(df_field["stage"].min() * 0.75, 4))
+            lower_point_Q = float(
                 best_rc_param["const"]
                 * (lower_point_H - offsets[0]) ** best_rc_param["exp"]
             )
             if round(lower_point_Q, 4) != 0:
                 lower_point_Q = round(lower_point_Q, 4)
-            upper_point_H = round(df_field["stage"].max() * 1.5, 4)
-            upper_point_Q = round(
+            upper_point_H = float(round(df_field["stage"].max() * 1.5, 4))
+            upper_point_Q = float(round(
                 best_rc_param["const"]
                 * (upper_point_H - offsets[0]) ** best_rc_param["exp"],
                 4,
-            )
+            ))
 
             best_rc_data[0]["data"].insert(0, [lower_point_H, lower_point_Q, 0])
             best_rc_data[0]["data"].append([upper_point_H, upper_point_Q, 0])
@@ -136,6 +146,7 @@ def autofit_data(
         try:
             # check if breakpoint exists and is within bounds of fitting data
             if breakpointH and breakpointH > x_min and breakpointH < x_max:
+                breakpointH = float(breakpointH)
                 # create dataframes to fit rating segments
                 df_lower = df_field[df_field["stage"] <= breakpointH]
                 df_upper = df_field[
@@ -151,7 +162,7 @@ def autofit_data(
                     )
 
                     # calculate breakpoint Q value from breakpoint H value
-                    breakpointQ = (
+                    breakpointQ = float(
                         mdl_param_lower["const"]
                         * (breakpointH - mdl_param_lower["offset"])
                         ** mdl_param_lower["exp"]
@@ -179,7 +190,7 @@ def autofit_data(
                     mdl_data_upper[0]["data"].insert(0, [breakpointH, breakpointQ, 0])
                     mdl_param_upper["seg_bounds"][0] = [breakpointH, breakpointQ]
 
-                    # prepaire output
+                    # prepare output
                     best_rc_data = mdl_data_lower + mdl_data_upper
                     best_rc_param = [mdl_param_lower, mdl_param_upper]
 
@@ -189,17 +200,17 @@ def autofit_data(
                         pass
                     else:
                         # extend rating curve
-                        lower_point_H = round(df_field["stage"].min() * 0.75, 4)
-                        upper_point_H = round(df_field["stage"].max() * 1.5, 4)
-                        lower_point_Q = (
+                        lower_point_H = float(round(df_field["stage"].min() * 0.75, 4))
+                        upper_point_H = float(round(df_field["stage"].max() * 1.5, 4))
+                        lower_point_Q = float(
                             best_rc_param[0]["const"]
                             * (lower_point_H - offsets[0]) ** best_rc_param[0]["exp"]
                         )
-                        upper_point_Q = round(
+                        upper_point_Q = float(round(
                             best_rc_param[1]["const"]
                             * (upper_point_H - offsets[1]) ** best_rc_param[1]["exp"],
                             4,
-                        )
+                        ))
                         if round(lower_point_Q, 4) != 0:
                             lower_point_Q = round(lower_point_Q, 4)
                         best_rc_data[0]["data"].insert(
@@ -227,13 +238,13 @@ def autofit_data(
                             df_lower, offsets[0], "model segment 1", weighted
                         )
 
-                        intersect_point_H = round(k, 4)
-                        intersect_point_Q = round(
+                        intersect_point_H = float(round(k, 4))
+                        intersect_point_Q = float(round(
                             mdl_param_lower["const"]
                             * (intersect_point_H - mdl_param_lower["offset"])
                             ** mdl_param_lower["exp"],
                             4,
-                        )
+                        ))
 
                         # add breakpoint to lower data and parameters
                         mdl_data_lower[0]["data"].append(
@@ -280,19 +291,19 @@ def autofit_data(
 
                 # add boundary points for 1.5 the max stage and 0.75 the lowest stage
                 if offsets[0] <= df_field["stage"].min() * 0.75:
-                    lower_point_H = round(df_field["stage"].min() * 0.75, 4)
+                    lower_point_H = float(round(df_field["stage"].min() * 0.75, 4))
                     lower_point_Q = (
                         best_rc_param[0]["const"]
                         * (lower_point_H - offsets[0]) ** best_rc_param[0]["exp"]
                     )
                     if round(lower_point_Q, 4) != 0:
-                        lower_point_Q = round(lower_point_Q, 4)
-                    upper_point_H = round(df_field["stage"].max() * 1.5, 4)
-                    upper_point_Q = round(
+                        lower_point_Q = float(round(lower_point_Q, 4))
+                    upper_point_H = float(round(df_field["stage"].max() * 1.5, 4))
+                    upper_point_Q = float(round(
                         best_rc_param[1]["const"]
                         * (upper_point_H - offsets[1]) ** best_rc_param[1]["exp"],
                         4,
-                    )
+                    ))
                     best_rc_data[0]["data"].insert(0, [lower_point_H, lower_point_Q, 0])
                     best_rc_param[0]["seg_bounds"][0] = [lower_point_H, lower_point_Q]
                     best_rc_data[1]["data"].append([upper_point_H, upper_point_Q, 0])
@@ -349,7 +360,7 @@ def rctool_develop_initialize(request):
                 df = pd.read_json(io.StringIO(session_content))
             except Exception as e:
                 messages.error(request, "Error: session file could not be parsed.")
-                return render(request, "rctool/rctool/import/rctool_import.html", context)
+                return render(request, "rctool/rctool/import/rctool_import.html", parse_context(context))
             
 
             # preprocess data from previous session
@@ -415,15 +426,15 @@ def rctool_develop_initialize(request):
             context["filename"] = df["filename"][0]
 
             # get constraints of input settings
-            context["max_offset"] = fielddatacsv_df["stage"].min()
+            context["max_offset"] = float(fielddatacsv_df["stage"].min())
 
             df_filtered = fielddatacsv_df.drop_duplicates(
                 subset=["stage"], keep="first"
             )
-            context["breakpoint_min"] = df_filtered["stage"].nsmallest(2).iloc[-1]
-            context["breakpoint_max"] = df_filtered["stage"].nlargest(2).iloc[-1]
+            context["breakpoint_min"] = float(df_filtered["stage"].nsmallest(2).iloc[-1])
+            context["breakpoint_max"] = float(df_filtered["stage"].nlargest(2).iloc[-1])
 
-            return render(request, "rctool/rctool/develop/rctool_develop.html", context)
+            return render(request, "rctool/rctool/develop/rctool_develop.html", parse_context(context))
 
         elif input_session_type == "new":
             # if new session...
@@ -434,7 +445,8 @@ def rctool_develop_initialize(request):
                 field_df_raw = pd.read_json(io.StringIO(field_data_json))
             except Exception as e:
                 messages.error(request, "Error: CSV file could not be parsed.")
-                return render(request, "rctool/rctool/import/rctool_import.html", context)
+                
+                return render(request, "rctool/rctool/import/rctool_import.html", parse_context(context))
 
             # convert first row to lower case
             field_df_raw.columns = [x.lower() for x in field_df_raw.columns]
@@ -467,7 +479,7 @@ def rctool_develop_initialize(request):
 
     else:
         # redirect to import as no data was passed
-        return render(request, "rctool/rctool/import/rctool_import.html", context)
+        return render(request, "rctool/rctool/import/rctool_import.html", parse_context(context))
 
     context["rc_data"] = None
     context["table_dict"] = {
@@ -490,8 +502,8 @@ def rctool_develop_initialize(request):
 
     # get constraints for input settings
     df_filtered = field_df_raw.drop_duplicates(subset=["stage"], keep="first")
-    context["breakpoint_min"] = df_filtered["stage"].nsmallest(2).iloc[-1]
-    context["breakpoint_max"] = df_filtered["stage"].nlargest(2).iloc[-1]
+    context["breakpoint_min"] = float(df_filtered["stage"].nsmallest(2).iloc[-1])
+    context["breakpoint_max"] = float(df_filtered["stage"].nlargest(2).iloc[-1])
 
     [context["rc"], context["sidepanel_message"]] = autofit_data(
         field_df_raw,
@@ -519,13 +531,13 @@ def rctool_develop_initialize(request):
     context["offsets_val"] = offsets_val
 
     # max offset
-    context["max_offset"] = field_df_raw["stage"].min()
+    context["max_offset"] = float(field_df_raw["stage"].min())
 
     # except Exception as e:
     #     print("Error in rctool_develop_initialize: " + repr(e))
     #     messages.error(request, "Unable to upload file. " + repr(e))
 
-    return render(request, "rctool/rctool/develop/rctool_develop.html", context)
+    return render(request, "rctool/rctool/develop/rctool_develop.html", parse_context(context))
 
 
 def rctool_develop_autofit(request):
@@ -604,8 +616,8 @@ def rctool_develop_autofit(request):
 
         # get constraints for input settings
         df_filtered = df_passthrough.drop_duplicates(subset=["stage"], keep="first")
-        context["breakpoint_min"] = df_filtered["stage"].nsmallest(2).iloc[-1]
-        context["breakpoint_max"] = df_filtered["stage"].nlargest(2).iloc[-1]
+        context["breakpoint_min"] = float(df_filtered["stage"].nsmallest(2).iloc[-1])
+        context["breakpoint_max"] = float(df_filtered["stage"].nlargest(2).iloc[-1])
 
     try:
         [context["rc"], context["sidepanel_message"]] = autofit_data(
@@ -617,13 +629,13 @@ def rctool_develop_autofit(request):
             weighted,
         )
         # max offset
-        context["max_offset"] = df_passthrough["stage"].min()
+        context["max_offset"] = float(df_passthrough["stage"].min())
 
     except Exception as e:
         print("Error in rctool_develop_autofit: " + repr(e))
         messages.error(request, repr(e))
 
-    return render(request, "rctool/rctool/develop/rctool_develop.html", context)
+    return render(request, "rctool/rctool/develop/rctool_develop.html", parse_context(context))
 
 
 def rctool_export_initialize(request):
@@ -655,17 +667,18 @@ def rctool_export_initialize(request):
         context["adjust_seg"] = None
         context["breakpoint1"] = None
         context["fielddatacsv"] = df_passthrough.to_json(date_format="iso")
+
         # convert json string to dict
-        context["rc_output"] = ast.literal_eval(rc_output)
+        context["rc_output"] = ast.literal_eval(rc_output.replace('null', 'None'))
         # add filename to output dict
         context["rc_output"]["filename"] = [request.POST.get("filename_out")]
     context["form"] = export_form
 
-    return render(request, "rctool/rctool/export/rctool_export.html", context)
+    return render(request, "rctool/rctool/export/rctool_export.html", parse_context(context))
 
 
 def create_export_rc_img(field_data, rc_data):
-    # Initialize and prepaire
+    # Initialize and prepare
     pallet = ["#80B7AB", "#CC6677", "#003466"]
     df_field_active = field_data[field_data["toggle_point"] == "checked"]
     df_field_inactive = field_data[field_data["toggle_point"] == "unchecked"]
@@ -677,7 +690,7 @@ def create_export_rc_img(field_data, rc_data):
         if exponent == 0:
             return np.log(x) / np.log(10)
         else:
-            return np.log(x) / np.log(exponent)
+            return np.log(x, where=x > 0) / np.log(exponent)
 
     # create plot obj
     fig1, ax1 = plt.subplots(figsize=(11, 5), num=1)
@@ -875,7 +888,7 @@ def rctool_export_output(request):
         field_data_values = field_data_output_df.values.tolist()
 
         rc_output = request.POST.get("rc_output")
-        rc_output_dict = ast.literal_eval(rc_output)
+        rc_output_dict = ast.literal_eval(rc_output.replace('null', 'None'))
 
         rc_output_dict["data"].append(field_data_values)
         rc_output_df = pd.DataFrame.from_dict(rc_output_dict, orient="index")
@@ -1070,7 +1083,7 @@ def rctool_export_output(request):
                     field_data_output_df, rc_output_dict
                 )
 
-                # prepaire and return output pdf
+                # prepare and return output pdf
                 template = get_template("rctool/rctool/export/rctool_export_pdf.html")
                 html = template.render(context)
                 pdf = render_to_pdf(
@@ -1088,7 +1101,7 @@ def rctool_export_output(request):
             context["form"] = export_form
             context["rc_output"] = rc_output
 
-            return render(request, "rctool/rctool/export/rctool_export.html", context)
+            return render(request, "rctool/rctool/export/rctool_export.html", parse_context(context))
     else:
         export_form = export_rc_data()
     return render(
