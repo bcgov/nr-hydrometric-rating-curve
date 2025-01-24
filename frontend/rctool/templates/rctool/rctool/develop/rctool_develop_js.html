@@ -1020,11 +1020,19 @@
         compRcData = [...compData];
         compRcData.unshift([lowerH, lowerQ, 0])
         compRcData.push([upperH, upperQ, 0])
+
+        // 2.9 interpolate data for residual chart
+        var stageInterpolated = [];
+        for (let i = 0; i < interpolation_points; i++) {
+            stageInterpolated.push(lowerH + i * (upperH - lowerH) / interpolation_points);
+        }
+        var q_model_interpolated = stageInterpolated.map(s => compConst * (s - compOffset) ** compExp);
+
         // 3. Calculate statistical parameters; RMSE
         stats_compare = calculate_stats(q_field_compare, q_model_compare)
 
         // 4. Prepare output
-        var compChartData = compRcData.map(item => ({ x: item[1], y: item[0] }));
+        var compChartData = stageInterpolated.map((item, index) => ({ x: q_model_interpolated[index], y: item }));
         var compResChartData = compData.map(item => ({ x: item[2], y: item[0] }));
 
         // 4.1 Sort by x value
