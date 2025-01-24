@@ -667,8 +667,9 @@ def rctool_export_initialize(request):
         context["adjust_seg"] = None
         context["breakpoint1"] = None
         context["fielddatacsv"] = df_passthrough.to_json(date_format="iso")
+
         # convert json string to dict
-        context["rc_output"] = ast.literal_eval(rc_output)
+        context["rc_output"] = ast.literal_eval(rc_output.replace('null', 'None'))
         # add filename to output dict
         context["rc_output"]["filename"] = [request.POST.get("filename_out")]
     context["form"] = export_form
@@ -887,7 +888,7 @@ def rctool_export_output(request):
         field_data_values = field_data_output_df.values.tolist()
 
         rc_output = request.POST.get("rc_output")
-        rc_output_dict = ast.literal_eval(rc_output)
+        rc_output_dict = ast.literal_eval(rc_output.replace('null', 'None'))
 
         rc_output_dict["data"].append(field_data_values)
         rc_output_df = pd.DataFrame.from_dict(rc_output_dict, orient="index")
