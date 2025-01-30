@@ -139,8 +139,8 @@ def autofit_data(
 
             best_rc_data[0]["data"].insert(0, [lower_point_H, lower_point_Q, 0])
             best_rc_data[0]["data"].append([upper_point_H, upper_point_Q, 0])
-            best_rc_param["seg_bounds"][0] = [lower_point_H, lower_point_Q]
-            best_rc_param["seg_bounds"][1] = [upper_point_H, upper_point_Q]
+            best_rc_param["seg_bounds"][0] = [float(lower_point_H), float(lower_point_Q)]
+            best_rc_param["seg_bounds"][1] = [float(upper_point_H), float(upper_point_Q)]
 
         rc_data_output = rc_data_output + best_rc_data
         rc_param_output = [best_rc_param]
@@ -179,7 +179,7 @@ def autofit_data(
                             mdl_data_lower[0]["data"][-1][1],
                         ]
                     ]  # retrieve last point of first model segment for starting point of second segment
-                    mdl_param_lower["seg_bounds"][1] = [breakpointH, breakpointQ]
+                    mdl_param_lower["seg_bounds"][1] = [float(breakpointH), float(breakpointQ)]
 
                     # fit upper
                     [mdl_data_upper, mdl_param_upper] = fit_linear_model(
@@ -192,7 +192,7 @@ def autofit_data(
 
                     # add breakpoint to upper data and parameters
                     mdl_data_upper[0]["data"].insert(0, [breakpointH, breakpointQ, 0])
-                    mdl_param_upper["seg_bounds"][0] = [breakpointH, breakpointQ]
+                    mdl_param_upper["seg_bounds"][0] = [float(breakpointH), float(breakpointQ)]
 
                     # prepare output
                     best_rc_data = mdl_data_lower + mdl_data_upper
@@ -221,15 +221,15 @@ def autofit_data(
                             0, [lower_point_H, lower_point_Q, 0]
                         )
                         best_rc_param[0]["seg_bounds"][0] = [
-                            lower_point_H,
-                            lower_point_Q,
+                            float(lower_point_H),
+                            float(lower_point_Q),
                         ]
                         best_rc_data[1]["data"].append(
                             [upper_point_H, upper_point_Q, 0]
                         )
                         best_rc_param[1]["seg_bounds"][1] = [
-                            upper_point_H,
-                            upper_point_Q,
+                            float(upper_point_H),
+                            float(upper_point_Q),
                         ]
 
             # if no breakpoint specified, iterate between numerous breakpoints and optimize fit
@@ -261,8 +261,8 @@ def autofit_data(
                             ]
                         ]  # retrieve last point of first model segment for starting point of second segment
                         mdl_param_lower["seg_bounds"][1] = [
-                            intersect_point_H,
-                            intersect_point_Q,
+                            float(intersect_point_H),
+                            float(intersect_point_Q),
                         ]
                         df_upper = df_field[df_field["stage"] >= intersect_point_H]
 
@@ -280,8 +280,8 @@ def autofit_data(
                                 0, [intersect_point_H, intersect_point_Q, 0]
                             )
                             mdl_param_upper["seg_bounds"][0] = [
-                                intersect_point_H,
-                                intersect_point_Q,
+                                float(intersect_point_H),
+                                float(intersect_point_Q),
                             ]
 
                             rmse = np.mean(
@@ -309,9 +309,9 @@ def autofit_data(
                         4,
                     ))
                     best_rc_data[0]["data"].insert(0, [lower_point_H, lower_point_Q, 0])
-                    best_rc_param[0]["seg_bounds"][0] = [lower_point_H, lower_point_Q]
+                    best_rc_param[0]["seg_bounds"][0] = [float(lower_point_H), float(lower_point_Q)]
                     best_rc_data[1]["data"].append([upper_point_H, upper_point_Q, 0])
-                    best_rc_param[1]["seg_bounds"][1] = [upper_point_H, upper_point_Q]
+                    best_rc_param[1]["seg_bounds"][1] = [float(upper_point_H), float(upper_point_Q)]
 
             rc_data_output = rc_data_output + best_rc_data
             rc_param_output = best_rc_param
