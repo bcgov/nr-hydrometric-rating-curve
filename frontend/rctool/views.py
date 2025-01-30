@@ -619,21 +619,21 @@ def rctool_develop_autofit(request):
         context["breakpoint_min"] = float(df_filtered["stage"].nsmallest(2).iloc[-1])
         context["breakpoint_max"] = float(df_filtered["stage"].nlargest(2).iloc[-1])
 
-    try:
-        [context["rc"], context["sidepanel_message"]] = autofit_data(
-            df_passthrough,
-            context["offsets"],
-            context["breakpoint1"],
-            context["rc_data"],
-            context["n_seg"],
-            weighted,
-        )
-        # max offset
-        context["max_offset"] = float(df_passthrough["stage"].min())
+    # try:
+    [context["rc"], context["sidepanel_message"]] = autofit_data(
+        df_passthrough,
+        context["offsets"],
+        context["breakpoint1"],
+        context["rc_data"],
+        context["n_seg"],
+        weighted,
+    )
+    # max offset
+    context["max_offset"] = float(df_passthrough["stage"].min())
 
-    except Exception as e:
-        print("Error in rctool_develop_autofit: " + repr(e))
-        messages.error(request, repr(e))
+    # except Exception as e:
+    #     print("Error in rctool_develop_autofit: " + repr(e))
+    #     messages.error(request, repr(e))
 
     return render(request, "rctool/rctool/develop/rctool_develop.html", parse_context(context))
 
