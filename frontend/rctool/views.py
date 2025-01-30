@@ -42,10 +42,14 @@ def parse_context(context):
     for key, value in context.items():
         # check for np.float64 in context caused by numpy v2 new handling of floats
         if "np.float64" in str(value):
-            print(value)
+            print("parse_context error: np.float64 found in context value")
+            str_index = str(value).index("np.float64")
+            print(value[str_index-10:str_index+10])
             raise ValueError("np.float64 found in context value")
         if "np.float64" in str(key):
-            print(key)
+            print("parse_context error: np.float64 found in context key")
+            str_index = str(key).index("np.float64")
+            print(key[str_index-10:str_index+10])
             raise ValueError("np.float64 found in context key")
     return context
     
