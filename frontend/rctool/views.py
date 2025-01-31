@@ -45,12 +45,12 @@ def parse_context(context):
             print("parse_context error: np.float64 found in context value")
             str_index = str(value).index("np.float64")
             print(value[str_index-10:str_index+10])
-            raise ValueError("np.float64 found in context value")
+            raise ValueError("np.float64 found in context value, value: " + value[str_index-20:str_index+20])
         if "np.float64" in str(key):
             print("parse_context error: np.float64 found in context key")
             str_index = str(key).index("np.float64")
             print(key[str_index-10:str_index+10])
-            raise ValueError("np.float64 found in context key")
+            raise ValueError("np.float64 found in context key, key: " + value[str_index-20:str_index+20])   
     return context
     
 def rctool_import(request, tour_request_id=0):

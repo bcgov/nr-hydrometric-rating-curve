@@ -116,7 +116,7 @@ objects:
                 - name: GUNICORN_TIMEOUT
                   value: "1800"
                 - name: GUNICORN_LOG_LEVEL
-                  value: "info"
+                  value: "debug"
                 - name: SECRET_KEY
                   valueFrom:
                     secretKeyRef:
