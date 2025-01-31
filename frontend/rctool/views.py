@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import base64
 import io, base64
-
+import re
 
 def healthcheck(request):
     return HttpResponse("OK")
@@ -39,18 +39,27 @@ def rctool_tour_intro(response, tour_request_id=0):
     return render(response, "rctool/rctool/tour/rctool_tour_intro.html", {})
 
 def parse_context(context):
-    for key, value in context.items():
-        # check for np.float64 in context caused by numpy v2 new handling of floats
-        if "np.float64" in str(value):
-            print("parse_context error: np.float64 found in context value")
-            str_index = str(value).index("np.float64")
-            print(value[str_index-10:str_index+10])
-            raise ValueError("np.float64 found in context value, value: " + value[str_index-20:str_index+20])
-        if "np.float64" in str(key):
-            print("parse_context error: np.float64 found in context key")
-            str_index = str(key).index("np.float64")
-            print(key[str_index-10:str_index+10])
-            raise ValueError("np.float64 found in context key, key: " + value[str_index-20:str_index+20])   
+    print('in parse')
+    # try regex removal of np.float64(number)
+    pattern = r"np\.float64\(([\d\.]+)\)"
+    matches = re.findall(pattern, str(context))
+
+    for match in matches:
+        context = str(context).replace("np.float64(" + match + ")", match)
+
+    # for key, value in context.items():
+    #     # check for np.float64 in context caused by numpy v2 new handling of floats
+    #     if "np.float64" in str(value):
+    #         print("parse_context error: np.float64 found in context value")
+    #         str_index = str(value).index("np.float64")
+    #         print(value[str_index-10:str_index+10])
+    #         raise ValueError("np.float64 found in context value, value: " + value[str_index-20:str_index+20])
+    #     if "np.float64" in str(key):
+    #         print("parse_context error: np.float64 found in context key")
+    #         str_index = str(key).index("np.float64")
+    #         print(key[str_index-10:str_index+10])
+    #         raise ValueError("np.float64 found in context key, key: " + value[str_index-20:str_index+20])   
+
     return context
     
 def rctool_import(request, tour_request_id=0):
