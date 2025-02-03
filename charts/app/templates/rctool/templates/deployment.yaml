@@ -55,6 +55,8 @@ spec:
                 value: "8190"
               - name: GUNICORN_TIMEOUT
                 value: "1800"
+              - name: GUNICORN_LOG_LEVEL
+                value: {{ .Values.frontend.gunicorn.logLevel }}
               - name: CSRF_TRUSTED_ORIGINS
                 value: 'https://*.apps.silver.devops.gov.bc.ca,https://*.apps.silver.devops.gov.bc.ca,https://hydra.nrs.gov.bc.ca'
               - name: MPLCONFIGDIR
