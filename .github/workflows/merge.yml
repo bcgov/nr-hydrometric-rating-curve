@@ -33,9 +33,7 @@ jobs:
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       environment: test
-      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
-
-
+      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true --set frontend.gunicorn.logLevel=debug
 
   zap_scan:
     runs-on: ubuntu-24.04
@@ -52,6 +50,7 @@ jobs:
           cmd_options: "-a"
           issue_title: "ZAP: rctool"
           target: https://${{ env.URL }}
+
   promotions:
     name: Promote Images
     needs: [deploy-test, vars]

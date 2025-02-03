@@ -74,6 +74,10 @@ frontend:
     #-- the target cpu utilization percentage, is from request cpu and NOT LIMIT CPU.
     targetCPUUtilizationPercentage: 80
   #-- the service for the component. for inter namespace communication, use the service name as the hostname.
+
+  gunicorn:
+    logLevel: "info"
+
   service:
     #-- enable or disable the service.
     enabled: true
