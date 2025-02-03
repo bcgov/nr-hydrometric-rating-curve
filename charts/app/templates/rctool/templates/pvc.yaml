@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "rctool.fullname" . }}
+  labels:
+    {{- include "rctool.labels" . | nindent 4 }}
+spec:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: "25Mi"
+    storageClassName: netapp-file-standard
