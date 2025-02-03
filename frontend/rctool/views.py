@@ -18,7 +18,6 @@ import matplotlib.ticker as ticker
 import base64
 import io, base64
 
-
 def healthcheck(request):
     return HttpResponse("OK")
 
@@ -38,16 +37,36 @@ def about(response):
 def rctool_tour_intro(response, tour_request_id=0):
     return render(response, "rctool/rctool/tour/rctool_tour_intro.html", {})
 
-def parse_context(context):
-    for key, value in context.items():
-        # check for np.float64 in context caused by numpy v2 new handling of floats
-        if "np.float64" in str(value):
-            print(value)
-            raise ValueError("np.float64 found in context value")
-        if "np.float64" in str(key):
-            print(key)
-            raise ValueError("np.float64 found in context key")
-    return context
+def parse_list(lst):
+    for i, item in enumerate(lst):
+        if isinstance(item, list):
+            lst[i] = parse_list(item)
+        if isinstance(item, dict):
+            lst[i] = parse_context(item)
+        elif isinstance(item, np.float64):
+            try:
+                lst[i] = float(item)
+            except:
+                pass
+    return lst
+
+def parse_context(context_dict):
+    
+    for key,value in context_dict.items():
+        if isinstance(value, dict):
+            context_dict[key] = parse_context(value)
+        if isinstance(value, list):
+            parse_list(value)
+        elif isinstance(value, np.float64):
+            try:
+                context_dict[key] = float(value)
+            except:
+                pass
+
+    if "np.float64" in str(context_dict):
+        raise ValueError("Error in parse_context: np.float64 found in context_dict," + str(context_dict))
+    
+    return context_dict
     
 def rctool_import(request, tour_request_id=0):
     context = {}
@@ -135,8 +154,8 @@ def autofit_data(
 
             best_rc_data[0]["data"].insert(0, [lower_point_H, lower_point_Q, 0])
             best_rc_data[0]["data"].append([upper_point_H, upper_point_Q, 0])
-            best_rc_param["seg_bounds"][0] = [lower_point_H, lower_point_Q]
-            best_rc_param["seg_bounds"][1] = [upper_point_H, upper_point_Q]
+            best_rc_param["seg_bounds"][0] = [float(lower_point_H), float(lower_point_Q)]
+            best_rc_param["seg_bounds"][1] = [float(upper_point_H), float(upper_point_Q)]
 
         rc_data_output = rc_data_output + best_rc_data
         rc_param_output = [best_rc_param]
@@ -175,7 +194,7 @@ def autofit_data(
                             mdl_data_lower[0]["data"][-1][1],
                         ]
                     ]  # retrieve last point of first model segment for starting point of second segment
-                    mdl_param_lower["seg_bounds"][1] = [breakpointH, breakpointQ]
+                    mdl_param_lower["seg_bounds"][1] = [float(breakpointH), float(breakpointQ)]
 
                     # fit upper
                     [mdl_data_upper, mdl_param_upper] = fit_linear_model(
@@ -188,7 +207,7 @@ def autofit_data(
 
                     # add breakpoint to upper data and parameters
                     mdl_data_upper[0]["data"].insert(0, [breakpointH, breakpointQ, 0])
-                    mdl_param_upper["seg_bounds"][0] = [breakpointH, breakpointQ]
+                    mdl_param_upper["seg_bounds"][0] = [float(breakpointH), float(breakpointQ)]
 
                     # prepare output
                     best_rc_data = mdl_data_lower + mdl_data_upper
@@ -217,15 +236,15 @@ def autofit_data(
                             0, [lower_point_H, lower_point_Q, 0]
                         )
                         best_rc_param[0]["seg_bounds"][0] = [
-                            lower_point_H,
-                            lower_point_Q,
+                            float(lower_point_H),
+                            float(lower_point_Q),
                         ]
                         best_rc_data[1]["data"].append(
                             [upper_point_H, upper_point_Q, 0]
                         )
                         best_rc_param[1]["seg_bounds"][1] = [
-                            upper_point_H,
-                            upper_point_Q,
+                            float(upper_point_H),
+                            float(upper_point_Q),
                         ]
 
             # if no breakpoint specified, iterate between numerous breakpoints and optimize fit
@@ -257,8 +276,8 @@ def autofit_data(
                             ]
                         ]  # retrieve last point of first model segment for starting point of second segment
                         mdl_param_lower["seg_bounds"][1] = [
-                            intersect_point_H,
-                            intersect_point_Q,
+                            float(intersect_point_H),
+                            float(intersect_point_Q),
                         ]
                         df_upper = df_field[df_field["stage"] >= intersect_point_H]
 
@@ -276,8 +295,8 @@ def autofit_data(
                                 0, [intersect_point_H, intersect_point_Q, 0]
                             )
                             mdl_param_upper["seg_bounds"][0] = [
-                                intersect_point_H,
-                                intersect_point_Q,
+                                float(intersect_point_H),
+                                float(intersect_point_Q),
                             ]
 
                             rmse = np.mean(
@@ -305,9 +324,9 @@ def autofit_data(
                         4,
                     ))
                     best_rc_data[0]["data"].insert(0, [lower_point_H, lower_point_Q, 0])
-                    best_rc_param[0]["seg_bounds"][0] = [lower_point_H, lower_point_Q]
+                    best_rc_param[0]["seg_bounds"][0] = [float(lower_point_H), float(lower_point_Q)]
                     best_rc_data[1]["data"].append([upper_point_H, upper_point_Q, 0])
-                    best_rc_param[1]["seg_bounds"][1] = [upper_point_H, upper_point_Q]
+                    best_rc_param[1]["seg_bounds"][1] = [float(upper_point_H), float(upper_point_Q)]
 
             rc_data_output = rc_data_output + best_rc_data
             rc_param_output = best_rc_param
@@ -619,21 +638,21 @@ def rctool_develop_autofit(request):
         context["breakpoint_min"] = float(df_filtered["stage"].nsmallest(2).iloc[-1])
         context["breakpoint_max"] = float(df_filtered["stage"].nlargest(2).iloc[-1])
 
-    try:
-        [context["rc"], context["sidepanel_message"]] = autofit_data(
-            df_passthrough,
-            context["offsets"],
-            context["breakpoint1"],
-            context["rc_data"],
-            context["n_seg"],
-            weighted,
-        )
-        # max offset
-        context["max_offset"] = float(df_passthrough["stage"].min())
+    # try:
+    [context["rc"], context["sidepanel_message"]] = autofit_data(
+        df_passthrough,
+        context["offsets"],
+        context["breakpoint1"],
+        context["rc_data"],
+        context["n_seg"],
+        weighted,
+    )
+    # max offset
+    context["max_offset"] = float(df_passthrough["stage"].min())
 
-    except Exception as e:
-        print("Error in rctool_develop_autofit: " + repr(e))
-        messages.error(request, repr(e))
+    # except Exception as e:
+    #     print("Error in rctool_develop_autofit: " + repr(e))
+    #     messages.error(request, repr(e))
 
     return render(request, "rctool/rctool/develop/rctool_develop.html", parse_context(context))
 
