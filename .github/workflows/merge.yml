@@ -33,7 +33,7 @@ jobs:
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       environment: test
-      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
+      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true --set frontend.gunicorn.logLevel=debug
 
   zap_scan:
     runs-on: ubuntu-24.04
