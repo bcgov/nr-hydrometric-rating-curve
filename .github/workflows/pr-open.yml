@@ -43,7 +43,7 @@ jobs:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
-      triggers: ('frontend/')
+      triggers: ('frontend/' 'charts/')
       params: --set global.secrets.persist=false
       oc_server: ${{ vars.OC_SERVER }}
 

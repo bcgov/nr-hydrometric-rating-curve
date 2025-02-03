@@ -25,6 +25,10 @@ spec:
       securityContext:
         {{- toYaml .Values.rctool.podSecurityContext | nindent 12 }}
       {{- end }}
+      volumes:
+        - name: {{ include "rctool.fullname" . }}
+          persistentVolumeClaim:
+            claimName: {{ include "rctool.fullname" . }}
       containers:
           - name: {{ include "rctool.fullname" . }}
             {{- if .Values.rctool.containerSecurityContext }}
@@ -39,26 +43,22 @@ spec:
             env:
               - name: WEB_PORT_INTERNAL
                 value: "3000"
-              -
-                name: ALLOWED_HOSTS
+              - name: ALLOWED_HOSTS
                 value: "*"
-              -
-                name: DEBUG
+              - name: DEBUG
                 value: "False"
-              -
-                name: GUNICORN_WORKERS
+              - name: GUNICORN_WORKERS
                 value: "2"
-              -
-                name: GUNICORN_LIMIT_REQ_LINE
+              - name: GUNICORN_LIMIT_REQ_LINE
                 value: "4094"
-              -
-                name: GUNICORN_LIMIT_REQ_FIELDSIZE
+              - name: GUNICORN_LIMIT_REQ_FIELDSIZE
                 value: "8190"
               - name: GUNICORN_TIMEOUT
                 value: "1800"
-              -
-                name: CSRF_TRUSTED_ORIGINS
+              - name: CSRF_TRUSTED_ORIGINS
                 value: 'https://*.apps.silver.devops.gov.bc.ca,https://*.apps.silver.devops.gov.bc.ca,https://hydra.nrs.gov.bc.ca'
+              - name: MPLCONFIGDIR
+                value: /opt/matplotlib
             ports:
               - name: http
                 containerPort: {{ .Values.rctool.service.targetPort }}
@@ -87,6 +87,9 @@ spec:
               requests:
                 cpu: 50m
                 memory: 350Mi
+            volumeMounts:
+              - name: {{ include "rctool.fullname" . }}
+                mountPath: /opt/matplotlib
       {{- with .Values.rctool.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
