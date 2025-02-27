@@ -26,7 +26,7 @@ jobs:
         uses: bcgov/action-get-pr@v0.0.1
 
   deploy-test:
-    name: Deploy (test)
+    name: Deploy (TEST)
     uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.8.3
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
@@ -51,7 +51,7 @@ jobs:
           issue_title: "ZAP: rctool"
           target: https://${{ env.URL }}
 
-  promotions:
+  promote-test:
     name: Promote Images
     needs: [deploy-test, vars]
     permissions:
@@ -67,4 +67,33 @@ jobs:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.package }}
           tags: test
+          target: ${{ needs.vars.outputs.pr }}
+
+  deploy-prod:
+    name: Deploy (PROD)
+    needs: [vars, deploy-test]
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.8.3
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_token: ${{ secrets.OC_TOKEN }}
+    with:
+      environment: prod
+      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
+
+  promote-prod:
+    name: Promote Images
+    needs: [deploy-prod, vars]
+    permissions:
+      packages: write
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        package: [frontend, rctool]
+    timeout-minutes: 1
+    steps:
+      - uses: shrink/actions-docker-registry-tag@v4
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          tags: prod
           target: ${{ needs.vars.outputs.pr }}
