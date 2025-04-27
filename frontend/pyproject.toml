@@ -18,7 +18,7 @@ xhtml2pdf = "^0.2.15"
 matplotlib = "^3.8.3"
 gunicorn = "^23.0.0"
 pip = "^25.0"
-setuptools = "^78.0.0"
+setuptools = "^79.0.0"
 numpy = "^2.2.2"
 
 [build-system]
