@@ -23,11 +23,11 @@ jobs:
       # Get PR number for squash merges to main
       - name: PR Number
         id: pr
-        uses: bcgov/action-get-pr@v0.0.1
+        uses: bcgov/action-get-pr@21f9351425cd55a98e869ee28919a512aa30647d # v0.0.1
 
   deploy-test:
     name: Deploy (TEST)
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.9.0
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@0b8121a528aaa05ef8def2f79be9081691dfe98a # v0.9.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
@@ -43,7 +43,7 @@ jobs:
       URL: ${{ github.event.repository.name }}-test-frontend.apps.silver.devops.gov.bc.ca
     steps:
       - name: ZAP Scan
-        uses: zaproxy/action-full-scan@v0.12.0
+        uses: zaproxy/action-full-scan@75ee1686750ab1511a73b26b77a2aedd295053ed # v0.12.0
         with:
           allow_issue_writing: true
           artifact_name: "zap_rctool"
@@ -62,7 +62,7 @@ jobs:
         package: [frontend, rctool]
     timeout-minutes: 1
     steps:
-      - uses: shrink/actions-docker-registry-tag@v4
+      - uses: shrink/actions-docker-registry-tag@f04afd0559f66b288586792eb150f45136a927fa # v4
         with:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.package }}
@@ -72,7 +72,7 @@ jobs:
   deploy-prod:
     name: Deploy (PROD)
     needs: [vars, deploy-test]
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.9.0
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@0b8121a528aaa05ef8def2f79be9081691dfe98a # v0.9.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
@@ -91,7 +91,7 @@ jobs:
         package: [frontend, rctool]
     timeout-minutes: 1
     steps:
-      - uses: shrink/actions-docker-registry-tag@v4
+      - uses: shrink/actions-docker-registry-tag@f04afd0559f66b288586792eb150f45136a927fa # v4
         with:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.package }}
