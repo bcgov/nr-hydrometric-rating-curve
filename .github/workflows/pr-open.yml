@@ -23,8 +23,8 @@ jobs:
           - package: rctool
             build_file: ./frontend/Dockerfile.app
     steps:
-      - uses: actions/checkout@v4
-      - uses: bcgov/action-builder-ghcr@v2.3.0
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: bcgov/action-builder-ghcr@ace71f7a527ca6fc43c15c7806314be5a4579d2c # v2.3.0
         with:
           package: ${{ matrix.package }}
           build_file: ${{ matrix.build_file }}
@@ -38,7 +38,7 @@ jobs:
   deploys:
     name: Deploys
     needs: [ builds ]
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@v0.9.0
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@0b8121a528aaa05ef8def2f79be9081691dfe98a # v0.9.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
