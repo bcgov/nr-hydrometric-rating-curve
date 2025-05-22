@@ -22,7 +22,7 @@ RUN python manage.py collectstatic
 
 
 ### APP IMAGE ###
-FROM nginx:1@sha256:c15da6c91de8d2f436196f3a768483ad32c258ed4e1beb3d367a27ed67253e66 AS deploy
+FROM nginx:1@sha256:59b59d308832ec4428da454bda93f595a00463596fd6385b8b0e6e388bce955a AS deploy
 WORKDIR /app
 
 # copy project
