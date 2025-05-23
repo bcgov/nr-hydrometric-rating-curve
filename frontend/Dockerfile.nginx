@@ -1,6 +1,6 @@
 ### BUILDER IMAGE ###
 # syntax=docker/dockerfile:1
-FROM python:3.13-slim@sha256:56a11364ffe0fee3bd60af6d6d5209eba8a99c2c16dc4c7c5861dc06261503cc AS BUILDER
+FROM python:3.13-slim AS BUILDER
 WORKDIR /app
 
 # set environment variables
@@ -22,7 +22,7 @@ RUN python manage.py collectstatic
 
 
 ### APP IMAGE ###
-FROM nginx:1@sha256:fb39280b7b9eba5727c884a3c7810002e69e8f961cc373b89c92f14961d903a0 AS deploy
+FROM nginx:1 AS deploy
 WORKDIR /app
 
 # copy project
