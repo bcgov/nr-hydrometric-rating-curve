@@ -8,8 +8,7 @@ on:
       - "**.md"
   workflow_dispatch:
 
-permissions:
-  contents: write
+permissions: {}
 
 concurrency:
   group: test-prod

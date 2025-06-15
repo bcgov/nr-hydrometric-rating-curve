@@ -4,9 +4,7 @@ on:
   pull_request:
     types: [closed]
 
-permissions:
-  contents: read
-  pull-requests: write
+permissions: {}
 
 concurrency:
   # PR open and close use the same group, allowing only one at a time

@@ -4,9 +4,7 @@ on:
   pull_request:
     types: [edited, opened, synchronize, reopened]
 
-permissions:
-  contents: read
-  pull-requests: write
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-edit-${{ github.event.number }}
