@@ -63,6 +63,8 @@ jobs:
   zap_scan:
     runs-on: ubuntu-24.04
     name: Penetration Tests
+    permissions:
+      security-events: write
     env:
       URL: ${{ github.event.repository.name }}-test-frontend.apps.silver.devops.gov.bc.ca
     steps:
