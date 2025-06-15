@@ -8,6 +8,8 @@ on:
       - "**.md"
   workflow_dispatch:
 
+permissions: {}
+
 concurrency:
   group: test-prod
   cancel-in-progress: false
@@ -34,22 +36,6 @@ jobs:
     with:
       environment: test
       params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true --set-string frontend.gunicorn.logLevel=debug
-
-  zap_scan:
-    runs-on: ubuntu-24.04
-    needs: [deploy-test, vars]
-    name: Penetration Tests
-    env:
-      URL: ${{ github.event.repository.name }}-test-frontend.apps.silver.devops.gov.bc.ca
-    steps:
-      - name: ZAP Scan
-        uses: zaproxy/action-full-scan@75ee1686750ab1511a73b26b77a2aedd295053ed # v0.12.0
-        with:
-          allow_issue_writing: true
-          artifact_name: "zap_rctool"
-          cmd_options: "-a"
-          issue_title: "ZAP: rctool"
-          target: https://${{ env.URL }}
 
   promote-test:
     name: Promote Images

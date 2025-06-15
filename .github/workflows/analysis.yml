@@ -9,6 +9,8 @@ on:
     - cron: "0 11 * * 0" # 3 AM PST = 12 PM UDT, runs sundays
   workflow_dispatch:
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -18,6 +20,8 @@ jobs:
   trivy:
     name: Trivy Security Scan
     if: (! github.event.pull_request.draft)
+    permissions:
+      security-events: write
     runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
@@ -51,8 +55,7 @@ jobs:
       SECRET_KEY: 'temporary_debug_key'
     timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
