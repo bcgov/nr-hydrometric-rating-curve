@@ -11,46 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ageOutPRs:
-    name: PR Env Purge
-    env:
-      # https://tecadmin.net/getting-yesterdays-date-in-bash/
-      CUTOFF: "1 week ago"
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: Clean up Helm Releases
-        uses: bcgov/action-oc-runner@10033668ef4374d9bb78149faa73e4ccda0e93dd # v1.2.3
-        with:
-          oc_server: ${{ vars.oc_server }}
-          oc_namespace: ${{ secrets.oc_namespace }}
-          oc_token: ${{ secrets.oc_token }}
-          commands: |
-            # Echos
-            echo "Delete stale Helm releases"
-            echo "Cutoff: ${{ env.CUTOFF }}"
-
-            # Before date, list of releases
-            BEFORE=$(date +%s -d "${{ env.CUTOFF }}")
-            RELEASES=$(helm ls -aq | grep ${{ github.event.repository.name }} || :)
-
-            # If releases, then iterate
-            [ -z "${RELEASES}" ]|| for r in ${RELEASES[@]}; do
-
-              # Get last update and convert the date
-              UPDATED=$(date "+%s" -d <<< echo $(helm status $r -o json | jq -r .info.last_deployed))
-
-              # Compare to cutoff and delete as necessary
-              if [[ ${UPDATED} < ${BEFORE} ]]; then
-                echo -e "\nOlder than cutoff: ${r}"
-                helm uninstall --no-hooks ${r}
-                oc delete pvc/${r}-bitnami-pg-0
-              else
-                echo -e "\nNewer than cutoff: ${r}"
-                echo "No need to delete"
-              fi
-            done
-
   zap_scan:
     runs-on: ubuntu-24.04
     name: Penetration Tests
