@@ -3,6 +3,8 @@ name: Pull Request
 on:
   pull_request:
 
+permissions: {}
+
 concurrency:
   # PR open and close use the same group, allowing only one at a time
   group: ${{ github.event.number }}
@@ -36,7 +38,9 @@ jobs:
   # https://github.com/bcgov/quickstart-openshift-helpers
   deploys:
     name: Deploys
-    needs: [ builds ]
+    needs: [builds]
+    permissions:
+      packages: write
     uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@0b8121a528aaa05ef8def2f79be9081691dfe98a # v0.9.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
@@ -45,7 +49,6 @@ jobs:
       triggers: ('frontend/' 'charts/')
       params: --set global.secrets.persist=false --set-string frontend.gunicorn.logLevel=debug
       oc_server: ${{ vars.OC_SERVER }}
-
 
   results:
     name: PR Results
