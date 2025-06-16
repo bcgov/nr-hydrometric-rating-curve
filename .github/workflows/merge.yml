@@ -8,11 +8,12 @@ on:
       - "**.md"
   workflow_dispatch:
 
-permissions: {}
-
 concurrency:
   group: test-prod
   cancel-in-progress: false
+      
+permissions:
+  packages: write
 
 jobs:
   vars:
@@ -29,8 +30,6 @@ jobs:
 
   deploy-test:
     name: Deploy (TEST)
-    permissions:
-      packages: write
     uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@0b8121a528aaa05ef8def2f79be9081691dfe98a # v0.9.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
@@ -42,8 +41,6 @@ jobs:
   promote-test:
     name: Promote Images
     needs: [deploy-test, vars]
-    permissions:
-      packages: write
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -60,8 +57,6 @@ jobs:
   deploy-prod:
     name: Deploy (PROD)
     needs: [vars, deploy-test]
-    permissions:
-      packages: write
     uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@0b8121a528aaa05ef8def2f79be9081691dfe98a # v0.9.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
@@ -73,8 +68,6 @@ jobs:
   promote-prod:
     name: Promote Images
     needs: [deploy-prod, vars]
-    permissions:
-      packages: write
     runs-on: ubuntu-24.04
     strategy:
       matrix:
