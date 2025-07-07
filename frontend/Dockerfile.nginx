@@ -3,21 +3,20 @@ FROM python:3.13-slim AS builder
 ENV LANG=C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV PATH="/venv/bin:$PATH"
 
 RUN apt-get update --no-install-recommends && \
     apt-get install -y gcc
-RUN python -m venv /venv
 
 WORKDIR /app
 COPY . ./
 RUN pip install .
 RUN python manage.py collectstatic
 
+
 ### APP IMAGE ###
 FROM nginx:1 AS deploy
 
-# Create user and required directories
+# User and expected directories
 USER nginx
 WORKDIR /app
 RUN mkdir -p \
