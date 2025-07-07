@@ -24,22 +24,19 @@ RUN pip install . --no-cache-dir
 
 ### APP IMAGE ###
 FROM python:3.13-slim
-WORKDIR /app
 
-# set environment variables
+# set environment variables and /venv
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PATH="/venv/bin:$PATH"
+COPY --from=builder /venv /venv
 
 # create and switch to the app user
-COPY start_app.sh /app/start_app.sh
+WORKDIR /app
 RUN useradd -m rctool
 USER rctool
 COPY --chown=rctool:rctool . /app
-
-# copy project
-COPY --from=builder /venv /venv
 
 # healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
