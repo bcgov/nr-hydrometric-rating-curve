@@ -5,20 +5,22 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update --no-install-recommends && \
-    apt-get install -y gcc
+    apt-get install -y gcc && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY . ./
 RUN pip install .
 RUN python manage.py collectstatic
 
-
 ### APP IMAGE ###
 FROM nginx:1 AS deploy
 
-# User and expected directories
-USER nginx
-WORKDIR /app
+# Copy project
+COPY nginx.conf start_nginx.sh ./app/
+COPY --from=builder /app/staticfiles /app/static/
+
+# Create directories with proper permissions for any user
 RUN mkdir -p \
         /app/nginx-cache/proxy_temp \
         /app/nginx-cache/fastcgi_temp \
@@ -28,9 +30,13 @@ RUN mkdir -p \
         /app/nginx-logs \
         /app/nginx-run
 
-# Copy project
-COPY --chown=nginx:nginx nginx.conf start_nginx.sh /app/
-COPY --from=builder /app/staticfiles /static/
+# Files required to have open write permissions
+RUN chmod -R 777 \
+        /app/nginx-cache \
+        /app/nginx-logs \
+        /app/nginx-run \
+        /app/nginx.conf \
+        /app/start_nginx.sh
 
 # Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
