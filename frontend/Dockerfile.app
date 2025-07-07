@@ -36,7 +36,7 @@ ENV PATH="/venv/bin:$PATH"
 COPY start_app.sh /app/start_app.sh
 RUN useradd -m rctool
 USER rctool
-COPY . /app --chown=rctool:rctool
+COPY --chown=rctool:rctool . /app
 
 # copy project
 COPY --from=builder /venv /venv
