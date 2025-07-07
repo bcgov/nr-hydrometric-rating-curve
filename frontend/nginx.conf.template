@@ -20,7 +20,7 @@ http {
         # Access log
         access_log /app/nginx-logs/access.log;
 
-        # Use custom temp paths (only what we need)
+        # Use custom temp paths
         proxy_temp_path /app/nginx-cache/proxy_temp;
         client_body_temp_path /app/nginx-cache/client_body_temp;
 

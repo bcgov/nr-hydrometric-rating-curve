@@ -8,31 +8,37 @@ RUN apt-get update --no-install-recommends && \
     apt-get install -y gcc && \
     rm -rf /var/lib/apt/lists/*
 
+# Copy files, install deps and build static files
 WORKDIR /app
-COPY . ./
+COPY requirements.txt pyproject.toml setup.py manage.py ./
+COPY src/ ./src/
 RUN pip install .
 RUN python manage.py collectstatic
+
 
 ### APP IMAGE ###
 FROM nginx:1 AS deploy
 
-# Copy project
+# Copy project files to /app/
 COPY nginx.conf.template start_nginx.sh ./app/
-COPY --from=builder /app/staticfiles /app/static/
 
-# Stub our config and dirs with open permissions any user
-RUN touch /app/nginx.conf
-RUN mkdir -p \
+# Copy static files to /static/ (outside /app/)
+COPY --from=builder /app/staticfiles /static/
+
+# Create runtime directories and files
+RUN touch /app/nginx.conf && \
+    mkdir -p \
         /app/nginx-cache/proxy_temp \
         /app/nginx-cache/client_body_temp \
         /app/nginx-logs \
-        /app/nginx-run
-RUN chmod -R 777 \
+        /app/nginx-run && \
+    chmod -R 777 \
         /app/nginx-cache \
         /app/nginx-logs \
         /app/nginx-run \
         /app/nginx.conf \
-        /app/start_nginx.sh
+        /app/start_nginx.sh && \
+    chmod -R 755 /static
 
 # Healthcheck and user
 USER nobody
