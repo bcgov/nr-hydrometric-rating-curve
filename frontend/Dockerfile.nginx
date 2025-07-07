@@ -26,7 +26,7 @@ FROM nginx:1 AS deploy
 ## Create user-writable directories
 USER nginx
 WORKDIR /app
-COPY --from=builder --chown=nginx:nginx /app/staticfiles /static
+COPY --from=builder --chown=nginx:nginx /app/staticfiles /static/
 COPY nginx.conf start_nginx.sh .
 RUN mkdir -p \
         /app/nginx-cache/proxy_temp \
