@@ -21,13 +21,12 @@ RUN python manage.py collectstatic
 ### APP IMAGE ###
 FROM nginx:1 AS deploy
 
-
 # copy project
 ## Create user-writable directories
 USER nginx
 WORKDIR /app
-COPY --from=builder --chown=nginx:nginx /app/staticfiles /static/
-COPY nginx.conf start_nginx.sh .
+COPY --from=builder --chown=nginx:nginx /app/staticfiles /static
+COPY nginx.conf start_nginx.sh ./
 RUN mkdir -p \
         /app/nginx-cache/proxy_temp \
         /app/nginx-cache/fastcgi_temp \
