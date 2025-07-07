@@ -20,13 +20,10 @@ FROM nginx:1 AS deploy
 COPY nginx.conf.template start_nginx.sh ./app/
 COPY --from=builder /app/staticfiles /app/static/
 
-# Stub our config and dirs with open permissions for a random OpenShift user
+# Stub our config and dirs with open permissions any user
 RUN touch /app/nginx.conf
 RUN mkdir -p \
         /app/nginx-cache/proxy_temp \
-        /app/nginx-cache/fastcgi_temp \
-        /app/nginx-cache/uwsgi_temp \
-        /app/nginx-cache/scgi_temp \
         /app/nginx-cache/client_body_temp \
         /app/nginx-logs \
         /app/nginx-run
