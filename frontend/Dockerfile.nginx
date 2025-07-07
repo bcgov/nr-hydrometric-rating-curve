@@ -39,7 +39,7 @@ RUN chmod -R 777 \
         /app/start_nginx.sh
 
 # Healthcheck and user
-USER nginx
+USER nobody
 HEALTHCHECK --interval=60s --timeout=10s \
     CMD test -f /app/nginx-run/nginx.pid
 
