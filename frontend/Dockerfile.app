@@ -4,8 +4,8 @@ FROM python:3.13-slim AS builder
 
 # set environment variables
 ENV LANG=C.UTF-8
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # use python venv to copy to the app image later
 ENV PATH="/venv/bin:$PATH"
