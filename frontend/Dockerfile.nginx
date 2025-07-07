@@ -22,6 +22,7 @@ RUN python manage.py collectstatic
 FROM nginx:1 AS deploy
 
 ## add permissions for nginx user
+COPY start_nginx.sh /app/start_nginx.sh
 RUN touch /var/run/nginx.pid
 RUN chown -R nginx:nginx /var/run/nginx.pid /var/cache/nginx /var/log/nginx /etc/nginx
 
