@@ -31,8 +31,7 @@ RUN touch /app/nginx.conf && \
     chmod -R 777 \
         /app/nginx-logs \
         /app/nginx.conf \
-        /app/start_nginx.sh && \
-    chmod -R 755 /static
+        /app/start_nginx.sh
 
 # Healthcheck and user
 USER nobody
