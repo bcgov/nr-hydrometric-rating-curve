@@ -21,14 +21,21 @@ RUN python manage.py collectstatic
 ### APP IMAGE ###
 FROM nginx:1 AS deploy
 
-## Create user-writable directories
-RUN mkdir -p /app/nginx-cache /app/nginx-logs /app/nginx-run
-COPY start_nginx.sh /app/start_nginx.sh
 
 # copy project
+## Create user-writable directories
 USER nginx
+WORKDIR /app
 COPY --from=builder --chown=nginx:nginx /app/staticfiles /static
-COPY --from=builder /app/nginx.conf /app/nginx.conf
+COPY nginx.conf start_nginx.sh .
+RUN mkdir -p \
+        /app/nginx-cache/proxy_temp \
+        /app/nginx-cache/fastcgi_temp \
+        /app/nginx-cache/uwsgi_temp \
+        /app/nginx-cache/scgi_temp \
+        /app/nginx-cache/client_body_temp \
+        /app/nginx-logs \
+        /app/nginx-run
 
 # healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
