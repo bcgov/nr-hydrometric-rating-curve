@@ -1,5 +1,5 @@
 # Tell nginx to use custom locations
-pid /app/nginx-run/nginx.pid;
+pid /tmp/nginx.pid;
 error_log /app/nginx-logs/error.log;
 
 # nginx configuration file to forward requests to gunicorn
@@ -20,9 +20,9 @@ http {
         # Access log
         access_log /app/nginx-logs/access.log;
 
-        # Use custom temp paths
-        proxy_temp_path /app/nginx-cache/proxy_temp;
-        client_body_temp_path /app/nginx-cache/client_body_temp;
+        # Use system temp paths (always writable)
+        proxy_temp_path /tmp/nginx-proxy-temp;
+        client_body_temp_path /tmp/nginx-client-temp;
 
         # Proxy settings
         proxy_busy_buffers_size   512k;
@@ -45,5 +45,3 @@ http {
         }
     }
 }
-
-

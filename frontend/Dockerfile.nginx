@@ -27,15 +27,9 @@ COPY --from=builder /app/staticfiles /static/
 
 # Create runtime directories and files
 RUN touch /app/nginx.conf && \
-    mkdir -p \
-        /app/nginx-cache/proxy_temp \
-        /app/nginx-cache/client_body_temp \
-        /app/nginx-logs \
-        /app/nginx-run && \
+    mkdir -p /app/nginx-logs \
     chmod -R 777 \
-        /app/nginx-cache \
         /app/nginx-logs \
-        /app/nginx-run \
         /app/nginx.conf \
         /app/start_nginx.sh && \
     chmod -R 755 /static
