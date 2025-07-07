@@ -23,13 +23,20 @@ RUN python -m venv /venv && \
 ### APP IMAGE ###
 FROM python:3.13-slim
 
-# Envars and venv
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PATH="/venv/bin:$PATH"
+
+# create and switch to the app user
+COPY start_app.sh /app/start_app.sh
+RUN useradd -m rctool
+USER rctool
+COPY --chown=rctool:rctool . /app
+
+# copy project
 COPY --from=builder /venv /venv
-ENV LANG=C.UTF-8 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PATH="/venv/bin:$PATH"
 
 # Copy app and set permissions (read all, write db.sqlite3)
 WORKDIR /app
