@@ -23,7 +23,7 @@ COPY rctool/ ./rctool
 RUN pip install . --no-cache-dir
 
 ### APP IMAGE ###
-FROM python:3.13-slim AS APP
+FROM python:3.13-slim
 WORKDIR /app
 
 # set environment variables
