@@ -1,6 +1,6 @@
 ### BUILDER IMAGE ###
 # syntax=docker/dockerfile:1
-FROM python:3.13-slim AS BUILDER
+FROM python:3.13-slim AS builder
 
 # set environment variables
 ENV LANG=C.UTF-8
@@ -40,7 +40,7 @@ USER rctool
 
 
 # copy project
-COPY --from=BUILDER /venv /venv
+COPY --from=builder /venv /venv
 
 # healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \

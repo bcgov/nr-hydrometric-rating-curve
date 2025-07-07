@@ -1,6 +1,6 @@
 ### BUILDER IMAGE ###
 # syntax=docker/dockerfile:1
-FROM python:3.13-slim AS BUILDER
+FROM python:3.13-slim AS builder
 WORKDIR /app
 
 # set environment variables
@@ -26,8 +26,8 @@ FROM nginx:1 AS deploy
 WORKDIR /app
 
 # copy project
-COPY --from=BUILDER /app/staticfiles /static
-COPY --from=BUILDER /app/nginx.conf /app/nginx.conf
+COPY --from=builder /app/staticfiles /static
+COPY --from=builder /app/nginx.conf /app/nginx.conf
 COPY start_nginx.sh /app/start_nginx.sh
 ## add permissions for nginx user
 RUN chown -R nginx:nginx /app && chmod -R 777 /app && \
