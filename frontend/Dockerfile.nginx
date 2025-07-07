@@ -29,7 +29,7 @@ RUN mkdir -p \
         /app/nginx-run
 
 # Copy project
-COPY nginx.conf start_nginx.sh /app/
+COPY --chown=nginx:nginx nginx.conf start_nginx.sh /app/
 COPY --from=builder /app/staticfiles /static/
 
 # Healthcheck
