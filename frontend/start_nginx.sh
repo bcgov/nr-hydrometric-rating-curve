@@ -1,10 +1,10 @@
 #!/bin/sh
 
-echo "---> Creating nginx.conf ..."
+echo "---> Creating nginx.conf from template..."
 echo "BACKEND URL IS $BACKEND_URL"
 
-# Replace $BACKEND_URL in nginx.conf with the actual URL
-sed -i "s|\$BACKEND_URL|$BACKEND_URL|g" /app/nginx.conf
+# Use envsubst to create final nginx.conf from template
+envsubst '${BACKEND_URL}' < /app/nginx.conf.template > /app/nginx.conf
 
 echo "---> Checking nginx.conf content:"
 cat /app/nginx.conf | grep -A5 -B5 proxy_pass
