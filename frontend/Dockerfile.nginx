@@ -1,19 +1,14 @@
-### BUILDER IMAGE ###
 FROM python:3.13-slim AS builder
 
-# set environment variables
-ENV LANG=C.UTF-8 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PATH="/venv/bin:$PATH"
+ENV LANG=C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/venv/bin:$PATH"
 
 RUN apt-get update --no-install-recommends && \
     apt-get install -y gcc
 RUN python -m venv /venv
 
-# install requirements
-WORKDIR /app
 COPY . .
 RUN pip install .
 RUN python manage.py collectstatic
@@ -21,12 +16,9 @@ RUN python manage.py collectstatic
 ### APP IMAGE ###
 FROM nginx:1 AS deploy
 
-# copy project
-## Create user-writable directories
+# Create user and user-writable directories
 USER nginx
 WORKDIR /app
-COPY --from=builder --chown=nginx:nginx /app/staticfiles /static/
-COPY nginx.conf start_nginx.sh ./
 RUN mkdir -p \
         /app/nginx-cache/proxy_temp \
         /app/nginx-cache/fastcgi_temp \
@@ -36,7 +28,11 @@ RUN mkdir -p \
         /app/nginx-logs \
         /app/nginx-run
 
-# healthcheck
+# Copy project
+COPY nginx.conf start_nginx.sh ./
+COPY --from=builder /app/staticfiles /static/
+
+# Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
     CMD test -f /app/nginx-run/nginx.pid
 
