@@ -11,14 +11,17 @@ http {
     # Use system mime.types
     include /etc/nginx/mime.types;
 
+    # Configure all temp paths to use /tmp (writable by any user)
+    proxy_temp_path /tmp/nginx-proxy-temp;
+    client_body_temp_path /tmp/nginx-client-temp;
+    fastcgi_temp_path /tmp/nginx-fastcgi-temp;
+    uwsgi_temp_path /tmp/nginx-uwsgi-temp;
+    scgi_temp_path /tmp/nginx-scgi-temp;
+
     large_client_header_buffers 4 32k;
     server {
         # Access log
         access_log /app/nginx-logs/access.log;
-
-        # Use system temp paths (always writable)
-        proxy_temp_path /tmp/nginx-proxy-temp;
-        client_body_temp_path /tmp/nginx-client-temp;
 
         # Proxy settings
         proxy_busy_buffers_size   512k;
