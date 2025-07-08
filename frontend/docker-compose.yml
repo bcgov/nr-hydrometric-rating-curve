@@ -1,30 +1,29 @@
-version: "3.9"
-#Triggering a PR build.
 services:
   nginx:
     build:
-      context: .
       dockerfile: Dockerfile.nginx
-    image: hr-curve-nginx:latest
+    depends_on: [ web ]
+    environment:
+      BACKEND_URL: http://rctool:3000
     ports:
-      - "${WEB_PORT}:${WEB_PORT}"
+      - "3001:3001"
     restart: unless-stopped
-    env_file:
-      - .env
-    depends_on:
-      - web
     logging:
       options:
         max-size: 10m
+
   web:
     build:
-      context: .
       dockerfile: Dockerfile.app
-    image: hr-curve:latest
+    environment:
+      WEB_PORT_INTERNAL: 3000
+      GUNICORN_WORKERS: 2
+      GUNICORN_LOG_LEVEL: debug
+      GUNICORN_LIMIT_REQ_LINE: 4094
+      GUNICORN_LIMIT_REQ_FIELDSIZE: 8190
+      GUNICORN_TIMEOUT: 30
     ports:
-      - "${WEB_PORT_INTERNAL}:${WEB_PORT_INTERNAL}"
-    env_file:
-      - .env
+      - "3000:3000"
     restart: unless-stopped
     logging:
       options:
