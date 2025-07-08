@@ -16,7 +16,6 @@ RUN python -m venv /venv
 
 # install requirements
 COPY pyproject.toml ./
-COPY README.md ./
 COPY rctool/ ./rctool
 RUN pip install . --no-cache-dir
 
