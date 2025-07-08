@@ -1,11 +1,20 @@
 #!/bin/sh
 
-echo "---> Creating nginx.conf ..."
+echo "---> Creating nginx.conf from template..."
 echo "BACKEND URL IS $BACKEND_URL"
+
+# nginx envars
 export host="\$host"
 export proxy_add_x_forwarded_for="\$proxy_add_x_forwarded_for"
-envsubst < /app/nginx.conf >  /etc/nginx/nginx.conf
-echo "---> nginx.conf created"
-cat /etc/nginx/nginx.conf
-nginx -g 'daemon off;'
 
+# Use envsubst to create final nginx.conf from template
+envsubst '${BACKEND_URL}' < /app/nginx.conf.template > /app/nginx.conf
+
+echo "---> nginx.conf created"
+cat /app/nginx.conf
+
+echo "---> Checking nginx.conf content:"
+cat /app/nginx.conf | grep -iEA4 "location / {"
+
+echo "---> Starting nginx..."
+nginx -c /tmp/nginx.conf -g 'daemon off;'
