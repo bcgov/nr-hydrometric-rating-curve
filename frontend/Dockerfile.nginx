@@ -26,14 +26,11 @@ COPY nginx.conf.template start_nginx.sh ./app/
 COPY --from=builder /app/staticfiles /static/
 
 # Create runtime directories and files
-RUN touch /app/nginx.conf && \
-    mkdir -p /app/nginx-logs && \
-    chmod -R 777 \
-        /app/nginx-logs \
-        /app/nginx.conf \
-        /app/start_nginx.sh
+RUN mkdir -p /app/nginx-logs && \
+    chmod 777 /app/nginx-logs && \
+    chmod 755 /app/start_nginx.sh
 
-# Healthcheck and user
+# Set any unprivileged user - let OpenShift assign random UID
 USER nobody
 HEALTHCHECK --interval=60s --timeout=10s \
     CMD test -f /tmp/nginx.pid
