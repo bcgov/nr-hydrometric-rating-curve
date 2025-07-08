@@ -30,18 +30,16 @@ ENV LANG=C.UTF-8 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
 
-# Copy app and loosen permissions
-COPY . /app
-COPY start_app.sh /app/start_app.sh
-COPY --from=builder /venv /venv
-RUN  chmod -R 777 /app
-
-# create and switch to the app user
-WORKDIR /app
+# Non-privileged user
 RUN useradd -m rctool
 USER rctool
 
-# healthcheck
+# Copy app and /venv
+WORKDIR /app
+COPY --chown=rctool:rctool . /app
+COPY --from=builder /venv /venv
+
+# Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
     CMD python manage.py check
 
