@@ -26,7 +26,6 @@ FROM python:3.13-slim
 # Envars and venv
 COPY --from=builder /venv /venv
 ENV LANG=C.UTF-8 \
-    MPLCONFIGDIR=/tmp \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
