@@ -40,7 +40,6 @@ RUN  chmod -R 777 /app
 WORKDIR /app
 RUN useradd -m rctool
 USER rctool
-COPY --chown=rctool:rctool . /app
 
 # healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
