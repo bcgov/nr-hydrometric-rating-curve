@@ -1,7 +1,7 @@
 ### BUILDER IMAGE ###
 FROM python:3.13-slim AS builder
 
-# set environment variables and /venv
+# set environment variables
 ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -25,7 +25,6 @@ FROM nginx:1 AS deploy
 # copy project
 COPY --from=builder /app/staticfiles /static
 COPY --from=builder /app/nginx.conf /app/nginx.conf
-COPY --from=builder /venv /venv
 COPY start_nginx.sh /app/start_nginx.sh
 
 ## add permissions for nginx user

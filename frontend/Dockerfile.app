@@ -29,6 +29,7 @@ ENV LANG=C.UTF-8 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
+COPY --from=builder /venv /venv
 
 # Non-privileged user
 RUN useradd -m rctool
@@ -37,7 +38,6 @@ USER rctool
 # Copy app and /venv
 WORKDIR /app
 COPY --chown=rctool:rctool . /app
-COPY --from=builder /venv /venv
 
 # Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
