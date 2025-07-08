@@ -2,13 +2,12 @@
 # syntax=docker/dockerfile:1
 FROM python:3.13-slim AS builder
 
-# set environment variables
-ENV LANG=C.UTF-8
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# use python venv to copy to the app image later
-ENV PATH="/venv/bin:$PATH"
+# set environment variables and /venv
+ENV LANG=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PATH="/venv/bin:$PATH"
 
 RUN apt-get update --no-install-recommends && \
     apt-get install -y gcc 
@@ -24,20 +23,24 @@ RUN pip install . --no-cache-dir
 
 ### APP IMAGE ###
 FROM python:3.13-slim
+WORKDIR /app
 
-# set environment variables and /venv
-ENV LANG=C.UTF-8 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PATH="/venv/bin:$PATH"
-COPY --from=builder /venv /venv
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PATH="/venv/bin:$PATH"
+COPY . /app
+COPY start_app.sh /app/start_app.sh
 
 # create and switch to the app user
 WORKDIR /app
 RUN useradd -m rctool
 USER rctool
 COPY --chown=rctool:rctool . /app
+
+# copy project
+COPY --from=builder /venv /venv
 
 # healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
