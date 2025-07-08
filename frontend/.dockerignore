@@ -1,0 +1,11 @@
+# .dockerignore (must be a separate file)
+.git
+__pycache__/
+*.pyc
+tests/
+Dockerfile*
+.env*
+*.md
+*.yaml
+*.yml
+COMPLIANCE.yaml

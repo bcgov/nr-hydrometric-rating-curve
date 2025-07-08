@@ -1,5 +1,5 @@
 # Matched against repo root (asterisk)
-*                         @carmenriddel @tobiasmllr @mishraomp @DerekRoberts
+*                         @carmenriddel @mishraomp @DerekRoberts
 
 # Matched against directories
 /.github/workflows/       @mishraomp @DerekRoberts

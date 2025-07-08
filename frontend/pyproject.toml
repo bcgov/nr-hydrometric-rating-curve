@@ -2,10 +2,6 @@
 name = "rctool"
 version = "1.0.0"
 description = ""
-authors = [
-    "Tobias Mueller <to.mueller@gmail.com, Tyler De Jong <TDeJong@nhcweb.com>",
-]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"

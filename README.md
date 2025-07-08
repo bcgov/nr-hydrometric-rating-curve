@@ -2,7 +2,6 @@
 
 [![Analysis](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/analysis.yml/badge.svg)](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/analysis.yml)
 [![Merge](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/merge.yml/badge.svg)](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/merge.yml)
-[![Release](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/prod.yml/badge.svg)](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/prod.yml)
 [![Scheduled](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/scheduled.yml/badge.svg)](https://github.com/bcgov/nr-hydrometric-rating-curve/actions/workflows/scheduled.yml)
 
 [![Issues](https://img.shields.io/github/issues/bcgov/nr-hydrometric-rating-curve)](/../../issues)
@@ -30,7 +29,3 @@ After cloning the repository, use the `poetry` python package manager to install
 ## Running tests locally
 
 To run Django tests, it is easiest to build the Docker container and attach to the running shell. The command `python manage.py test` executes the tests in Django.
-
-##### Contributing Authors
-
-NHC (Tyler De Jong, Tobias Müller), ENV X

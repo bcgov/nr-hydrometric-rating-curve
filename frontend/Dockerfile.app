@@ -8,40 +8,40 @@ ENV LANG=C.UTF-8 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
 
+# Install gcc and cleanup apt cache
 RUN apt-get update --no-install-recommends && \
-    apt-get install -y gcc 
+    apt-get install -y gcc && \
+    rm -rf /var/lib/apt/lists/*
 
-# set up venv
-RUN python -m venv /venv
-
-# install requirements
+# Setup venv and install requirements
 COPY pyproject.toml ./
-COPY README.md ./
 COPY rctool/ ./rctool
-RUN pip install . --no-cache-dir
+RUN python -m venv /venv && \
+    pip install . --no-cache-dir
+
 
 ### APP IMAGE ###
 FROM python:3.13-slim
 
-# set environment variables and /venv
+# Envars and venv
+COPY --from=builder /venv /venv
 ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
-COPY --from=builder /venv /venv
 
-# Non-privileged user
-RUN useradd -m rctool
-USER rctool
-
-# Copy app and set permissions for random UID OpenShift user
+# Copy app and set permissions (read all, write db.sqlite3)
 WORKDIR /app
-COPY --chown=rctool:rctool . /app
-RUN  chmod -R 777 /app
+COPY . /app
+RUN touch ./db.sqlite3 && \
+    chmod 666 ./db.sqlite3
+
+# Use a generic non-root user for security (OpenShift will override with a random UID)
+USER nobody
 
 # Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
-    CMD python manage.py check
+    CMD python manage.py check --deploy
 
 CMD ["sh", "-c", "/app/start_app.sh"]
