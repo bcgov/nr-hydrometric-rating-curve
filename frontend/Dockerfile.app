@@ -1,7 +1,7 @@
-### Builder
+### BUILDER IMAGE ###
 FROM python:3.13-slim AS builder
 
-# Envars
+# set environment variables and /venv
 ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -20,22 +20,22 @@ RUN python -m venv /venv && \
     pip install . --no-cache-dir
 
 
-### Deployment
+### APP IMAGE ###
 FROM python:3.13-slim
 
 # Envars and venv
 COPY --from=builder /venv /venv
 ENV LANG=C.UTF-8 \
-    MPLCONFIGDIR=/tmp \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
-    
-# Copy app
+
+# Copy app and set permissions (read all, write db.sqlite3)
 WORKDIR /app
 COPY . /app
-RUN  chmod -R 777 /app
+RUN touch ./db.sqlite3 && \
+    chmod 666 ./db.sqlite3
 
 # Use a generic non-root user for security (OpenShift will override with a random UID)
 USER nobody
