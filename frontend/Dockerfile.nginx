@@ -3,9 +3,6 @@
 FROM python:3.13-slim AS builder
 WORKDIR /app
 
-# set environment variables
-ENV LANG=C.UTF-8 \
-
 # set environment variables and /venv
 ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
