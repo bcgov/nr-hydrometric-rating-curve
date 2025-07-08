@@ -37,6 +37,7 @@ USER nobody
 # Copy app
 WORKDIR /app
 COPY . /app
+RUN  chmod -R 777 /app
 
 # Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
