@@ -23,13 +23,14 @@ RUN python -m venv /venv && \
 ### APP IMAGE ###
 FROM python:3.13-slim
 
-# set environment variables and /venv
+# Envars and venv
+COPY --from=builder /venv /venv
 ENV LANG=C.UTF-8 \
+    MPLCONFIGDIR=/tmp \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
-COPY --from=builder /venv /venv
 
 # Non-privileged user
 RUN useradd -m rctool
