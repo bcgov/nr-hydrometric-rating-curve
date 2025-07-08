@@ -20,12 +20,12 @@ RUN python manage.py collectstatic
 
 
 ### APP IMAGE ###
-FROM nginx:1 AS deploy
+FROM nginx:1
 
 # copy project
 COPY --from=builder /app/staticfiles /static
-COPY --from=builder /app/nginx.conf /app/nginx.conf
-COPY start_nginx.sh /app/start_nginx.sh
+WORKDIR /app
+COPY nginx.conf.template start_nginx.sh ./
 
 ## add permissions for nginx user
 RUN touch /var/run/nginx.pid && \
@@ -37,7 +37,6 @@ RUN touch /var/run/nginx.pid && \
     chmod -R 777 /etc/nginx/nginx.conf
 
 # User and workdir
-WORKDIR /app
 USER nobody
 
 # healthcheck
