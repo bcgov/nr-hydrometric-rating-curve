@@ -13,13 +13,12 @@ RUN apt-get update --no-install-recommends && \
     apt-get install -y gcc && \
     rm -rf /var/lib/apt/lists/*
 
-# set up venv
-RUN python -m venv /venv
-
-# install requirements
+# Setup venv and install requirements
 COPY pyproject.toml ./
 COPY rctool/ ./rctool
-RUN pip install . --no-cache-dir
+RUN python -m venv /venv && \
+    pip install . --no-cache-dir
+
 
 ### APP IMAGE ###
 FROM python:3.13-slim
