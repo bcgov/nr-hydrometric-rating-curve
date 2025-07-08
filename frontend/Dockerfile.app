@@ -26,10 +26,7 @@ RUN pip install . --no-cache-dir
 FROM python:3.13-slim
 
 # set environment variables and /venv
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
-ENV PATH="/venv/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_DISABLE_PIP_VERSION_CHECK=1 PATH="/venv/bin:$PATH"
 COPY --from=builder /venv /venv
 
 # create and switch to the app user
