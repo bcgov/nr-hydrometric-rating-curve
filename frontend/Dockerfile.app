@@ -35,9 +35,10 @@ COPY --from=builder /venv /venv
 RUN useradd -m rctool
 USER rctool
 
-# Copy app and /venv
+# Copy app and set permissions for random UID OpenShift user
 WORKDIR /app
 COPY --chown=rctool:rctool . /app
+RUN  chmod -R 777 /app
 
 # Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
