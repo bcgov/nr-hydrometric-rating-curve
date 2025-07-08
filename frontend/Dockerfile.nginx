@@ -10,8 +10,9 @@ RUN apt-get update --no-install-recommends && \
 
 # Copy files, install deps and build static files
 WORKDIR /app
-COPY requirements.txt pyproject.toml setup.py manage.py ./
+COPY manage.py poetry.lock pyproject.toml ./
 COPY rctool/ ./rctool/
+COPY rctool_project/ ./rctool_project/
 RUN pip install .
 RUN python manage.py collectstatic
 
