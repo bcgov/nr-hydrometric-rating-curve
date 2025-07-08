@@ -16,8 +16,8 @@ RUN apt-get update --no-install-recommends && \
 # Setup venv and install requirements
 COPY pyproject.toml ./
 COPY rctool/ ./rctool
-RUN python -m venv /venv
-RUN pip install . --no-cache-dir
+RUN python -m venv /venv && \
+    pip install . --no-cache-dir
 
 
 ### Deployment
