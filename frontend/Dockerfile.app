@@ -22,7 +22,6 @@ RUN pip install . --no-cache-dir
 
 ### APP IMAGE ###
 FROM python:3.13-slim
-WORKDIR /app
 
 # set environment variables and /venv
 ENV LANG=C.UTF-8 \
@@ -31,17 +30,17 @@ ENV LANG=C.UTF-8 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
 
+# Copy app and loosen permissions
 COPY . /app
 COPY start_app.sh /app/start_app.sh
+COPY --from=builder /venv /venv
+RUN  chmod -R 777 /app
 
 # create and switch to the app user
 WORKDIR /app
 RUN useradd -m rctool
 USER rctool
 COPY --chown=rctool:rctool . /app
-
-# copy project
-COPY --from=builder /venv /venv
 
 # healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
