@@ -30,14 +30,14 @@ ENV LANG=C.UTF-8 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
-
-# Use a generic non-root user for security (OpenShift will override with a random UID)
-USER nobody
-
+    
 # Copy app
 WORKDIR /app
 COPY . /app
 RUN  chmod -R 777 /app
+
+# Use a generic non-root user for security (OpenShift will override with a random UID)
+USER nobody
 
 # Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
