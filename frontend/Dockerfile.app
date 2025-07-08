@@ -1,5 +1,4 @@
 ### BUILDER IMAGE ###
-# syntax=docker/dockerfile:1
 FROM python:3.13-slim AS builder
 
 # set environment variables and /venv
@@ -25,11 +24,13 @@ RUN pip install . --no-cache-dir
 FROM python:3.13-slim
 WORKDIR /app
 
-# set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
-ENV PATH="/venv/bin:$PATH"
+# set environment variables and /venv
+ENV LANG=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PATH="/venv/bin:$PATH"
+
 COPY . /app
 COPY start_app.sh /app/start_app.sh
 
