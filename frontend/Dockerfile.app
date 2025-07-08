@@ -42,6 +42,6 @@ USER nobody
 
 # Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
-    CMD python manage.py check
+    CMD python manage.py check --deploy
 
 CMD ["sh", "-c", "/app/start_app.sh"]
