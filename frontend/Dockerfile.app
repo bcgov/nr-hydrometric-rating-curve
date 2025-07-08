@@ -32,14 +32,13 @@ ENV LANG=C.UTF-8 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
 
-# Non-privileged user
-RUN useradd -m rctool
-USER rctool
-
-# Copy app and set permissions for random UID OpenShift user
+# Copy app
 WORKDIR /app
-COPY --chown=rctool:rctool . /app
+COPY . /app
 RUN  chmod -R 777 /app
+
+# Use a generic non-root user for security (OpenShift will override with a random UID)
+USER nobody
 
 # Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
