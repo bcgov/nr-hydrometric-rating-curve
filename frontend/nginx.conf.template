@@ -6,14 +6,10 @@ error_log /app/nginx-logs/error.log;
 events {
     worker_connections  1024;  ## Default: 1024
 }
+
 http {
     # Use system mime.types
     include /etc/nginx/mime.types;
-
-    # allow csv files. Seems to also allow .dat files
-    types {
-        text/csv csv;
-    }
 
     large_client_header_buffers 4 32k;
     server {
@@ -32,6 +28,11 @@ http {
 
         listen 3000;
         server_name localhost;
+
+        # Handle CSV files from anywhere
+        location ~* \.(csv|dat)$ {
+            add_header Content-Type text/csv;
+        }
 
         location /static/ {
             autoindex off;
