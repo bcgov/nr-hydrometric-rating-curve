@@ -1,7 +1,7 @@
-### BUILDER IMAGE ###
+### Builder
 FROM python:3.13-slim AS builder
 
-# set environment variables and /venv
+# Envars
 ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -16,27 +16,29 @@ RUN apt-get update --no-install-recommends && \
 # Setup venv and install requirements
 COPY pyproject.toml ./
 COPY rctool/ ./rctool
-RUN python -m venv /venv && \
-    pip install . --no-cache-dir
+RUN python -m venv /venv
+RUN pip install . --no-cache-dir
 
 
-### APP IMAGE ###
+### Deployment
 FROM python:3.13-slim
 
-# set environment variables and /venv
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
-ENV PATH="/venv/bin:$PATH"
+# Envars and venv
 COPY --from=builder /venv /venv
+ENV LANG=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PATH="/venv/bin:$PATH"
 
-# create and switch to the app user
+# Use a generic non-root user for security (OpenShift will override with a random UID)
+USER nobody
+
+# Copy app
 WORKDIR /app
-RUN useradd -m rctool
-USER rctool
-COPY --chown=rctool:rctool . /app
+COPY . /app
 
-# healthcheck
+# Healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
     CMD python manage.py check --deploy
 
