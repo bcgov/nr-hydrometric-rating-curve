@@ -32,10 +32,11 @@ ENV LANG=C.UTF-8 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
 
-# Copy app
+# Copy app and set permissions (read all, write db.sqlite3)
 WORKDIR /app
 COPY . /app
-RUN  chmod -R 777 /app
+RUN touch ./db.sqlite3 && \
+    chmod 666 ./db.sqlite3
 
 # Use a generic non-root user for security (OpenShift will override with a random UID)
 USER nobody
