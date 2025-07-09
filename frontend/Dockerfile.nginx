@@ -5,43 +5,33 @@ FROM python:3.13-slim AS builder
 ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PATH="/venv/bin:$PATH"
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 RUN apt-get update --no-install-recommends && \
-    apt-get install -y gcc
-RUN python -m venv /venv
+    apt-get install -y gcc && \
+    rm -rf /var/lib/apt/lists/*
 
 # install requirements
 WORKDIR /app
-COPY . .
-RUN pip install .
-RUN python manage.py collectstatic
+COPY manage.py poetry.lock pyproject.toml ./
+COPY rctool/ ./rctool/
+COPY rctool_project/ ./rctool_project/
+COPY static/ ./static/
+RUN pip install . && \
+    python manage.py collectstatic
 
 
 ### APP IMAGE ###
-FROM nginx:1 AS deploy
+FROM nginx:1.29.0
 
 # copy project
 COPY --from=builder /app/staticfiles /static
-COPY --from=builder /app/nginx.conf /app/nginx.conf
-COPY start_nginx.sh /app/start_nginx.sh
-
-## add permissions for nginx user
-RUN chown -R nginx:nginx /app && chmod -R 777 /app && \
-    chown -R nginx:nginx /var/cache/nginx && chmod -R 777 /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && chmod -R 777 /var/log/nginx && \
-    chown -R nginx:nginx /etc/nginx/conf.d && chmod -R 777 /etc/nginx/conf.d && \
-    chown -R nginx:nginx /etc/nginx/nginx.conf && chmod -R 777 /etc/nginx/nginx.conf
-RUN touch /var/run/nginx.pid && \
-    chown -R nginx:nginx /var/run/nginx.pid && chmod -R 777 /var/run/nginx.pid
-
-# User and workdir
 WORKDIR /app
-USER nginx
+COPY nginx.conf.template start_nginx.sh ./
 
-# healthcheck
+# Set any unprivileged user - let OpenShift assign random UID
+USER nobody
 HEALTHCHECK --interval=60s --timeout=10s \
-    CMD service nginx status
+    CMD curl -f http://localhost:3000/ || exit 1
 
 CMD ["sh", "-c", "/app/start_nginx.sh"]
