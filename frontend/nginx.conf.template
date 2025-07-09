@@ -1,6 +1,6 @@
 # Tell nginx to use custom locations for runtime files
-pid /tmp/nginx.pid;                    # Process ID file (writable by any user)
-error_log /tmp/nginx-logs/error.log;   # Error log location
+pid /tmp/nginx.pid;             # Process ID file (writable by any user)
+error_log /tmp/error.log;       # Error log location
 
 # nginx configuration file to forward requests to gunicorn
 events {
