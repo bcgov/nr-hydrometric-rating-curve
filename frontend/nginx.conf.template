@@ -8,6 +8,8 @@ events {
 }
 
 http {
+    access_log /tmp/access.log; # Store access log in /tmp (writable by any user)
+
     # Use system mime.types for file type detection
     include /etc/nginx/mime.types;
 
@@ -46,6 +48,22 @@ http {
             proxy_pass ${BACKEND_URL};            # Backend URL (set via envsubst)
             proxy_set_header Host $host;          # Forward original Host header
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; # Forward client IP
+            proxy_set_header X-Forwarded-Proto $scheme; # Forward protocol (http/https)
+            proxy_set_header X-Real-IP $remote_addr; # Forward real client IP
         }
+
+        # Security headers for improved browser protection
+
+        # Prevents browsers from MIME-sniffing a response away from the declared Content-Type.
+        # Helps reduce the risk of drive-by downloads and some XSS attacks.
+        add_header X-Content-Type-Options nosniff;
+
+        # Prevents the site from being displayed in a frame or iframe.
+        # Protects against clickjacking attacks.
+        add_header X-Frame-Options DENY;
+
+        # Enables the browser's built-in XSS protection and tells it to block the page if an attack is detected.
+        # Note: Modern browsers may ignore this header, but it is harmless to include.
+        add_header X-XSS-Protection "1; mode=block";
     }
 }
