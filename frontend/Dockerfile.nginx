@@ -26,7 +26,6 @@ FROM nginx:1
 COPY --from=builder /app/staticfiles /static
 WORKDIR /app
 COPY nginx.conf.template start_nginx.sh ./
-RUN ls -la && blorf
 
 ## add permissions for nginx user
 RUN touch /var/run/nginx.pid && \
