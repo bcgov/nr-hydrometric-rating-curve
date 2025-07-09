@@ -17,4 +17,4 @@ echo "---> Checking nginx.conf content:"
 cat /app/nginx.conf | grep -iEA4 "location / {"
 
 echo "---> Starting nginx..."
-nginx -c /tmp/nginx.conf -g 'daemon off;'
+nginx -c /app/nginx.conf -g 'daemon off;'
