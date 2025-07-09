@@ -1,46 +1,51 @@
 # Tell nginx to use custom locations for runtime files
-pid /tmp/nginx.pid;             # Process ID file (writable by any user)
-error_log /tmp/error.log;       # Error log location
+pid /tmp/nginx.pid;             # Store PID file in /tmp (writable by any user)
+error_log /tmp/error.log;       # Store error log in /tmp (writable by any user)
 
-# nginx configuration file to forward requests to gunicorn
+# Events block: controls basic connection processing
 events {
-    worker_connections  1024;  ## Default: 1024
+    worker_connections  1024;   # Maximum simultaneous connections per worker
 }
 
 http {
     # Use system mime.types for file type detection
     include /etc/nginx/mime.types;
 
-    proxy_temp_path /tmp/nginx-proxy-temp;
-    client_body_temp_path /tmp/nginx-client-temp;
-    fastcgi_temp_path /tmp/nginx-fastcgi-temp;
-    uwsgi_temp_path /tmp/nginx-uwsgi-temp;
-    scgi_temp_path /tmp/nginx-scgi-temp;
+    # Store all temp/cache files in /tmp for OpenShift/random UID compatibility
+    proxy_temp_path /tmp/nginx-proxy-temp;         # Proxy buffering
+    client_body_temp_path /tmp/nginx-client-temp;  # Large client request bodies
+    fastcgi_temp_path /tmp/nginx-fastcgi-temp;     # FastCGI (not used, but safe)
+    uwsgi_temp_path /tmp/nginx-uwsgi-temp;         # uWSGI (not used, but safe)
+    scgi_temp_path /tmp/nginx-scgi-temp;           # SCGI (not used, but safe)
 
-    large_client_header_buffers 4 32k;
+    large_client_header_buffers 4 32k;             # Buffer size for large headers
+
     server {
-        # Handle CSV files from anywhere with correct MIME type
+        # Handle CSV and DAT files with correct MIME type
         location ~* \.(csv|dat)$ {
             add_header Content-Type text/csv;      # Set MIME type for CSV files
         }
 
+        # Proxy buffer settings for performance
         proxy_busy_buffers_size   512k;
         proxy_buffers   4 512k;
         proxy_buffer_size   256k;
-        proxy_read_timeout    300s;
+        proxy_read_timeout    300s;                # Timeout for backend responses
 
-        listen 3000;
-        server_name localhost;
+        listen 3000;                              # Listen on port 3000 (non-root)
+        server_name localhost;                    # Server name (adjust as needed)
 
+        # Serve static files directly
         location /static/ {
-            autoindex off;
-            alias /static/;
+            autoindex off;                        # Disable directory listing
+            alias /static/;                       # Serve from /static directory
         }
 
+        # Proxy all other requests to the backend (e.g., Gunicorn/Django)
         location / {
-            proxy_pass ${BACKEND_URL};
-            proxy_set_header Host $host;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass ${BACKEND_URL};            # Backend URL (set via envsubst)
+            proxy_set_header Host $host;          # Forward original Host header
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; # Forward client IP
         }
     }
 }
