@@ -3,30 +3,39 @@ services:
     build:
       dockerfile: Dockerfile.nginx
     container_name: nginx
-    depends_on: [ web ]
+    depends_on:
+      web: 
+        condition: service_healthy
     environment:
       BACKEND_URL: http://web
-    ports:
-      - "3001:3001"
+    ports: [ "3001:3000" ]
     restart: unless-stopped
-    logging:
-      options:
-        max-size: 10m
+    volumes:
+      - /opt/matplotlib
 
   web:
-    build:
-      dockerfile: Dockerfile.app
+    command: >
+      sh -c "
+        python -m venv /venv &&
+        pip install . --no-cache-dir &&
+        python manage.py makemigrations &&
+        python manage.py migrate &&
+        python manage.py runserver 0.0.0.0:3000
+      "
     container_name: web
     environment:
-      WEB_PORT_INTERNAL: 3000
-      GUNICORN_WORKERS: 2
-      GUNICORN_LOG_LEVEL: debug
       GUNICORN_LIMIT_REQ_LINE: 4094
       GUNICORN_LIMIT_REQ_FIELDSIZE: 8190
+      GUNICORN_LOG_LEVEL: debug
       GUNICORN_TIMEOUT: 30
-    ports:
-      - "3000:3000"
+      GUNICORN_WORKERS: 2
+      WEB_PORT_INTERNAL: 3000
+    image: python:3.13-slim
+    ports: [ "3000:3000" ]
     restart: unless-stopped
-    logging:
-      options:
-        max-size: 10m
+    user: root
+    volumes:
+      - ./:/app
+      - /venv
+      - /opt/matplotlib
+    working_dir: /app
