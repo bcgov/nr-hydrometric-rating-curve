@@ -14,7 +14,7 @@ echo "---> nginx.conf created"
 cat /tmp/nginx.conf
 
 echo "---> Checking nginx.conf content:"
-cat /tmp/nginx.conf | grep -iEA4 "location / {"
+grep -iEA4 "location / {" /tmp/nginx.conf
 
 echo "---> Starting nginx..."
 nginx -c /tmp/nginx.conf -g 'daemon off;'
