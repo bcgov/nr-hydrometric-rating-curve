@@ -9,8 +9,8 @@ ENV LANG=C.UTF-8 \
     PATH="/venv/bin:$PATH"
 
 # Install gcc and cleanup apt cache
-RUN apt-get update --no-install-recommends && \
-    apt-get install -y gcc && \
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y gcc && \
     rm -rf /var/lib/apt/lists/*
 
 # Setup venv and install requirements
