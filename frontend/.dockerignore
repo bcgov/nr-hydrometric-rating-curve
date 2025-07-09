@@ -1,5 +1,6 @@
 # .dockerignore (must be a separate file)
 .git
+.gitignore
 __pycache__/
 *.pyc
 tests/

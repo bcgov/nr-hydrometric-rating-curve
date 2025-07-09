@@ -11,7 +11,6 @@ ENV LANG=C.UTF-8 \
 RUN apt-get update --no-install-recommends && \
     apt-get install -y gcc && \
     rm -rf /var/lib/apt/lists/*
-RUN python -m venv /venv
 
 # install requirements
 WORKDIR /app
