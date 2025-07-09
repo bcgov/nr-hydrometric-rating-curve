@@ -5,8 +5,7 @@ FROM python:3.13-slim AS builder
 ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PATH="/venv/bin:$PATH"
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 RUN apt-get update --no-install-recommends && \
     apt-get install -y gcc && \
@@ -18,8 +17,8 @@ COPY manage.py poetry.lock pyproject.toml ./
 COPY rctool/ ./rctool/
 COPY rctool_project/ ./rctool_project/
 COPY static/ ./static/
-RUN pip install .
-RUN python manage.py collectstatic
+RUN pip install . && \
+    python manage.py collectstatic
 
 
 ### APP IMAGE ###
