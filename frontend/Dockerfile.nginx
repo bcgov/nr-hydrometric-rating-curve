@@ -15,7 +15,9 @@ RUN python -m venv /venv
 
 # install requirements
 WORKDIR /app
-COPY . .
+COPY manage.py poetry.lock pyproject.toml ./
+COPY rctool/ ./rctool/
+COPY rctool_project/ ./rctool_project/
 RUN pip install .
 RUN python manage.py collectstatic
 
@@ -37,10 +39,8 @@ RUN touch /var/run/nginx.pid && \
     chmod -R 777 /etc/nginx/conf.d && \
     chmod -R 777 /etc/nginx/nginx.conf
 
-# User and workdir
+# Set any unprivileged user - let OpenShift assign random UID
 USER nobody
-
-# healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
     CMD test -f /tmp/nginx.pid
 
