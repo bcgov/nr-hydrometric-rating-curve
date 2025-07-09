@@ -11,6 +11,12 @@ http {
     # Use system mime.types for file type detection
     include /etc/nginx/mime.types;
 
+    proxy_temp_path /tmp/nginx-proxy-temp;
+    client_body_temp_path /tmp/nginx-client-temp;
+    fastcgi_temp_path /tmp/nginx-fastcgi-temp;
+    uwsgi_temp_path /tmp/nginx-uwsgi-temp;
+    scgi_temp_path /tmp/nginx-scgi-temp;
+
     large_client_header_buffers 4 32k;
     server {
         # Handle CSV files from anywhere with correct MIME type

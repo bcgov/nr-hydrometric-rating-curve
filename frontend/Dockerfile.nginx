@@ -30,11 +30,6 @@ COPY --from=builder /app/staticfiles /static
 WORKDIR /app
 COPY nginx.conf.template start_nginx.sh ./
 
-## add permissions for nginx user
-RUN chmod -R 777 /app && \
-    chmod -R 777 /var/cache/nginx && \
-    chmod -R 777 /var/log/nginx
-
 # Set any unprivileged user - let OpenShift assign random UID
 USER nobody
 HEALTHCHECK --interval=60s --timeout=10s \
