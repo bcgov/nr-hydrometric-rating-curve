@@ -11,10 +11,10 @@ export proxy_add_x_forwarded_for="\$proxy_add_x_forwarded_for"
 envsubst '${BACKEND_URL}' < /app/nginx.conf.template > /tmp/nginx.conf
 
 echo "---> nginx.conf created"
-cat /app/nginx.conf
+cat /tmp/nginx.conf
 
 echo "---> Checking nginx.conf content:"
-cat /app/nginx.conf | grep -iEA4 "location / {"
+cat /tmp/nginx.conf | grep -iEA4 "location / {"
 
 echo "---> Starting nginx..."
 nginx -c /tmp/nginx.conf -g 'daemon off;'
