@@ -18,6 +18,7 @@ WORKDIR /app
 COPY manage.py poetry.lock pyproject.toml ./
 COPY rctool/ ./rctool/
 COPY rctool_project/ ./rctool_project/
+COPY static/ ./static/
 RUN pip install .
 RUN python manage.py collectstatic
 
