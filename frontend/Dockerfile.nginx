@@ -31,13 +31,10 @@ WORKDIR /app
 COPY nginx.conf.template start_nginx.sh ./
 
 ## add permissions for nginx user
-RUN touch /var/run/nginx.pid && \
-    chmod -R 777 /var/run/nginx.pid && \
-    chmod -R 777 /app && \
+RUN chmod -R 777 /app && \
     chmod -R 777 /var/cache/nginx && \
     chmod -R 777 /var/log/nginx && \
-    chmod -R 777 /etc/nginx/conf.d && \
-    chmod -R 777 /etc/nginx/nginx.conf
+    chmod -R 777 /etc/nginx/conf.d
 
 # Set any unprivileged user - let OpenShift assign random UID
 USER nobody
