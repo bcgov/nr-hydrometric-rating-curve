@@ -8,7 +8,7 @@ export host="\$host"
 export proxy_add_x_forwarded_for="\$proxy_add_x_forwarded_for"
 
 # Use envsubst to create final nginx.conf from template
-envsubst '${BACKEND_URL}' < /app/nginx.conf.template > /app/nginx.conf
+envsubst '${BACKEND_URL}' < /app/nginx.conf.template > /tmp/nginx.conf
 
 echo "---> nginx.conf created"
 cat /app/nginx.conf
@@ -17,4 +17,4 @@ echo "---> Checking nginx.conf content:"
 cat /app/nginx.conf | grep -iEA4 "location / {"
 
 echo "---> Starting nginx..."
-nginx -c /app/nginx.conf -g 'daemon off;'
+nginx -c /tmp/nginx.conf -g 'daemon off;'
