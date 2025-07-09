@@ -1,21 +1,19 @@
 #!/bin/sh
 
-# Config vars
+# Config file
 CONF="/tmp/nginx.conf"
 
-# Create config
-echo "---> Creating ${CONF} from template"
+# Create and log
+echo "---> Creating ${CONF}"
 echo "BACKEND_URL=$BACKEND_URL"
 envsubst '${BACKEND_URL}' < /app/nginx.conf.template > ${CONF}
-
-# Log config
 echo
-echo "---> ${CONF}:"
-sed 's/^/nginx.conf | /; s/ /·/g' /tmp/nginx.conf
+cat /tmp/nginx.conf | sed 's/ /·/g'
+
 # Create temp dirs
 mkdir -p /tmp/nginx-proxy-temp /tmp/nginx-client-temp /tmp/nginx-fastcgi-temp /tmp/nginx-uwsgi-temp /tmp/nginx-scgi-temp
 
-# Startup (foreground, daemon off)
+# Startup (daemon off = foreground)
 echo
-echo "---> Starting nginx..."
+echo "---> Starting nginx"
 nginx -c ${CONF} -g 'daemon off;'
