@@ -1,7 +1,12 @@
+# Tell nginx to use custom locations for runtime files
+pid /tmp/nginx.pid;                    # Process ID file (writable by any user)
+error_log /tmp/nginx-logs/error.log;   # Error log location
+
 # nginx configuration file to forward requests to gunicorn
 events {
     worker_connections  1024;  ## Default: 1024
 }
+
 http {
     # Use system mime.types for file type detection
     include /etc/nginx/mime.types;
@@ -12,7 +17,7 @@ http {
         location ~* \.(csv|dat)$ {
             add_header Content-Type text/csv;      # Set MIME type for CSV files
         }
-        
+
         proxy_busy_buffers_size   512k;
         proxy_buffers   4 512k;
         proxy_buffer_size   256k;
