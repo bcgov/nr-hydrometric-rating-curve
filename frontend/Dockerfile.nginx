@@ -41,6 +41,6 @@ USER nobody
 
 # healthcheck
 HEALTHCHECK --interval=60s --timeout=10s \
-    CMD service nginx status
+    CMD test -f /tmp/nginx.pid
 
 CMD ["sh", "-c", "/app/start_nginx.sh"]
