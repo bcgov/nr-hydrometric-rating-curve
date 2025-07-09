@@ -112,3 +112,6 @@ test-report.xml
 
 # test files
 *.xlsx
+
+# Temporary Nginx configuration file
+/frontend/nginx.conf.template
