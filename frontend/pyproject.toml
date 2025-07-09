@@ -1,6 +1,7 @@
 [tool.poetry]
 name = "rctool"
 version = "1.0.0"
+authors = ["Anonymous <noreply@invalid.local>"]
 description = ""
 
 [tool.poetry.dependencies]
