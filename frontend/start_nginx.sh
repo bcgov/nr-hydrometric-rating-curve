@@ -4,8 +4,7 @@ echo "---> Creating nginx.conf from template..."
 echo "BACKEND URL IS $BACKEND_URL"
 
 # nginx envars
-export host="\$host"
-export proxy_add_x_forwarded_for="\$proxy_add_x_forwarded_for"
+# Lines removed as they are unused.
 
 # Use envsubst to create final nginx.conf from template
 envsubst '${BACKEND_URL}' < /app/nginx.conf.template > /tmp/nginx.conf
