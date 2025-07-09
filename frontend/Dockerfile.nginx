@@ -9,7 +9,8 @@ ENV LANG=C.UTF-8 \
     PATH="/venv/bin:$PATH"
 
 RUN apt-get update --no-install-recommends && \
-    apt-get install -y gcc
+    apt-get install -y gcc && \
+    rm -rf /var/lib/apt/lists/*
 RUN python -m venv /venv
 
 # install requirements
