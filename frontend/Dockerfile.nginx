@@ -32,6 +32,6 @@ COPY nginx.conf.template start_nginx.sh ./
 # Set any unprivileged user - let OpenShift assign random UID
 USER nobody
 HEALTHCHECK --interval=60s --timeout=10s \
-    CMD curl -f http://localhost/ || exit 1
+    CMD curl -f http://localhost:3000/ || exit 1
 
 CMD ["sh", "-c", "/app/start_nginx.sh"]
