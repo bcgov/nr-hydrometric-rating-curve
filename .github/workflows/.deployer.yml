@@ -43,7 +43,8 @@ on:
         description: OpenShift token
         required: true
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   deploy:
