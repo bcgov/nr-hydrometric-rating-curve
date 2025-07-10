@@ -41,7 +41,7 @@ jobs:
     needs: [builds]
     permissions:
       packages: write
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@d9b3d32fb3f03c4699c2dce83ddfff042cd31a1f # v1.0.0
+    uses: .github/workflows/.deployer.yml
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
