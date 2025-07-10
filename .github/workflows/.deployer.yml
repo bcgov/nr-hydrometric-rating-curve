@@ -1,0 +1,194 @@
+name: .Helm Deployer
+
+on:
+  workflow_call:
+    inputs:
+      ### Required
+      # Only secrets!
+
+      ### Typical / recommended
+      atomic:
+        description: Atomic deployment?  That means fail all or nothing
+        default: 'true'
+        required: false
+        type: string
+      directory:
+        description: Chart directory
+        default:  'charts/app'
+        required: false
+        type: string
+      environment:
+        description: Environment name; omit for PRs
+        required: false
+        type: string
+      oc_server:
+        default: https://api.silver.devops.gov.bc.ca:6443
+        description: 'OpenShift server'
+        required: false
+        type: string
+      params:
+        description: 'Extra parameters to pass to helm upgrade'
+        default: ''
+        required: false
+        type: string
+      promote_images:
+        description: 'List of images to promote with a new tag'
+        default: ''
+        required: false
+        type: string
+      promote_tags:
+        description: 'Tag to apply to promoted images'
+        default: ''
+        required: false
+        type: string
+      tag:
+        description: Specify a tag to deploy; defaults to PR number
+        required: false
+        type: string
+      triggers:
+        description: Paths used to trigger a deployment; e.g. ('./backend/' './frontend/)
+        required: false
+        type: string
+
+      ### Usually a bad idea / not recommended
+      repository:
+        description: Optionally, specify a different repo to clone
+        default: ${{ github.repository }}
+        required: false
+        type: string
+      timeout-minutes:
+        description: 'Timeout minutes'
+        default: 10
+        required: false
+        type: number
+      values:
+        description: 'Values file'
+        default: 'values.yaml'
+        required: false
+        type: string
+
+    outputs:
+      triggered:
+        description: 'Has a deployment has been triggered?'
+        value: ${{ jobs.deploy.outputs.triggered }}
+
+    secrets:
+      oc_namespace:
+        description: OpenShift namespace
+        required: true
+      oc_token:
+        description: OpenShift token
+        required: true
+
+permissions: {}
+
+jobs:
+  deploy:
+    name: Helm
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-24.04
+    outputs:
+      packages: ${{ steps.vars.outputs.packages }}
+      tag: ${{ steps.vars.outputs.tag }}
+      triggered: ${{ steps.deploy.outputs.triggered }}
+    steps:
+      ### Triggers, tag and release
+
+      # Variables
+      - if: inputs.tag  == ''
+        id: pr
+        uses: bcgov/action-get-pr@21f9351425cd55a98e869ee28919a512aa30647d # v0.0.1
+
+      - name: Vars
+        id: vars
+        run: |
+          # Tag defaults to PR number, but can be overridden by inputs.tag
+          tag=${{ inputs.tag || steps.pr.outputs.pr }}
+
+          # Release name includes run numbers to ensure uniqueness
+          release=${{ github.event.repository.name }}-${{ inputs.environment || inputs.tag || steps.pr.outputs.pr }}
+          
+          # Version, used for non-PR releases
+          version=1.0.0-${{ github.run_number }}
+          
+          # Summary
+          echo "tag=${tag}"
+          echo "release=${release}"
+          echo "version=${version}"
+
+          # Output
+          echo "tag=${tag}" >> $GITHUB_OUTPUT
+          echo "release=${release}" >> $GITHUB_OUTPUT
+          echo "version=${version}" >> $GITHUB_OUTPUT
+
+          # Convert packages to JSON array for job matrix
+          echo "packages=$(jq -cn '$ARGS.positional' --args ${{ inputs.promote_images }})" >> $GITHUB_OUTPUT
+
+      ### Deploy
+      - name: Interrupt deployments (PR only)
+        if: github.event_name == 'pull_request'
+        uses: bcgov/action-oc-runner@10033668ef4374d9bb78149faa73e4ccda0e93dd # v1.2.3
+        with:
+          oc_namespace: ${{ secrets.oc_namespace }}
+          oc_token: ${{ secrets.oc_token }}
+          oc_server: ${{ inputs.oc_server }}
+          triggers: ${{ inputs.triggers }}
+          commands: |
+            # Interrupt any previous deployments (PR only)
+            PREVIOUS=$(helm status ${{ steps.vars.outputs.release }} -o json | jq .info.status || true)
+            if [[ ${PREVIOUS} =~ pending ]]; then
+              echo "Rollback triggered"
+              helm rollback ${{ steps.vars.outputs.release }} || \
+                helm uninstall ${{ steps.vars.outputs.release }}
+            fi
+
+      - name: Deploy Helm chart
+        id: deploy
+        uses: bcgov/action-oc-runner@v1.0.0
+        with:
+          oc_namespace: ${{ secrets.oc_namespace }}
+          oc_token: ${{ secrets.oc_token }}
+          oc_server: ${{ inputs.oc_server }}
+          triggers: ${{ inputs.triggers }}
+          commands: |
+            # Package Helm chart
+            cd ${{ inputs.directory }}
+            sed -i 's/^name:.*/name: ${{ github.event.repository.name }}/' Chart.yaml
+            helm package -u . --app-version="tag-${{ steps.vars.outputs.tag }}_run-${{ github.run_number }}" \
+              --version=${{ steps.pr.outputs.pr || steps.vars.outputs.version }}
+
+            # Helm upgrade/rollout
+            helm upgrade \
+              --set-string global.repository=${{ github.repository }} \
+              --set-string global.tag=${{ steps.vars.outputs.tag }} \
+              ${{ inputs.params }} \
+              --install --wait ${{ inputs.atomic == 'true' && '--atomic' || ''}} \
+              ${{ steps.vars.outputs.release }} \
+              --timeout ${{ inputs.timeout-minutes }}m \
+              --values ${{ inputs.values }} \
+              ./${{ github.event.repository.name }}-${{ steps.pr.outputs.pr || steps.vars.outputs.version }}.tgz
+
+            # Helm release history
+            helm history ${{ steps.vars.outputs.release }}
+
+            # Completed pod cleanup
+            oc delete po --field-selector=status.phase==Succeeded || true
+
+  promote:
+    name: Promote Images
+    if: inputs.promote_images != '' && inputs.promote_tags != ''
+    needs: [deploy]
+    permissions:
+      packages: write
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        package: ${{ fromJson(needs.deploy.outputs.packages) }}
+    timeout-minutes: 1
+    steps:
+      - uses: shrink/actions-docker-registry-tag@f04afd0559f66b288586792eb150f45136a927fa # v4
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          tags: ${{ inputs.promote_tags }}
+          target: ${{ needs.deploy.outputs.tag }}
