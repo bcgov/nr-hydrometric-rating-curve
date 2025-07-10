@@ -41,7 +41,7 @@ jobs:
     needs: [builds]
     permissions:
       packages: write
-    uses: .github/workflows/.deployer.yml
+    uses: ./.github/workflows/.deployer.yml
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
