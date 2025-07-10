@@ -1,4 +1,4 @@
-name: .Helm Deployer
+name: Helm Deployer
 
 on:
   workflow_call:
