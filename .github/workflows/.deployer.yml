@@ -7,16 +7,6 @@ on:
       # Only secrets!
 
       ### Typical / recommended
-      atomic:
-        description: Atomic deployment?  That means fail all or nothing
-        default: 'true'
-        required: false
-        type: string
-      directory:
-        description: Chart directory
-        default:  'charts/app'
-        required: false
-        type: string
       environment:
         description: Environment name; omit for PRs
         required: false
@@ -37,23 +27,6 @@ on:
         type: string
       triggers:
         description: Paths used to trigger a deployment; e.g. ('./backend/' './frontend/)
-        required: false
-        type: string
-
-      ### Usually a bad idea / not recommended
-      repository:
-        description: Optionally, specify a different repo to clone
-        default: ${{ github.repository }}
-        required: false
-        type: string
-      timeout-minutes:
-        description: 'Timeout minutes'
-        default: 10
-        required: false
-        type: number
-      values:
-        description: 'Values file'
-        default: 'values.yaml'
         required: false
         type: string
 
@@ -139,7 +112,7 @@ jobs:
           triggers: ${{ inputs.triggers }}
           commands: |
             # Package Helm chart
-            cd ${{ inputs.directory }}
+            cd charts/app
             sed -i 's/^name:.*/name: ${{ github.event.repository.name }}/' Chart.yaml
             helm package -u . --app-version="tag-${{ steps.vars.outputs.tag }}_run-${{ github.run_number }}" \
               --version=${{ steps.pr.outputs.pr || steps.vars.outputs.version }}
@@ -151,8 +124,8 @@ jobs:
               ${{ inputs.params }} \
               --install --wait '--atomic' \
               ${{ steps.vars.outputs.release }} \
-              --timeout ${{ inputs.timeout-minutes }}m \
-              --values ${{ inputs.values }} \
+              --timeout 10m \
+              --values values.yaml \
               ./${{ github.event.repository.name }}-${{ steps.pr.outputs.pr || steps.vars.outputs.version }}.tgz
 
             # Helm release history

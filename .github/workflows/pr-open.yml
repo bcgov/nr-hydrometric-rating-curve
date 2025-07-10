@@ -47,7 +47,6 @@ jobs:
     with:
       triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
       params: --set global.secrets.persist=false --set-string frontend.gunicorn.logLevel=debug
-      oc_server: ${{ vars.OC_SERVER }}
 
   results:
     name: PR Results
