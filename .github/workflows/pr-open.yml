@@ -3,7 +3,8 @@ name: Pull Request
 on:
   pull_request:
 
-permissions: {}
+permissions:
+  contents: read
 
 concurrency:
   # PR open and close use the same group, allowing only one at a time
@@ -25,7 +26,6 @@ jobs:
           - package: rctool
             build_file: ./frontend/Dockerfile.app
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: bcgov/action-builder-ghcr@fd17bc1cbb16a60514e0df3966d42dff9fc232bc # v4.0.0
         with:
           package: ${{ matrix.package }}
@@ -39,16 +39,13 @@ jobs:
   deploys:
     name: Deploys
     needs: [builds]
-    permissions:
-      packages: write
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@d9b3d32fb3f03c4699c2dce83ddfff042cd31a1f # v1.0.0
+    uses: ./.github/workflows/.deployer.yml
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
-      triggers: ('frontend/' 'charts/')
+      triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
       params: --set global.secrets.persist=false --set-string frontend.gunicorn.logLevel=debug
-      oc_server: ${{ vars.OC_SERVER }}
 
   results:
     name: PR Results
