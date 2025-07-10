@@ -26,7 +26,7 @@ on:
         required: false
         type: string
       triggers:
-        description: Paths used to trigger a deployment; e.g. ('./backend/' './frontend/)
+        description: Paths used to trigger a deployment; e.g. ('./backend/' './frontend/'')
         required: false
         type: string
 
