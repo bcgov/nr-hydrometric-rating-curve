@@ -46,7 +46,7 @@ jobs:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
-      triggers: ('frontend/' 'charts/')
+      triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
       params: --set global.secrets.persist=false --set-string frontend.gunicorn.logLevel=debug
       oc_server: ${{ vars.OC_SERVER }}
 
