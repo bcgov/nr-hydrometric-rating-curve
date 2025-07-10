@@ -3,7 +3,8 @@ name: Pull Request
 on:
   pull_request:
 
-permissions: {}
+permissions:
+  contents: read
 
 concurrency:
   # PR open and close use the same group, allowing only one at a time
@@ -38,8 +39,6 @@ jobs:
   deploys:
     name: Deploys
     needs: [builds]
-    permissions:
-      packages: write
     uses: ./.github/workflows/.deployer.yml
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
