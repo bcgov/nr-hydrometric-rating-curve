@@ -105,7 +105,7 @@ jobs:
 
       - name: Deploy Helm chart
         id: deploy
-        uses: bcgov/action-oc-runner@v1.0.0
+        uses: bcgov/action-oc-runner@v1.2.3
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
           oc_token: ${{ secrets.oc_token }}
