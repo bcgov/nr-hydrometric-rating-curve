@@ -26,7 +26,7 @@ jobs:
           - package: rctool
             build_file: ./frontend/Dockerfile.app
     steps:
-      - uses: bcgov/action-builder-ghcr@fd17bc1cbb16a60514e0df3966d42dff9fc232bc # v4.0.0
+      - uses: bcgov/action-builder-ghcr@1a3767a04ade69edf7e4857c44269d1100282581 # v4.1.0
         with:
           package: ${{ matrix.package }}
           build_file: ${{ matrix.build_file }}
