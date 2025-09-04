@@ -1,5 +1,5 @@
 ### BUILDER IMAGE ###
-FROM python:3.13-slim AS builder
+FROM python:3.13-slim@sha256:27f90d79cc85e9b7b2560063ef44fa0e9eaae7a7c3f5a9f74563065c5477cc24 AS builder
 
 # set environment variables and /venv
 ENV LANG=C.UTF-8 \
@@ -21,7 +21,7 @@ RUN python -m venv /venv && \
 
 
 ### APP IMAGE ###
-FROM python:3.13-slim
+FROM python:3.13-slim@sha256:27f90d79cc85e9b7b2560063ef44fa0e9eaae7a7c3f5a9f74563065c5477cc24
 
 # Envars and venv
 COPY --from=builder /venv /venv

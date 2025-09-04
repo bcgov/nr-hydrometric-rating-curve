@@ -1,5 +1,5 @@
 ### BUILDER IMAGE ###
-FROM python:3.13-slim AS builder
+FROM python:3.13-slim@sha256:27f90d79cc85e9b7b2560063ef44fa0e9eaae7a7c3f5a9f74563065c5477cc24 AS builder
 
 # set environment variables
 ENV LANG=C.UTF-8 \
@@ -22,7 +22,7 @@ RUN pip install . && \
 
 
 ### APP IMAGE ###
-FROM nginx:1.29.1
+FROM nginx:1.29.1@sha256:33e0bbc7ca9ecf108140af6288c7c9d1ecc77548cbfd3952fd8466a75edefe57
 
 # copy project
 COPY --from=builder /app/staticfiles /static
