@@ -16,6 +16,11 @@ urlpatterns = [
         name="rctool_import",
     ),
     path(
+        "rctool/download/sample-data/",
+        views.download_sample_data,
+        name="download_sample_data",
+    ),
+    path(
         "rctool/develop/initialize",
         views.rctool_develop_initialize,
         name="rctool_develop_initialize",

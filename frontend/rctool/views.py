@@ -5,7 +5,7 @@ import csv
 import ast
 import math
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.contrib import messages
 from django.urls import reverse
 from django.template.loader import get_template
@@ -36,6 +36,13 @@ def about(response):
 
 def rctool_tour_intro(response, tour_request_id=0):
     return render(response, "rctool/rctool/tour/rctool_tour_intro.html", {})
+
+
+def download_sample_data(request):
+    """Serve the sample_data.csv file as a download."""
+    sample_data_path = os.path.join(os.path.dirname(__file__), "..", "static", "sample_data", "sample_data.csv")
+    return FileResponse(open(sample_data_path, 'rb'), as_attachment=True, filename='sample_data.csv')
+
 
 def parse_list(lst):
     for i, item in enumerate(lst):
