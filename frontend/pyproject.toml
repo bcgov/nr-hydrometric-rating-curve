@@ -18,6 +18,12 @@ pip = "^25.0"
 setuptools = "^80.0.0"
 numpy = "^2.2.2"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+
+[tool.poetry.extras]
+all = ["pycairo"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
