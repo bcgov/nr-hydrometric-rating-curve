@@ -60,9 +60,11 @@ jobs:
         uses: actions/setup-python@v6
         with:
            python-version: "3.13"
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev
       - name: Install requirements
         run: |
-            pip install .
+            pip install . xhtml2pdf
       - name: Run tests
         run: |
             python manage.py test
