@@ -168,8 +168,7 @@
     // Check if tour status has been previously set
     if (sessionStorage.getItem("tourStatus") == null) {
         // Check if user selected tour
-        var tourStatusID = {{ tour_request_status_id| safe
-    }};
+        var tourStatusID = {{ tour_request_status_id | safe }};
     if (tourStatusID == 1) {
         sessionStorage.setItem("tourStatus", true);
     } else {
