@@ -64,7 +64,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libcairo2-dev
       - name: Install requirements
         run: |
-            pip install . rctool[pdf]
+            pip install . xhtml2pdf
       - name: Run tests
         run: |
             python manage.py test
