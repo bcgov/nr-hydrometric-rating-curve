@@ -16,6 +16,7 @@ gunicorn = "^25.0.0"
 pip = "^25.0"
 setuptools = "^82.0.0"
 numpy = "^2.2.2"
+xhtml2pdf = "^0.2.11"
 
 [tool.poetry.extras]
 pdf = ["xhtml2pdf"]
