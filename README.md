@@ -8,6 +8,7 @@
 [![Pull Requests](https://img.shields.io/github/issues-pr/bcgov/nr-hydrometric-rating-curve)](/../../pulls)
 [![MIT License](https://img.shields.io/github/license/bcgov/nr-hydrometric-rating-curve.svg)](/LICENSE.md)
 ![Lifecycle:Maturing](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)
+![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)
 
 # Hydrometric Rating Application (HydRA)
 
@@ -28,4 +29,43 @@ After cloning the repository, use the `poetry` python package manager to install
 
 ## Running tests locally
 
-To run Django tests, it is easiest to build the Docker container and attach to the running shell. The command `python manage.py test` executes the tests in Django.
+The project uses [`pytest`](https://pytest.org) with [`pytest-django`](https://pytest-django.readthedocs.io) and [`pytest-cov`](https://pytest-cov.readthedocs.io) for testing and coverage reporting.
+
+### Quick start (without Docker)
+
+```bash
+# from the frontend/ directory
+pip install . xhtml2pdf pytest-django pytest-cov
+
+# run all tests with coverage
+DEBUG=False \
+  ALLOWED_HOSTS='localhost,' \
+  CSRF_TRUSTED_ORIGINS='http://localhost' \
+  SECRET_KEY='local_dev_key' \
+  pytest
+```
+
+### With Docker
+
+Build the container and attach to the running shell, then run:
+
+```bash
+pytest
+```
+
+The `pytest.ini` file configures the `DJANGO_SETTINGS_MODULE`, test discovery paths, and enforces a **minimum 80% coverage threshold**.  Tests are also run automatically on every PR and push to `main` via the [Analysis workflow](.github/workflows/analysis.yml).
+
+### Test layout
+
+| File | What it tests |
+|------|---------------|
+| `rctool/tests/test_fit_linear_model.py` | Unit tests for the power-law curve fitting function |
+| `rctool/tests/test_views_helpers.py` | Unit tests for `parse_context`, `autofit_data`, `export_calculate_discharge_error` |
+| `rctool/tests/test_forms.py` | Django form validation — valid and invalid inputs |
+| `rctool/tests/test_views.py` | View smoke tests (GET/POST), image generation helpers |
+| `rctool/tests/test_integration.py` | Full end-to-end pipelines: import → autofit → PDF/CSV/session export |
+| `rctool/tests/test_legacy.py` | Original tests (preserved for reference) |
+
+### Renovate auto-merge
+
+[Renovate](https://docs.renovatebot.com) is configured to **auto-merge** non-major dependency updates once all CI checks pass.  Major version bumps require human review.

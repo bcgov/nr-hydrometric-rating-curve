@@ -14,7 +14,10 @@ import numpy as np
 
 # Tests data import and export from sample_data.csv
 class BaseTestCase(TestCase):
-    test_csv = finders.find("sample_data/sample_data.csv")
+    test_csv = None
+
+    def setUp(self):
+        self.test_csv = finders.find("sample_data/sample_data.csv")
 
     # test if the sample csv file exists
     def test_sample_csv_exists(self):
