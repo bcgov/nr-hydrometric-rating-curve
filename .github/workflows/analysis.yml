@@ -64,10 +64,16 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libcairo2-dev
       - name: Install requirements
         run: |
-            pip install . xhtml2pdf
-      - name: Run tests
+            pip install . xhtml2pdf pytest-django pytest-cov
+      - name: Run tests with coverage
         run: |
-            python manage.py test
+            pytest --cov=rctool --cov-report=term-missing --cov-report=xml --cov-fail-under=80
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: frontend/coverage.xml
             
   results:
     name: Analysis Results
