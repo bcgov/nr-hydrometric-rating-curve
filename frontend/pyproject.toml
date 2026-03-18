@@ -22,7 +22,7 @@ pdf = ["xhtml2pdf"]
 all = ["pycairo"]
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
+pytest = "^9.0.0"
 
 [build-system]
 requires = ["poetry-core"]
