@@ -1,0 +1,33 @@
+# Docker Compose for local development
+# Usage: podman compose up --build (or docker compose up --build)
+
+services:
+  rctool:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app:z
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+    command: >
+      sh -c "
+        python -m venv /app/venv &&
+        /app/venv/bin/pip install . &&
+        python manage.py migrate &&
+        python manage.py runserver 0.0.0.0:3000
+      "
+
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "3001:3000"
+    environment:
+      - BACKEND_URL=http://rctool:3000
+    depends_on:
+      - rctool
