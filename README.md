@@ -24,6 +24,23 @@ After cloning the repository, use the `poetry` python package manager to install
 
 ## Running the app locally
 
+### With Docker or Podman
+
+This project includes a `compose.yml` file at the project root that works with both Docker and Podman:
+
+```bash
+# Build and run
+podman compose up --build
+# or
+docker compose up --build
+```
+
+The app will be available at:
+- App: http://localhost:3000
+- Nginx: http://localhost:3001
+
+### With docker-compose (legacy)
+
 - Create a `.env` file in the `frontend` directory of the project by copying the `.env.example` file and updating the values as needed. For development, the `DJANGO_DEBUG` variable should be set to `True`.
 - To run the django server locally, install docker and docker-compose. Run `docker compose -f ./frontend/docker-compose.dev.yml up --build` to start the development server. The app will be available at `http://localhost:8003`. Note: the non-dev version of the app is served via nginx at `http://localhost:{WEB_PORT}`.
 
