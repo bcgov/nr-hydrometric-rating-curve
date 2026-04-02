@@ -13,10 +13,11 @@ services:
     environment:
       - DEBUG=True
       - ALLOWED_HOSTS=*
+    user: "0"
     command: >
       sh -c "
-        python -m venv /app/venv &&
-        /app/venv/bin/pip install . &&
+        python -m venv /venv &&
+        /venv/bin/pip install . &&
         python manage.py migrate &&
         python manage.py runserver 0.0.0.0:3000
       "
