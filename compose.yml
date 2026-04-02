@@ -13,6 +13,7 @@ services:
     environment:
       - DEBUG=True
       - ALLOWED_HOSTS=*
+      - SECRET_KEY=test-secret-key-for-development-only
     user: "0"
     command: >
       sh -c "
