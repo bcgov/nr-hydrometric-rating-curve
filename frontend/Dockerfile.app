@@ -17,7 +17,7 @@ RUN apt-get update && \
 COPY pyproject.toml ./
 COPY rctool/ ./rctool
 RUN python -m venv /venv && \
-    pip install . --no-cache-dir
+    pip install ".[pdf]" --no-cache-dir
 
 
 ### APP IMAGE ###
