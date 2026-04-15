@@ -22,7 +22,7 @@ RUN pip install . && \
 
 
 ### APP IMAGE ###
-FROM nginx:1.29.7
+FROM nginx:1.29.8
 
 # copy project
 COPY --from=builder /app/staticfiles /static
