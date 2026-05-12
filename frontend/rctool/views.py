@@ -13,7 +13,9 @@ from django.template.loader import get_template
 from .forms import import_rc_data, export_rc_data
 from .functions.fit_linear_model import fit_linear_model
 from rctool.utils import render_to_pdf
-from datetime import datetime
+from datetime import datetime, timezone
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import base64
@@ -937,7 +939,18 @@ def rctool_export_output(request):
         field_data_values = field_data_output_df.values.tolist()
 
         rc_output = request.POST.get("rc_output")
-        rc_output_dict = ast.literal_eval(rc_output.replace('null', 'None'))
+        try:
+            rc_output_dict = ast.literal_eval(rc_output.replace('null', 'None'))
+        except (ValueError, SyntaxError, AttributeError) as e:
+            logger.exception("Error parsing rating curve data during export")
+            return HttpResponse(
+                "<html><body><h2>Export failed: Invalid rating curve data.</h2>"
+                "<p>The rating curve data could not be parsed. Please try the export again.</p>"
+                "<p><a href=\"/export/\">Return to export page</a></p>"
+                "</body></html>",
+                content_type="text/html",
+                status=400,
+            )
 
         rc_output_dict["data"].append(field_data_values)
         rc_output_df = pd.DataFrame.from_dict(rc_output_dict, orient="index")
@@ -959,7 +972,7 @@ def rctool_export_output(request):
                 app_period_end = export_form.cleaned_data["export_date_applic_final"]
                 context["app_period_end"] = app_period_end
 
-            context["current_time"] = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
+            context["current_time"] = datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M")
             context["rc"] = rc_output_dict
 
             # Round output parameters
@@ -1117,28 +1130,29 @@ def rctool_export_output(request):
                 # write to pdf option selected
 
                 # calculate residuals for output figures and table
-                field_data_output_df = export_calculate_discharge_error(
-                    field_data_output_df, rc_output_dict
-                )
-                context["field_table"] = {
-                    "headings": field_data_output_df.columns.values,
-                    "data": field_data_output_df.values.tolist(),
-                }
-                # create figure for pdf
-                context["rc_img"] = create_export_rc_img(
-                    field_data_output_df, rc_output_dict
-                )
-                context["res_img"] = create_export_res_img(
-                    field_data_output_df, rc_output_dict
-                )
-
-                # prepare and return output pdf
                 try:
+                    field_data_output_df = export_calculate_discharge_error(
+                        field_data_output_df, rc_output_dict
+                    )
+                    context["field_table"] = {
+                        "headings": field_data_output_df.columns.values,
+                        "data": field_data_output_df.values.tolist(),
+                    }
+                    # create figure for pdf
+                    context["rc_img"] = create_export_rc_img(
+                        field_data_output_df, rc_output_dict
+                    )
+                    context["res_img"] = create_export_res_img(
+                        field_data_output_df, rc_output_dict
+                    )
+
                     template = get_template("rctool/rctool/export/rctool_export_pdf.html")
                     html = template.render(context)
-                    pdf = render_to_pdf(
+                    pdf_response = render_to_pdf(
                         "rctool/rctool/export/rctool_export_pdf.html", context
                     )
+                    if pdf_response is None:
+                        raise ValueError("PDF generation failed (render_to_pdf returned None)")
                 except Exception as e:
                     logger.exception("Error generating PDF during export")
                     return HttpResponse(
@@ -1150,7 +1164,8 @@ def rctool_export_output(request):
                         content_type="text/html",
                         status=500,
                     )
-                response = HttpResponse(pdf, content_type="application/pdf")
+                
+                response = pdf_response
                 content = "inline; filename='%s'" % (fname)
                 download = request.GET.get("download")
                 if download:
