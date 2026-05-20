@@ -26,11 +26,11 @@ jobs:
       # Get PR number for squash merges to main
       - name: PR Number
         id: pr
-        uses: bcgov/action-get-pr@bfa713a9ab410c0f0c13126c35983934fc80d15b # v0.1.1
+        uses: bcgov/action-get-pr@bf6c85d0ed23a151f2829956c140fde87979bbf2 # v0.2.0
 
   deploy-test:
     name: Deploy (TEST)
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@ca6579bdadf383a2513397081f963889b92823a4 # v1.1.0
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@18a043020cdc4f1125ec592524e8163edc767f4a # v1.2.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
@@ -57,7 +57,7 @@ jobs:
   deploy-prod:
     name: Deploy (PROD)
     needs: [vars, deploy-test]
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@ca6579bdadf383a2513397081f963889b92823a4 # v1.1.0
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@18a043020cdc4f1125ec592524e8163edc767f4a # v1.2.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
