@@ -1,4 +1,7 @@
 import os
+os.environ["MPLCONFIGDIR"] = "/tmp/matplotlib"
+os.environ["HOME"] = "/tmp"
+import logging
 import pandas as pd
 import numpy as np
 import csv
@@ -12,11 +15,15 @@ from django.template.loader import get_template
 from .forms import import_rc_data, export_rc_data
 from .functions.fit_linear_model import fit_linear_model
 from rctool.utils import render_to_pdf
-from datetime import datetime
+from datetime import datetime, timezone
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import io
 import base64
-import io, base64
+
+logger = logging.getLogger(__name__)
 
 def healthcheck(request):
     return HttpResponse("OK")
@@ -901,7 +908,27 @@ def rctool_export_output(request):
     if request.method == "POST":
         export_form = export_rc_data(request.POST)
         field_data_output_json = request.POST.get("fielddatacsv-to-output")
-        field_data_output_df = pd.read_json(io.StringIO(field_data_output_json))
+        if not field_data_output_json:
+            return HttpResponse(
+                "<html><body><h2>Export failed: No data provided.</h2>"
+                "<p>Please go back and ensure you have valid data to export.</p>"
+                "<p><a href=\"/export/\">Return to export page</a></p>"
+                "</body></html>",
+                content_type="text/html",
+                status=400,
+            )
+        try:
+            field_data_output_df = pd.read_json(io.StringIO(field_data_output_json))
+        except ValueError as e:
+            logger.exception("Error parsing field data JSON during export")
+            return HttpResponse(
+                "<html><body><h2>Export failed: Invalid data format.</h2>"
+                "<p>The data could not be parsed. Please try the export again from the beginning.</p>"
+                "<p><a href=\"/export/\">Return to export page</a></p>"
+                "</body></html>",
+                content_type="text/html",
+                status=400,
+            )
         field_data_output_dict = field_data_output_df.to_dict()
         field_data_output_df["datetime"] = field_data_output_df["datetime"].apply(str)
         field_data_output_df["stage"] = field_data_output_df["stage"].round(decimals=3)
@@ -914,7 +941,18 @@ def rctool_export_output(request):
         field_data_values = field_data_output_df.values.tolist()
 
         rc_output = request.POST.get("rc_output")
-        rc_output_dict = ast.literal_eval(rc_output.replace('null', 'None'))
+        try:
+            rc_output_dict = ast.literal_eval(rc_output.replace('null', 'None'))
+        except (ValueError, SyntaxError, AttributeError) as e:
+            logger.exception("Error parsing rating curve data during export")
+            return HttpResponse(
+                "<html><body><h2>Export failed: Invalid rating curve data.</h2>"
+                "<p>The rating curve data could not be parsed. Please try the export again.</p>"
+                "<p><a href=\"/export/\">Return to export page</a></p>"
+                "</body></html>",
+                content_type="text/html",
+                status=400,
+            )
 
         rc_output_dict["data"].append(field_data_values)
         rc_output_df = pd.DataFrame.from_dict(rc_output_dict, orient="index")
@@ -936,7 +974,7 @@ def rctool_export_output(request):
                 app_period_end = export_form.cleaned_data["export_date_applic_final"]
                 context["app_period_end"] = app_period_end
 
-            context["current_time"] = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
+            context["current_time"] = datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M")
             context["rc"] = rc_output_dict
 
             # Round output parameters
@@ -1094,28 +1132,42 @@ def rctool_export_output(request):
                 # write to pdf option selected
 
                 # calculate residuals for output figures and table
-                field_data_output_df = export_calculate_discharge_error(
-                    field_data_output_df, rc_output_dict
-                )
-                context["field_table"] = {
-                    "headings": field_data_output_df.columns.values,
-                    "data": field_data_output_df.values.tolist(),
-                }
-                # create figure for pdf
-                context["rc_img"] = create_export_rc_img(
-                    field_data_output_df, rc_output_dict
-                )
-                context["res_img"] = create_export_res_img(
-                    field_data_output_df, rc_output_dict
-                )
+                try:
+                    field_data_output_df = export_calculate_discharge_error(
+                        field_data_output_df, rc_output_dict
+                    )
+                    context["field_table"] = {
+                        "headings": field_data_output_df.columns.values,
+                        "data": field_data_output_df.values.tolist(),
+                    }
+                    # create figure for pdf
+                    context["rc_img"] = create_export_rc_img(
+                        field_data_output_df, rc_output_dict
+                    )
+                    context["res_img"] = create_export_res_img(
+                        field_data_output_df, rc_output_dict
+                    )
 
-                # prepare and return output pdf
-                template = get_template("rctool/rctool/export/rctool_export_pdf.html")
-                html = template.render(context)
-                pdf = render_to_pdf(
-                    "rctool/rctool/export/rctool_export_pdf.html", context
-                )
-                response = HttpResponse(pdf, content_type="application/pdf")
+                    template = get_template("rctool/rctool/export/rctool_export_pdf.html")
+                    html = template.render(context)
+                    pdf_response = render_to_pdf(
+                        "rctool/rctool/export/rctool_export_pdf.html", context
+                    )
+                    if pdf_response is None:
+                        raise ValueError("PDF generation failed (render_to_pdf returned None)")
+                except Exception as e:
+                    logger.exception("Error generating PDF during export")
+                    return HttpResponse(
+                        "<html><body><h2>Error generating PDF.</h2>"
+                        "<p>An internal error occurred while generating the PDF. "
+                        "Please try again later or contact the system administrator.</p>"
+                        "<p><a href=\"/export/\">Return to export page</a></p>"
+                        "</body></html>",
+                        content_type="text/html",
+                        status=500,
+                    )
+                
+                response = pdf_response
                 content = "inline; filename='%s'" % (fname)
                 download = request.GET.get("download")
                 if download:
