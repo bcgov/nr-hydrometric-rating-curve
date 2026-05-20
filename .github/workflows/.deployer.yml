@@ -61,7 +61,7 @@ jobs:
       # Variables
       - if: inputs.tag  == ''
         id: pr
-        uses: bcgov/action-get-pr@bfa713a9ab410c0f0c13126c35983934fc80d15b # v0.1.1
+        uses: bcgov/action-get-pr@bf6c85d0ed23a151f2829956c140fde87979bbf2 # v0.2.0
 
       - name: Vars
         id: vars
@@ -88,7 +88,7 @@ jobs:
       ### Deploy
       - name: Interrupt deployments (PR only)
         if: github.event_name == 'pull_request'
-        uses: bcgov/action-oc-runner@d2fc921aaa9d70684c186dbb7754e6985d44d86f # v1.4.1
+        uses: bcgov/action-oc-runner@1815ce17a815c71e9078851a2e3da84d191ea6c3 # v1.5.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
           oc_token: ${{ secrets.oc_token }}
@@ -105,7 +105,7 @@ jobs:
 
       - name: Deploy Helm chart
         id: deploy
-        uses: bcgov/action-oc-runner@d2fc921aaa9d70684c186dbb7754e6985d44d86f # v1.4.1
+        uses: bcgov/action-oc-runner@1815ce17a815c71e9078851a2e3da84d191ea6c3 # v1.5.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
           oc_token: ${{ secrets.oc_token }}
