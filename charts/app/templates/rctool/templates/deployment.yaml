@@ -34,7 +34,7 @@ spec:
           - name: {{ include "rctool.fullname" . }}
             {{- if .Values.rctool.containerSecurityContext }}
             securityContext:
-              {{- toYaml .Values.rctool.containerSecurityContext | nindent 12 }}
+              {{- toYaml .Values.rctool.containerSecurityContext | nindent 14 }}
             {{- end }}
             image: "{{.Values.global.registry}}/{{.Values.global.repository}}/rctool:{{ .Values.global.tag | default .Chart.AppVersion }}"
             imagePullPolicy: {{ default "Always" .Values.rctool.imagePullPolicy }}
