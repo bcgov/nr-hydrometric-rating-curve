@@ -14,6 +14,7 @@ services:
       - DEBUG=True
       - ALLOWED_HOSTS=*
       - SECRET_KEY=test-secret-key-for-development-only
+      - CSRF_TRUSTED_ORIGINS=http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001
     user: "0"
     command: >
       sh -c "
