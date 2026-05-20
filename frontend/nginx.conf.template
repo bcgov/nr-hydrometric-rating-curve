@@ -1,6 +1,6 @@
 # Tell nginx to use custom locations for runtime files
 pid /tmp/nginx.pid;             # Store PID file in /tmp (writable by any user)
-error_log /dev/stderr info;       # Store error log in /dev/stderr for proper container logging
+error_log /tmp/error.log;       # Store error log in /tmp (writable by any user)
 
 # Events block: controls basic connection processing
 events {
@@ -8,7 +8,7 @@ events {
 }
 
 http {
-    access_log /dev/stdout; # Store access log in /dev/stdout for proper container logging
+    access_log /tmp/access.log; # Store access log in /tmp (writable by any user)
 
     # Use system mime.types for file type detection
     include /etc/nginx/mime.types;
