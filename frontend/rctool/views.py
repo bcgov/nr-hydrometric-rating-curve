@@ -1,4 +1,6 @@
 import os
+os.environ["MPLCONFIGDIR"] = "/tmp/matplotlib"
+os.environ["HOME"] = "/tmp"
 import logging
 import pandas as pd
 import numpy as np
@@ -18,8 +20,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import io
 import base64
-import io, base64
 
 logger = logging.getLogger(__name__)
 

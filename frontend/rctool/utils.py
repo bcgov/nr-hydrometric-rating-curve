@@ -1,3 +1,7 @@
+import os
+os.environ["MPLCONFIGDIR"] = "/tmp/matplotlib"
+os.environ["HOME"] = "/tmp"
+
 from io import BytesIO
 from django.http import HttpResponse
 from django.template.loader import get_template
