@@ -2473,4 +2473,4 @@ pdf = ["xhtml2pdf"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.15"
-content-hash = "dc576a239aa85911ebb4f70b8a518b94a535ee248b5b59c6e8e49b5d59ea120f"
+content-hash = "be529a7ebc010c26e71c391b6462e30e6633e9199677ac687e8ce2bd42712ecf"
