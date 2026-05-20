@@ -8,9 +8,9 @@ ENV LANG=C.UTF-8 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PATH="/venv/bin:$PATH"
 
-# Install gcc and cleanup apt cache
+# Install gcc, pkg-config, libcairo2-dev and cleanup apt cache
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y gcc && \
+    apt-get install --no-install-recommends -y gcc pkg-config libcairo2-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Setup venv and install requirements
@@ -22,6 +22,11 @@ RUN python -m venv /venv && \
 
 ### APP IMAGE ###
 FROM python:3.14-slim
+
+# Install runtime dependencies (libcairo2)
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y libcairo2 && \
+    rm -rf /var/lib/apt/lists/*
 
 # Envars and venv
 COPY --from=builder /venv /venv
