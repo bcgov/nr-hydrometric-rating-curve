@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-24.04
     name: Penetration Tests
     permissions:
-      security-events: write
+      issues: write
     env:
       URL: ${{ github.event.repository.name }}-test-frontend.apps.silver.devops.gov.bc.ca
     steps:
@@ -23,7 +23,6 @@ jobs:
         uses: zaproxy/action-full-scan@3c58388149901b9a03b7718852c5ba889646c27c # v0.13.0
         with:
           allow_issue_writing: true
-          artifact_name: "zap_rctool"
-          cmd_options: "-a"
-          issue_title: "ZAP: rctool"
+          issue_title: "ZAP Security Report"
+          token: ${{ secrets.GITHUB_TOKEN }}
           target: https://${{ env.URL }}
