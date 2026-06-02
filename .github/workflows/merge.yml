@@ -26,7 +26,7 @@ jobs:
       # Get PR number for squash merges to main
       - name: PR Number
         id: pr
-        uses: bcgov/action-get-pr@bf6c85d0ed23a151f2829956c140fde87979bbf2 # v0.2.0
+        uses: bcgov/action-get-pr@3931962bf13b3f4702d0013ec7c836f752ff1a3b # v0.3.0
 
   deploy-test:
     name: Deploy (TEST)
