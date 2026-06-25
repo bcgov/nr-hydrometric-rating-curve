@@ -2,27 +2,6 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Presets from https://github.com/bcgov/renovate-config",
   "extends": [
-    "github>bcgov/renovate-config#2026.5.24"
-  ],
-  "packageRules": [
-    {
-      "description": "Auto-merge non-major dependency updates once CI passes",
-      "matchUpdateTypes": [
-        "minor",
-        "patch",
-        "digest",
-        "lockFileMaintenance"
-      ],
-      "automerge": true,
-      "automergeType": "pr",
-      "automergeStrategy": "squash"
-    },
-    {
-      "description": "Major updates require human review",
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "automerge": false
-    }
+    "github>bcgov/renovate-config#2026.04"
   ]
 }
