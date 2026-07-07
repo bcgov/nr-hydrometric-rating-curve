@@ -38,9 +38,10 @@ http {
             autoindex off;                        # Disable directory listing
             alias /static/;                       # Serve from /static directory
 
-            # Handle CSV and DAT files with correct MIME type
-            location ~* \.(csv|dat)$ {
-                add_header Content-Type text/csv;  # Set MIME type for CSV files
+            # Ensure CSV and DAT files are served as text/csv
+            include /etc/nginx/mime.types;
+            types {
+                text/csv csv dat;
             }
         }
 
