@@ -30,13 +30,12 @@ jobs:
 
   deploy-test:
     name: Deploy (TEST)
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@a11ad3d1b9288fb40757c4314a62eb86ff227931 # v1.2.1
+    uses: ./.github/workflows/.deployer.yml
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       environment: test
-      triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
       params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true --set-string frontend.gunicorn.logLevel=debug
 
   promote-test:
@@ -58,13 +57,12 @@ jobs:
   deploy-prod:
     name: Deploy (PROD)
     needs: [vars, deploy-test]
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.deployer.yml@a11ad3d1b9288fb40757c4314a62eb86ff227931 # v1.2.1
+    uses: ./.github/workflows/.deployer.yml
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       environment: prod
-      triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
       params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
 
   promote-prod:
