@@ -14,6 +14,7 @@ concurrency:
       
 permissions:
   packages: write
+  contents: read
 
 jobs:
   vars:
@@ -54,29 +55,29 @@ jobs:
           tags: test
           target: ${{ needs.vars.outputs.pr }}
 
-  deploy-prod:
-    name: Deploy (PROD)
-    needs: [vars, deploy-test]
-    uses: ./.github/workflows/.deployer.yml
-    secrets:
-      oc_namespace: ${{ secrets.OC_NAMESPACE }}
-      oc_token: ${{ secrets.OC_TOKEN }}
-    with:
-      environment: prod
-      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
-
-  promote-prod:
-    name: Promote Images
-    needs: [deploy-prod, vars]
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        package: [frontend, rctool]
-    timeout-minutes: 1
-    steps:
-      - uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5
-        with:
-          registry: ghcr.io
-          repository: ${{ github.repository }}/${{ matrix.package }}
-          tags: prod
-          target: ${{ needs.vars.outputs.pr }}
+#  deploy-prod:
+#    name: Deploy (PROD)
+#    needs: [vars, deploy-test]
+#    uses: ./.github/workflows/.deployer.yml
+#    secrets:
+#      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+#      oc_token: ${{ secrets.OC_TOKEN }}
+#    with:
+#      environment: prod
+#      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
+#
+#  promote-prod:
+#    name: Promote Images
+#    needs: [deploy-prod, vars]
+#    runs-on: ubuntu-24.04
+#    strategy:
+#      matrix:
+#        package: [frontend, rctool]
+#    timeout-minutes: 1
+#    steps:
+#      - uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5
+#        with:
+#          registry: ghcr.io
+#          repository: ${{ github.repository }}/${{ matrix.package }}
+#          tags: prod
+#          target: ${{ needs.vars.outputs.pr }}
