@@ -1778,4 +1778,562 @@
         document.getElementById('autofit-breakpoint-checkbox').style.display = 'flex';
         document.getElementById('adding-segment-link').style.display = 'none';
     };
+
+    /* -------------------------------------------------------------------------------------------------------------------------------------------
+    C) CLIENT-SIDE LMFIT RECALCULATION (PYODIDE)
+    ----------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    let pyodideReady = false;
+    let pyodideInstance = null;
+
+    const pythonFittingCode = `
+import pandas as pd
+import numpy as np
+import io
+import json
+import math
+from lmfit import models, Parameters
+
+def mean_squared_error(y_true, y_pred):
+    return np.mean((np.array(y_true) - np.array(y_pred)) ** 2)
+
+def mean_absolute_percentage_error(y_true, y_pred):
+    return np.mean(np.abs((np.array(y_true) - np.array(y_pred)) / np.array(y_true)))
+
+def fit_linear_model(df, offset, label, weighted=None, intersect_points=None, *args):
+    df_data = df.copy()
+    df_data.drop(["datetime", "comments", "toggle_point"], axis=1, errors="ignore", inplace=True)
+    df_data = df_data.rename(
+        columns={"discharge": "Q", "stage": "H", "uncertainty": "U"}
+    )
+    df_data.sort_values("H", inplace=True)
+
+    df_data["H0"] = df_data["H"] - offset
+    plm = models.PowerLawModel()
+
+    params = Parameters()
+    params.add("amplitude", value=0.1, min=0.001, max=100)
+    params.add("exponent", value=2, min=0.5, max=5)
+
+    if intersect_points:
+        for idx, point in enumerate(intersect_points):
+            constraint_name = "amplitude"
+            constraint_expression = "{0:g}*{1:g}**(-(exponent))".format(
+                point[1], point[0] - offset
+            )
+            params.add(constraint_name, expr=constraint_expression)
+
+    result = plm.fit(df_data["Q"], params, x=df_data["H0"])
+    
+    unw_const = float(result.best_values["amplitude"])
+    unw_exp = float(result.best_values["exponent"])
+    unw_best = result.best_fit
+
+    unw_residual = list(
+        100 * (np.array(unw_best) - np.array(df_data["Q"])) / np.array(df_data["Q"])
+    )
+    unw_seg_nodes = [
+        [np.array(df_data["H"])[0], unw_best[0]],
+        [np.array(df_data["H"])[-1], unw_best[-1]],
+    ]
+
+    df_data["U"] = df_data["U"].apply(lambda x: x / 100.0)
+    df_data["W"] = df_data["U"].apply(lambda x: 1 - x)
+
+    result = plm.fit(df_data["Q"], params, x=df_data["H0"], weights=df_data["W"])
+    wgt_const = float(result.best_values["amplitude"])
+    wgt_exp = float(result.best_values["exponent"])
+    wgt_best = result.best_fit
+    wgt_residual = list(
+        100 * (np.array(wgt_best) - np.array(df_data["Q"])) / np.array(df_data["Q"])
+    )
+    wgt_seg_nodes = [
+        [np.array(df_data["H"])[0], wgt_best[0]],
+        [np.array(df_data["H"])[-1], wgt_best[-1]],
+    ]
+
+    unw_mse = mean_squared_error(df_data["Q"], unw_best)
+    unw_rmse = math.sqrt(unw_mse)
+    unw_mape = mean_absolute_percentage_error(df_data["Q"], unw_best) * 100.0
+
+    wgt_mse = mean_squared_error(df_data["Q"], wgt_best)
+    wgt_rmse = math.sqrt(wgt_mse)
+    wgt_mape = mean_absolute_percentage_error(df_data["Q"], wgt_best) * 100.0
+
+    if weighted:
+        mdl_param = {
+            "label": label,
+            "const": wgt_const,
+            "exp": wgt_exp,
+            "seg_bounds": wgt_seg_nodes,
+            "offset": offset,
+            "rmse": wgt_rmse,
+            "mape": wgt_mape,
+        }
+        wgt_data = [
+            [float(a), float(b), float(c)] for a, b, c in zip(df_data["H"].tolist(), wgt_best, wgt_residual)
+        ]
+        mdl_data = [{"label": label, "data": wgt_data}]
+    else:
+        mdl_param = {
+            "label": label,
+            "const": unw_const,
+            "exp": unw_exp,
+            "seg_bounds": unw_seg_nodes,
+            "offset": offset,
+            "rmse": unw_rmse,
+            "mape": unw_mape,
+        }
+        unw_data = [
+            [float(a), float(b), float(c)] for a, b, c in zip(df_data["H"].tolist(), unw_best, unw_residual)
+        ]
+        mdl_data = [{"label": label, "data": unw_data}]
+
+    return mdl_data, mdl_param
+
+def autofit_data(field_data, offsets, breakpointH=None, rc_data=None, n_seg=None, weighted=None, adjust_seg=None, *args):
+    sidepanel_message = None
+    df_field = field_data.copy()
+    df_field = field_data[field_data["toggle_point"] == "checked"]
+
+    field_data_out = [
+        [a, b, c]
+        for a, b, c in zip(
+            df_field["stage"].tolist(),
+            df_field["discharge"].tolist(),
+            df_field["toggle_point"].tolist(),
+        )
+    ]
+
+    rc_data_output = [{"label": "field", "data": field_data_out}]
+    best_rc_data = None
+
+    df_field = df_field.drop_duplicates(subset=["stage", "discharge"], keep="first")
+
+    x_min = df_field["stage"].min()
+    x_max = df_field["stage"].max()
+    x_step = (x_max - x_min) / 50
+    min_fitting_points = math.ceil(len(df_field["stage"]) * 0.15)
+    rmse_best = 10000.00
+
+    if n_seg == 1:
+        [mdl_data, mdl_param] = fit_linear_model(
+            df_field, offsets[0], "model segment 1", weighted
+        )
+        best_rc_data = mdl_data
+        best_rc_param = mdl_param
+
+        if df_field["stage"].min() * 0.75 <= offsets[0]:
+            pass
+        else:
+            lower_point_H = float(round(df_field["stage"].min() * 0.75, 4))
+            lower_point_Q = float(
+                best_rc_param["const"]
+                * (lower_point_H - offsets[0]) ** best_rc_param["exp"]
+            )
+            if round(lower_point_Q, 4) != 0:
+                lower_point_Q = round(lower_point_Q, 4)
+            upper_point_H = float(round(df_field["stage"].max() * 1.5, 4))
+            upper_point_Q = float(round(
+                best_rc_param["const"]
+                * (upper_point_H - offsets[0]) ** best_rc_param["exp"],
+                4,
+            ))
+
+            best_rc_data[0]["data"].insert(0, [lower_point_H, lower_point_Q, 0])
+            best_rc_data[0]["data"].append([upper_point_H, upper_point_Q, 0])
+            best_rc_param["seg_bounds"][0] = [float(lower_point_H), float(lower_point_Q)]
+            best_rc_param["seg_bounds"][1] = [float(upper_point_H), float(upper_point_Q)]
+
+        rc_data_output = rc_data_output + best_rc_data
+        rc_param_output = [best_rc_param]
+
+    elif n_seg == 2:
+        try:
+            if breakpointH and breakpointH > x_min and breakpointH < x_max:
+                breakpointH = float(breakpointH)
+                df_lower = df_field[df_field["stage"] <= breakpointH]
+                df_upper = df_field[df_field["stage"] >= breakpointH]
+
+                if len(df_lower["stage"]) > 1 and len(df_upper["stage"]) > 1:
+                    [mdl_data_lower, mdl_param_lower] = fit_linear_model(
+                        df_lower, offsets[0], "model segment 1", weighted
+                    )
+
+                    breakpointQ = float(
+                        mdl_param_lower["const"]
+                        * (breakpointH - mdl_param_lower["offset"])
+                        ** mdl_param_lower["exp"]
+                    )
+                    mdl_data_lower[0]["data"].append([breakpointH, breakpointQ, 0])
+                    intersect_point_1 = [
+                        [
+                            mdl_data_lower[0]["data"][-1][0],
+                            mdl_data_lower[0]["data"][-1][1],
+                        ]
+                    ]
+                    mdl_param_lower["seg_bounds"][1] = [float(breakpointH), float(breakpointQ)]
+
+                    [mdl_data_upper, mdl_param_upper] = fit_linear_model(
+                        df_upper,
+                        offsets[1],
+                        "model segment 2",
+                        weighted,
+                        intersect_point_1,
+                    )
+
+                    mdl_data_upper[0]["data"].insert(0, [breakpointH, breakpointQ, 0])
+                    mdl_param_upper["seg_bounds"][0] = [float(breakpointH), float(breakpointQ)]
+
+                    best_rc_data = mdl_data_lower + mdl_data_upper
+                    best_rc_param = [mdl_param_lower, mdl_param_upper]
+
+                    if df_field["stage"].min() * 0.75 <= offsets[0]:
+                        pass
+                    else:
+                        lower_point_H = float(round(df_field["stage"].min() * 0.75, 4))
+                        upper_point_H = float(round(df_field["stage"].max() * 1.5, 4))
+                        lower_point_Q = float(
+                            best_rc_param[0]["const"]
+                            * (lower_point_H - offsets[0]) ** best_rc_param[0]["exp"]
+                        )
+                        upper_point_Q = float(round(
+                            best_rc_param[1]["const"]
+                            * (upper_point_H - offsets[1]) ** best_rc_param[1]["exp"],
+                            4,
+                        ))
+                        if round(lower_point_Q, 4) != 0:
+                            lower_point_Q = round(lower_point_Q, 4)
+                        best_rc_data[0]["data"].insert(
+                            0, [lower_point_H, lower_point_Q, 0]
+                        )
+                        best_rc_param[0]["seg_bounds"][0] = [
+                            float(lower_point_H),
+                            float(lower_point_Q),
+                        ]
+                        best_rc_data[1]["data"].append(
+                            [upper_point_H, upper_point_Q, 0]
+                        )
+                        best_rc_param[1]["seg_bounds"][1] = [
+                            float(upper_point_H),
+                            float(upper_point_Q),
+                        ]
+
+            else:
+                for k in np.arange(x_min, x_max, x_step):
+                    df_lower = df_field[df_field["stage"] <= k]
+
+                    if len(df_lower["stage"]) > min_fitting_points:
+                        [mdl_data_lower, mdl_param_lower] = fit_linear_model(
+                            df_lower, offsets[0], "model segment 1", weighted
+                        )
+
+                        intersect_point_H = float(round(k, 4))
+                        intersect_point_Q = float(round(
+                            mdl_param_lower["const"]
+                            * (intersect_point_H - mdl_param_lower["offset"])
+                            ** mdl_param_lower["exp"],
+                            4,
+                        ))
+
+                        mdl_data_lower[0]["data"].append(
+                            [intersect_point_H, intersect_point_Q, 0]
+                        )
+                        intersect_point_1 = [
+                            [
+                                mdl_data_lower[0]["data"][-1][0],
+                                mdl_data_lower[0]["data"][-1][1],
+                            ]
+                        ]
+                        mdl_param_lower["seg_bounds"][1] = [
+                            float(intersect_point_H),
+                            float(intersect_point_Q),
+                        ]
+                        df_upper = df_field[df_field["stage"] >= intersect_point_H]
+
+                        if len(df_upper["stage"]) > min_fitting_points:
+                            [mdl_data_upper, mdl_param_upper] = fit_linear_model(
+                                df_upper,
+                                offsets[1],
+                                "model segment 2",
+                                weighted,
+                                intersect_point_1,
+                            )
+                            mdl_data_upper[0]["data"].insert(
+                                0, [intersect_point_H, intersect_point_Q, 0]
+                            )
+                            mdl_param_upper["seg_bounds"][0] = [
+                                float(intersect_point_H),
+                                float(intersect_point_Q),
+                            ]
+
+                            rmse = np.mean(
+                                [mdl_param_lower["rmse"], mdl_param_upper["rmse"]]
+                            )
+
+                            if rmse_best > rmse:
+                                rmse_best = round(rmse, 3)
+                                best_rc_data = mdl_data_lower + mdl_data_upper
+                                best_rc_param = [mdl_param_lower, mdl_param_upper]
+
+                if offsets[0] <= df_field["stage"].min() * 0.75:
+                    lower_point_H = float(round(df_field["stage"].min() * 0.75, 4))
+                    lower_point_Q = (
+                        best_rc_param[0]["const"]
+                        * (lower_point_H - offsets[0]) ** best_rc_param[0]["exp"]
+                    )
+                    if round(lower_point_Q, 4) != 0:
+                        lower_point_Q = float(round(lower_point_Q, 4))
+                    upper_point_H = float(round(df_field["stage"].max() * 1.5, 4))
+                    upper_point_Q = float(round(
+                        best_rc_param[1]["const"]
+                        * (upper_point_H - offsets[1]) ** best_rc_param[1]["exp"],
+                        4,
+                    ))
+                    best_rc_data[0]["data"].insert(0, [lower_point_H, lower_point_Q, 0])
+                    best_rc_param[0]["seg_bounds"][0] = [float(lower_point_H), float(lower_point_Q)]
+                    best_rc_data[1]["data"].append([upper_point_H, upper_point_Q, 0])
+                    best_rc_param[1]["seg_bounds"][1] = [float(upper_point_H), float(upper_point_Q)]
+
+            rc_data_output = rc_data_output + best_rc_data
+            rc_param_output = best_rc_param
+
+        except Exception as e:
+            print("Error in autofit_data ", e)
+            sidepanel_message = {
+                "error_title": "Error Auto-Fitting Rating Curve",
+                "error_text": "Could not fit second segment, please specify a breakpoint and try again.",
+            }
+            [mdl_data, mdl_param] = fit_linear_model(
+                df_field, offsets[0], "model segment 1"
+            )
+            rc_data_output = rc_data_output + mdl_data
+            rc_param_output = [mdl_param]
+
+    for param in rc_param_output:
+        if param["exp"] < 1:
+            sidepanel_message = {
+                "error_title": "Warning",
+                "error_text": "Exponent for {} is too low.".format(param["label"]),
+            }
+        elif param["exp"] > 4:
+            sidepanel_message = {
+                "error_title": "Warning",
+                "error_text": "Exponent for {} is too high.".format(param["label"]),
+            }
+
+    rc_dict = {"data": rc_data_output, "parameters": rc_param_output}
+    return rc_dict, sidepanel_message
+`;
+
+    async function initPyodide() {
+        const btn = document.getElementById("autofit-rc-button");
+        const originalText = btn ? btn.innerHTML : "<small>autofit new rating curve</small>";
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = "<small>loading scientific libraries...</small>";
+        }
+
+        try {
+            pyodideInstance = await loadPyodide();
+            await pyodideInstance.loadPackage(["numpy", "pandas", "scipy"]);
+            await pyodideInstance.loadPackage("micropip");
+            const micropip = pyodideInstance.pyimport("micropip");
+            await micropip.install("lmfit==1.3.4");
+            
+            pyodideInstance.runPython(pythonFittingCode);
+            
+            pyodideReady = true;
+            console.log("Pyodide and scientific libraries loaded.");
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        } catch (err) {
+            console.error("Pyodide initialization failed:", err);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+    }
+
+    async function autofitClientSide(nSeg, offsets, breakpointH, weighted) {
+        if (!pyodideReady) {
+            return null;
+        }
+
+        const fieldDataJson = JSON.stringify(fielddatacsv);
+        const breakpointHVal = (breakpointH !== null && breakpointH !== undefined && breakpointH !== "") ? parseFloat(breakpointH) : null;
+
+        try {
+            pyodideInstance.globals.set("field_data_json", fieldDataJson);
+            pyodideInstance.globals.set("offsets_list", pyodideInstance.toPy(offsets));
+            pyodideInstance.globals.set("breakpoint_h", breakpointHVal);
+            pyodideInstance.globals.set("n_seg", parseInt(nSeg));
+            pyodideInstance.globals.set("weighted", weighted ? true : null);
+
+            const resultJson = pyodideInstance.runPython(`
+import io
+import json
+df_field = pd.read_json(io.StringIO(field_data_json))
+df_field = df_field.sort_index()
+
+rc_dict, sidepanel_msg = autofit_data(
+    df_field,
+    offsets_list,
+    breakpointH=breakpoint_h,
+    n_seg=n_seg,
+    weighted=weighted
+)
+
+def clean_dict(d):
+    if isinstance(d, dict):
+        return {k: clean_dict(v) for k, v in d.items()}
+    elif isinstance(d, list):
+        return [clean_dict(v) for v in d]
+    elif hasattr(d, "item"):
+        return d.item()
+    else:
+        return d
+
+json.dumps({"rc": clean_dict(rc_dict), "sidepanel_message": clean_dict(sidepanel_msg)})
+            `);
+
+            return JSON.parse(resultJson);
+        } catch (err) {
+            console.error("Pyodide autofit execution failed:", err);
+            return null;
+        }
+    }
+
+    function applyRecalculatedRatingCurve(result) {
+        residualData = JSON.parse(JSON.stringify(result.rc.data));
+        rcData = JSON.parse(JSON.stringify(result.rc.data));
+        rcParam = JSON.parse(JSON.stringify(result.rc.parameters));
+        rcDict = {'data': rcData, 'parameters': rcParam};
+
+        for (let idx = 0; idx < rcParam.length; idx++) {
+            const param = rcParam[idx];
+            const segNumStr = String(idx + 1);
+            
+            const C = param.const;
+            const slope = param.exp;
+            const offset = param.offset;
+            const rmse = param.rmse;
+            const mape = param.mape;
+            
+            if (document.getElementById('segment' + segNumStr + '-const')) {
+                document.getElementById('segment' + segNumStr + '-const').innerHTML = C.toFixed(2);
+            }
+            if (document.getElementById('segment' + segNumStr + '-exp')) {
+                document.getElementById('segment' + segNumStr + '-exp').innerHTML = slope.toFixed(2);
+            }
+            if (document.getElementById('table1-segment' + segNumStr + '-const')) {
+                document.getElementById('table1-segment' + segNumStr + '-const').innerHTML = C.toFixed(2);
+            }
+            if (document.getElementById('table1-segment' + segNumStr + '-exp')) {
+                document.getElementById('table1-segment' + segNumStr + '-exp').innerHTML = slope.toFixed(2);
+            }
+            if (document.getElementById('table1-segment' + segNumStr + '-rmse')) {
+                document.getElementById('table1-segment' + segNumStr + '-rmse').innerHTML = rmse.toFixed(3);
+            }
+            if (document.getElementById('table1-segment' + segNumStr + '-mape')) {
+                document.getElementById('table1-segment' + segNumStr + '-mape').innerHTML = mape.toFixed(1) + '%';
+            }
+            
+            if (idx === 0) {
+                if (document.getElementById("endpointSeg1H0")) document.getElementById("endpointSeg1H0").value = param.seg_bounds[0][0].toFixed(3);
+                if (document.getElementById("endpointSeg1Q0")) document.getElementById("endpointSeg1Q0").value = param.seg_bounds[0][1].toFixed(3);
+                if (document.getElementById("endpointSeg1H1")) document.getElementById("endpointSeg1H1").value = param.seg_bounds[1][0].toFixed(3);
+                if (document.getElementById("endpointSeg1Q1")) document.getElementById("endpointSeg1Q1").value = param.seg_bounds[1][1].toFixed(3);
+                
+                if (document.getElementById("table1-endpoint-Seg1H0")) document.getElementById("table1-endpoint-Seg1H0").innerHTML = param.seg_bounds[0][0].toFixed(3);
+                if (document.getElementById("table1-endpoint-Seg1H1")) document.getElementById("table1-endpoint-Seg1H1").innerHTML = param.seg_bounds[1][0].toFixed(3);
+            } else if (idx === 1) {
+                if (document.getElementById("endpointSeg2H0")) document.getElementById("endpointSeg2H0").value = param.seg_bounds[0][0].toFixed(3);
+                if (document.getElementById("endpointSeg2Q0")) document.getElementById("endpointSeg2Q0").value = param.seg_bounds[0][1].toFixed(3);
+                if (document.getElementById("endpointSeg2H1")) document.getElementById("endpointSeg2H1").value = param.seg_bounds[1][0].toFixed(3);
+                if (document.getElementById("endpointSeg2Q1")) document.getElementById("endpointSeg2Q1").value = param.seg_bounds[1][1].toFixed(3);
+                
+                if (document.getElementById("table1-endpoint-Seg2H0")) document.getElementById("table1-endpoint-Seg2H0").innerHTML = param.seg_bounds[0][0].toFixed(3);
+                if (document.getElementById("table1-endpoint-Seg2H1")) document.getElementById("table1-endpoint-Seg2H1").innerHTML = param.seg_bounds[1][0].toFixed(3);
+            }
+            
+            var offset_val = Math.abs(offset).toFixed(3);
+            let sign = offset < 0 ? ' + ' : ' - ';
+            if (document.getElementById('segment' + segNumStr + '-offset')) {
+                document.getElementById('segment' + segNumStr + '-offset').innerHTML = sign + offset_val;
+            }
+            if (document.getElementById('table1-segment' + segNumStr + '-offset')) {
+                document.getElementById('table1-segment' + segNumStr + '-offset').innerHTML = sign + offset_val;
+            }
+
+            let newSegDataPoints = result.rc.data[idx+1].data;
+            let newSegPlotData = newSegDataPoints.map(item => ({ x: item[2], y: item[0] }));
+            updateResidualChart(newSegPlotData.slice(1, -1), idx);
+        }
+
+        if (nSegData == 2 && rcParam.length == 2 && document.getElementById("breakpoint1")) {
+            document.getElementById("breakpoint1").value = rcParam[0].seg_bounds[1][0].toFixed(3);
+        }
+
+        updateChartFromGlobal();
+        updateMaxBounds(rcParam);
+        checkExponent();
+
+        if (result.sidepanel_message) {
+            updateWarningMessage(result.sidepanel_message, {title: 'none', url: 'none'});
+        } else {
+            updateWarningMessage({error_text: 'no warning'}, {title: 'none', url: 'none'});
+        }
+
+        updateExportVariables();
+    }
+
+    document.getElementById("rcform").addEventListener("submit", async function(event) {
+        const nSeg = parseInt(document.getElementById("n-seg").value);
+        if (pyodideReady && nSeg === nSegData) {
+            event.preventDefault();
+
+            const offset1 = parseFloat(document.getElementById("offset1").value);
+            const offset2 = document.getElementById("offset2") ? parseFloat(document.getElementById("offset2").value) : 0.0;
+            const offsets = [offset1, offset2];
+            
+            const toggleBreakpointEl = document.getElementById("toggle_breakpoint");
+            const toggleBreakpoint = toggleBreakpointEl ? toggleBreakpointEl.checked : false;
+            
+            let breakpointH = null;
+            if (document.getElementById("breakpoint1")) {
+                if (!toggleBreakpoint) {
+                    breakpointH = parseFloat(document.getElementById("breakpoint1").value);
+                }
+            }
+            
+            const weighted = document.getElementById("toggle_weighted_fit").checked;
+            
+            const btn = document.getElementById("autofit-rc-button");
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = "<small>fitting...</small>";
+            
+            const result = await autofitClientSide(nSeg, offsets, breakpointH, weighted);
+            
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            
+            if (result) {
+                applyRecalculatedRatingCurve(result);
+            } else {
+                console.warn("Client side fitting failed, submitting form to backend.");
+                document.getElementById("rcform").submit();
+            }
+        }
+    });
+
+    if ("requestIdleCallback" in window) {
+        requestIdleCallback(() => initPyodide());
+    } else {
+        setTimeout(() => initPyodide(), 0);
+    }
 </script>

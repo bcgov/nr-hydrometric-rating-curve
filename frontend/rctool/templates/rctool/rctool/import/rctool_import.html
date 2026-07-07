@@ -231,6 +231,10 @@
     }
 
     function loadCSV() {
+        const fileInput = document.getElementById("csvFile");
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            return;
+        }
         const reader = new FileReader();
         reader.onload = function (e) {
             const csv = e.target.result;
@@ -268,9 +272,9 @@
 
             // set the csv content to the hidden form field
             document.getElementById("csv_content").value = JSON.stringify(result);
-
+            updateTable();
         };
-        reader.readAsText(document.getElementById("csvFile").files[ 0 ]);
+        reader.readAsText(fileInput.files[ 0 ]);
     };
 
 
@@ -336,8 +340,6 @@
         clearTable();
         try {
             loadCSV();
-            setTimeout(updateTable, 200);
-            updateTable();
         } catch (e) {
             console.log(e);
             clearTable();
@@ -345,6 +347,10 @@
     }
 
     function loadSession() {
+        const fileInput = document.getElementById("sessionFile");
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            return;
+        }
         const reader = new FileReader();
         reader.onload = function (e) {
             const session = e.target.result;
@@ -371,15 +377,15 @@
 
             // set the session content to the hidden form field
             document.getElementById("session_content").value = JSON.stringify(result);
+            document.getElementById("enter-data-button").disabled = false;
         };
 
-        reader.readAsText(document.getElementById("sessionFile").files[ 0 ]);
+        reader.readAsText(fileInput.files[ 0 ]);
     }
 
     function refreshSession() {
-        document.getElementById("enter-data-button").disabled = false;
+        document.getElementById("enter-data-button").disabled = true;
         loadSession();
-
     }
 
     // on input field change, update things
