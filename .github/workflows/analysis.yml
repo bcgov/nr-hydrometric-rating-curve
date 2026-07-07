@@ -87,7 +87,7 @@ jobs:
       - uses: actions/checkout@v7
       - name: Check workflows with actionlint
         run: |
-          bash <(curl -L https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash)
           ./actionlint
             
   # ==========================================================================
