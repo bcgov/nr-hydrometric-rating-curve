@@ -36,6 +36,7 @@ jobs:
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       environment: test
+      triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
       params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true --set-string frontend.gunicorn.logLevel=debug
 
   promote-test:
@@ -63,6 +64,7 @@ jobs:
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       environment: prod
+      triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
       params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
 
   promote-prod:

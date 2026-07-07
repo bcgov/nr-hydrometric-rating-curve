@@ -23,10 +23,6 @@ http {
     large_client_header_buffers 4 32k;             # Buffer size for large headers
 
     server {
-        # Handle CSV and DAT files with correct MIME type
-        location ~* \.(csv|dat)$ {
-            add_header Content-Type text/csv;      # Set MIME type for CSV files
-        }
 
         # Proxy buffer settings for performance
         proxy_busy_buffers_size   512k;
@@ -41,6 +37,11 @@ http {
         location /static/ {
             autoindex off;                        # Disable directory listing
             alias /static/;                       # Serve from /static directory
+
+            # Handle CSV and DAT files with correct MIME type
+            location ~* \.(csv|dat)$ {
+                add_header Content-Type text/csv;  # Set MIME type for CSV files
+            }
         }
 
         # Proxy all other requests to the backend (e.g., Gunicorn/Django)
