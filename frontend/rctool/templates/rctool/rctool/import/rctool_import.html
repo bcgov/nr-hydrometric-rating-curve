@@ -231,6 +231,10 @@
     }
 
     function loadCSV() {
+        const fileInput = document.getElementById("csvFile");
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            return;
+        }
         const reader = new FileReader();
         reader.onload = function (e) {
             const csv = e.target.result;
@@ -270,7 +274,7 @@
             document.getElementById("csv_content").value = JSON.stringify(result);
 
         };
-        reader.readAsText(document.getElementById("csvFile").files[ 0 ]);
+        reader.readAsText(fileInput.files[ 0 ]);
     };
 
 
@@ -345,6 +349,10 @@
     }
 
     function loadSession() {
+        const fileInput = document.getElementById("sessionFile");
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            return;
+        }
         const reader = new FileReader();
         reader.onload = function (e) {
             const session = e.target.result;
@@ -373,7 +381,7 @@
             document.getElementById("session_content").value = JSON.stringify(result);
         };
 
-        reader.readAsText(document.getElementById("sessionFile").files[ 0 ]);
+        reader.readAsText(fileInput.files[ 0 ]);
     }
 
     function refreshSession() {
