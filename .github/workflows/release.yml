@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: prod-deploy
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  promote-prod:
+    name: Promote Images
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        package: [frontend, rctool]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve image digest
+        id: resolve
+        uses: bcgov/actions/image-tracker@bf09757562da93a1825abba5290d87f3811d9f5b # image-tracker
+        with:
+          package: ${{ matrix.package }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          revision: ${{ github.sha }}
+          max_depth: 20
+
+      - name: Promote Tag
+        uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          target: ${{ steps.resolve.outputs.digest }}
+          tags: |
+            prod
+            ${{ github.event.release.tag_name }}
+
+  deploy-prod:
+    name: Deploy (PROD)
+    needs: [promote-prod]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/.deployer.yml
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_token: ${{ secrets.OC_TOKEN }}
+    with:
+      environment: prod
+      tag: ${{ github.event.release.tag_name }}
+      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
