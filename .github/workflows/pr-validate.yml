@@ -15,7 +15,7 @@ jobs:
     name: Validate PR
     permissions:
       pull-requests: write
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.pr-validate.yml@a11ad3d1b9288fb40757c4314a62eb86ff227931 # v1.2.1
+    uses: bcgov/actions/.github/workflows/.pr-validate.yml@8766d7cd6a01dc63d1dc69781eb1098c77694560 # v0.3.0
     with:
       markdown_links: |
         - [Frontend](https://${{ github.event.repository.name }}-${{ github.event.number }}-frontend.apps.silver.devops.gov.bc.ca/) available
