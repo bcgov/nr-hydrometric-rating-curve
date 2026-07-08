@@ -26,7 +26,7 @@ jobs:
 
       - name: Resolve image digest
         id: resolve
-        uses: bcgov/actions/image-tracker@bf09757562da93a1825abba5290d87f3811d9f5b # image-tracker
+        uses: bcgov/actions/image-tracker@bf09757562da93a1825abba5290d87f3811d9f5b # v0.2.0
         with:
           package: ${{ matrix.package }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
