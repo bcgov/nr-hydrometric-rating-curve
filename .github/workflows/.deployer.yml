@@ -81,9 +81,11 @@ jobs:
           echo "version=${version}"
 
           # Output
-          echo "tag=${tag}" >> $GITHUB_OUTPUT
-          echo "release=${release}" >> $GITHUB_OUTPUT
-          echo "version=${version}" >> $GITHUB_OUTPUT
+          {
+            echo "tag=${tag}"
+            echo "release=${release}"
+            echo "version=${version}"
+          } >> "$GITHUB_OUTPUT"
 
       ### Deploy
       - name: Interrupt deployments (PR only)
