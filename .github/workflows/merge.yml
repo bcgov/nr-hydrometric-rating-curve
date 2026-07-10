@@ -27,7 +27,7 @@ jobs:
       # Get PR number for squash merges to main
       - name: PR Number
         id: pr
-        uses: bcgov/action-get-pr@28b0adf8e4d40720d41f9c87356ce24b0a4bd6af # v0.3.1
+        uses: bcgov/actions/get-pr@0992e41cd11c5370b77f9e6066effe63efe9f8c9 # v0.4.0
 
   deploy-test:
     name: Deploy (TEST)
@@ -55,29 +55,3 @@ jobs:
           tags: test
           target: ${{ needs.vars.outputs.pr }}
 
-#  deploy-prod:
-#    name: Deploy (PROD)
-#    needs: [vars, deploy-test]
-#    uses: ./.github/workflows/.deployer.yml
-#    secrets:
-#      oc_namespace: ${{ secrets.OC_NAMESPACE }}
-#      oc_token: ${{ secrets.OC_TOKEN }}
-#    with:
-#      environment: prod
-#      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
-#
-#  promote-prod:
-#    name: Promote Images
-#    needs: [deploy-prod, vars]
-#    runs-on: ubuntu-24.04
-#    strategy:
-#      matrix:
-#        package: [frontend, rctool]
-#    timeout-minutes: 1
-#    steps:
-#      - uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5
-#        with:
-#          registry: ghcr.io
-#          repository: ${{ github.repository }}/${{ matrix.package }}
-#          tags: prod
-#          target: ${{ needs.vars.outputs.pr }}

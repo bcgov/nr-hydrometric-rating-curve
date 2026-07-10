@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: prod-deploy
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  promote-release:
+    name: Promote Release Tag
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        package: [frontend, rctool]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve image digest
+        id: resolve
+        uses: bcgov/actions/image-tracker@0992e41cd11c5370b77f9e6066effe63efe9f8c9 # v0.4.0
+        with:
+          package: ${{ matrix.package }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          revision: ${{ github.sha }}
+          max_depth: 20
+
+      - name: Tag Image as Release
+        uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          target: ${{ steps.resolve.outputs.digest }}
+          tags: ${{ github.event.release.tag_name }}
+
+  deploy-prod:
+    name: Deploy (PROD)
+    needs: [promote-release]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/.deployer.yml
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_token: ${{ secrets.OC_TOKEN }}
+    with:
+      environment: prod
+      tag: ${{ github.event.release.tag_name }}
+      params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true
+
+  promote-prod:
+    name: Promote Prod Tag
+    needs: [deploy-prod]
+    permissions:
+      packages: write
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        package: [frontend, rctool]
+    timeout-minutes: 5
+    steps:
+      - name: Tag Image as Prod
+        uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          target: ${{ github.event.release.tag_name }}
+          tags: prod

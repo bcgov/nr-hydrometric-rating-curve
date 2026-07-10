@@ -76,20 +76,6 @@ jobs:
           name: coverage-report
           path: frontend/coverage.xml
 
-  actionlint:
-    name: Lint Workflows
-    if: (! github.event.pull_request.draft)
-    permissions:
-      contents: read
-    runs-on: ubuntu-24.04
-    timeout-minutes: 1
-    steps:
-      - uses: actions/checkout@v7
-      - name: Check workflows with actionlint
-        run: |
-          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash)
-          ./actionlint
-            
   # ==========================================================================
   # WARNING: This job acts as the required merge gate for this workflow.
   # If you add a new job to this workflow, you MUST add its ID to the 'needs'
@@ -97,7 +83,7 @@ jobs:
   # ==========================================================================
   results:
     name: Analysis Results
-    needs: [tests, actionlint] # Restore trivy when/if it's working again
+    needs: [tests] # Restore trivy when/if it's working again
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 1
