@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: bcgov/actions/.github/workflows/.pr-validate.yml@c7300cba0d8be84ba53846568246426c42baa994 # feat/cleanup-legacy-references
+    uses: bcgov/actions/.github/workflows/.pr-validate.yml@d9cc43c9cd774a69a3493221198f4d230e5409e3 # v0.4.0
     with:
       markdown_links: |
         - [Frontend](https://${{ github.event.repository.name }}-${{ github.event.number }}-frontend.apps.silver.devops.gov.bc.ca/) available
