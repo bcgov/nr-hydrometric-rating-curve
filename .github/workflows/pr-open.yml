@@ -32,7 +32,6 @@ jobs:
           build_file: ${{ matrix.build_file }}
           build_context: ./frontend
           tag_fallback: latest
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           triggers: ('frontend/')
 
   # https://github.com/bcgov/quickstart-openshift-helpers
