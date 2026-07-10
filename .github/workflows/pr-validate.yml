@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: bcgov/actions/.github/workflows/.pr-validate.yml@33ca31c648911b22331eb2dd239d685ab6f1001d # v0.4.0
+    uses: bcgov/actions/.github/workflows/.pr-validate.yml@fix/checkout-before-diff # testing-branch
     with:
       markdown_links: |
         - [Frontend](https://${{ github.event.repository.name }}-${{ github.event.number }}-frontend.apps.silver.devops.gov.bc.ca/) available

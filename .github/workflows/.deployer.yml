@@ -61,7 +61,7 @@ jobs:
       # Variables
       - if: inputs.tag  == ''
         id: pr
-        uses: bcgov/actions/get-pr@33ca31c648911b22331eb2dd239d685ab6f1001d # v0.4.0
+        uses: bcgov/actions/get-pr@fix/checkout-before-diff # testing-branch
 
       - name: Vars
         id: vars
