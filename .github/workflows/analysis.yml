@@ -110,7 +110,7 @@ jobs:
             pip install . xhtml2pdf pytest-django pytest-cov pytest-playwright
       - name: Get installed Playwright version
         id: playwright-version
-        run: echo "version=$(python -c 'import playwright; print(playwright.__version__)')" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(python -c 'from importlib.metadata import version as v; print(v("playwright"))')" >> "$GITHUB_OUTPUT"
       - name: Cache Playwright browsers
         id: playwright-cache
         uses: actions/cache@v4
