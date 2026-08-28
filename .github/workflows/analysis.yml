@@ -108,8 +108,24 @@ jobs:
       - name: Install requirements
         run: |
             pip install . xhtml2pdf pytest-django pytest-cov pytest-playwright
-      - name: Install Playwright browsers
+      - name: Get installed Playwright version
+        id: playwright-version
+        run: echo "version=$(python -c 'import playwright; print(playwright.__version__)')" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: playwright-browsers-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+      # The cache only covers the downloaded browser binary, not the OS-level shared
+      # libraries (e.g. libnspr4) it needs — those come from apt on a fresh runner
+      # every time, so install-deps still has to run either way.
+      - name: Install Playwright browsers (cache miss)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: playwright install --with-deps chromium
+      - name: Install Playwright OS dependencies (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: playwright install-deps chromium
       - name: Run Playwright tests
         run: |
             pytest -m playwright --no-cov
