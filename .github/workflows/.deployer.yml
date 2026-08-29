@@ -22,7 +22,7 @@ on:
         required: false
         type: string
       tag:
-        description: Specify a tag to deploy; defaults to PR head SHA on pull_request, else PR number
+        description: Specify a tag to deploy; defaults to PR head SHA, else PR number
         required: false
         type: string
       triggers:
@@ -55,18 +55,8 @@ jobs:
     outputs:
       packages: ${{ steps.vars.outputs.packages }}
       tag: ${{ steps.vars.outputs.tag }}
-      triggered: ${{ steps.finalize.outputs.triggered }}
+      triggered: ${{ steps.deploy.outputs.triggered }}
     steps:
-      - name: Deploy eligibility
-        id: gate
-        run: |
-          if [ -z "${{ secrets.oc_token }}" ] || [ -z "${{ secrets.oc_namespace }}" ]; then
-            echo "::notice::OpenShift credentials unavailable; deploy skipped."
-            echo "eligible=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "eligible=true" >> "$GITHUB_OUTPUT"
-          fi
-
       ### Triggers, tag and release
 
       # Variables
@@ -76,81 +66,48 @@ jobs:
 
       - name: Vars
         id: vars
-        env:
-          INPUT_TAG: ${{ inputs.tag }}
-          PR_NUMBER: ${{ steps.pr.outputs.pr }}
-          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          GH_REPOSITORY: ${{ github.repository }}
-          EVENT_NAME: ${{ github.event_name }}
-          ENVIRONMENT: ${{ inputs.environment }}
-          REPO_NAME: ${{ github.event.repository.name }}
-          RUN_NUMBER: ${{ github.run_number }}
         run: |
-          set -euo pipefail
+          # Tag: explicit input, else PR head SHA (always tagged by builder), else PR number
+          tag=${{ inputs.tag || github.event.pull_request.head.sha || steps.pr.outputs.pr }}
+          repository=$(echo '${{ github.event.pull_request.head.repo.full_name || github.repository }}' | tr '[:upper:]' '[:lower:]')
 
-          # GHCR path: fork PR images live under head.repo (same as builder-ghcr publish_repository).
-          if [ "${EVENT_NAME}" = "pull_request" ] && [ -n "${HEAD_REPO}" ]; then
-            repository="${HEAD_REPO,,}"
-          else
-            repository="${GH_REPOSITORY,,}"
-          fi
+          # Release name includes run numbers to ensure uniqueness
+          release=${{ github.event.repository.name }}-${{ inputs.environment || inputs.tag || steps.pr.outputs.pr }}
 
-          # Tag: explicit input, else PR head SHA (builder always tags this), else PR number (merge/deploy).
-          if [ -n "${INPUT_TAG}" ]; then
-            tag="${INPUT_TAG}"
-          elif [ "${EVENT_NAME}" = "pull_request" ] && [ -n "${HEAD_SHA}" ]; then
-            tag="${HEAD_SHA}"
-          else
-            tag="${PR_NUMBER}"
-          fi
+          # Version, used for non-PR releases
+          version=1.0.0-${{ github.run_number }}
 
-          release="${REPO_NAME}-${ENVIRONMENT:-${INPUT_TAG:-${PR_NUMBER}}}"
-          version="1.0.0-${RUN_NUMBER}"
-
-          echo "repository=${repository}"
+          # Summary
           echo "tag=${tag}"
+          echo "repository=${repository}"
           echo "release=${release}"
           echo "version=${version}"
 
+          # Output
           {
-            echo "repository=${repository}"
             echo "tag=${tag}"
+            echo "repository=${repository}"
             echo "release=${release}"
             echo "version=${version}"
           } >> "$GITHUB_OUTPUT"
 
+      # image-tracker needs a git checkout to resolve revision; skip on merge/release
+      # (those deploy by PR/release tag, not commit SHA)
       - uses: actions/checkout@v7
-        if: steps.gate.outputs.eligible == 'true'
+        if: github.event_name == 'pull_request'
 
       - name: Resolve images
         id: tracker
-        if: steps.gate.outputs.eligible == 'true'
+        if: github.event_name == 'pull_request'
         uses: bcgov/actions/image-tracker@main # beta: revert to release pin in #380
         with:
           package: frontend, rctool
           repository: ${{ steps.vars.outputs.repository }}
-          revision: ${{ steps.vars.outputs.tag }}
-
-      - name: Deploy readiness
-        id: ready
-        if: steps.gate.outputs.eligible == 'true'
-        env:
-          DIGESTS: ${{ steps.tracker.outputs.digests }}
-        run: |
-          set -euo pipefail
-          frontend="$(printf '%s' "${DIGESTS}" | jq -r '.frontend // empty')"
-          rctool="$(printf '%s' "${DIGESTS}" | jq -r '.rctool // empty')"
-          if [ -z "${frontend}" ] || [ -z "${rctool}" ]; then
-            echo "::notice::No GHCR images resolved for this revision; deploy skipped."
-            echo "deploy=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "deploy=true" >> "$GITHUB_OUTPUT"
-          fi
+          revision: ${{ github.event.pull_request.head.sha }}
 
       ### Deploy
       - name: Interrupt deployments (PR only)
-        if: steps.ready.outputs.deploy == 'true' && github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.tracker.outputs.digest != ''
         uses: bcgov/action-oc-runner@111868d1fc50db0a40417ba321d865ef5c931bbd # v1.7.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
@@ -168,7 +125,7 @@ jobs:
 
       - name: Deploy Helm chart
         id: deploy
-        if: steps.ready.outputs.deploy == 'true'
+        if: github.event_name != 'pull_request' || steps.tracker.outputs.digest != ''
         uses: bcgov/action-oc-runner@111868d1fc50db0a40417ba321d865ef5c931bbd # v1.7.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
@@ -198,13 +155,3 @@ jobs:
 
             # Completed pod cleanup
             oc delete po --field-selector=status.phase==Succeeded || true
-
-      - name: Finalize deploy triggered output
-        id: finalize
-        if: always()
-        run: |
-          if [ "${{ steps.ready.outputs.deploy }}" = "true" ]; then
-            echo "triggered=${{ steps.deploy.outputs.triggered || 'true' }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "triggered=false" >> "$GITHUB_OUTPUT"
-          fi
