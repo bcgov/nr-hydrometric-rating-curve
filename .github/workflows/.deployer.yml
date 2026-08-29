@@ -22,7 +22,7 @@ on:
         required: false
         type: string
       tag:
-        description: Specify a tag to deploy; defaults to PR number
+        description: Specify a tag to deploy; defaults to PR head SHA, else PR number
         required: false
         type: string
       triggers:
@@ -45,6 +45,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   deploy:
@@ -61,35 +62,52 @@ jobs:
       # Variables
       - if: inputs.tag  == ''
         id: pr
-        uses: bcgov/actions/get-pr@0992e41cd11c5370b77f9e6066effe63efe9f8c9 # v0.4.0
+        uses: bcgov/actions/get-pr@main # beta: revert to release pin in #380
 
       - name: Vars
         id: vars
         run: |
-          # Tag defaults to PR number, but can be overridden by inputs.tag
-          tag=${{ inputs.tag || steps.pr.outputs.pr }}
+          # Tag: explicit input, else PR head SHA (always tagged by builder), else PR number
+          tag=${{ inputs.tag || github.event.pull_request.head.sha || steps.pr.outputs.pr }}
+          repository=$(echo '${{ github.event.pull_request.head.repo.full_name || github.repository }}' | tr '[:upper:]' '[:lower:]')
 
           # Release name includes run numbers to ensure uniqueness
           release=${{ github.event.repository.name }}-${{ inputs.environment || inputs.tag || steps.pr.outputs.pr }}
-          
+
           # Version, used for non-PR releases
           version=1.0.0-${{ github.run_number }}
-          
+
           # Summary
           echo "tag=${tag}"
+          echo "repository=${repository}"
           echo "release=${release}"
           echo "version=${version}"
 
           # Output
           {
             echo "tag=${tag}"
+            echo "repository=${repository}"
             echo "release=${release}"
             echo "version=${version}"
           } >> "$GITHUB_OUTPUT"
 
+      # image-tracker needs a git checkout to resolve revision; skip on merge/release
+      # (those deploy by PR/release tag, not commit SHA)
+      - uses: actions/checkout@v7
+        if: github.event_name == 'pull_request'
+
+      - name: Resolve images
+        id: tracker
+        if: github.event_name == 'pull_request'
+        uses: bcgov/actions/image-tracker@main # beta: revert to release pin in #380
+        with:
+          package: frontend, rctool
+          repository: ${{ steps.vars.outputs.repository }}
+          revision: ${{ github.event.pull_request.head.sha }}
+
       ### Deploy
       - name: Interrupt deployments (PR only)
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.tracker.outputs.digest != ''
         uses: bcgov/action-oc-runner@111868d1fc50db0a40417ba321d865ef5c931bbd # v1.7.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
@@ -107,6 +125,7 @@ jobs:
 
       - name: Deploy Helm chart
         id: deploy
+        if: github.event_name != 'pull_request' || steps.tracker.outputs.digest != ''
         uses: bcgov/action-oc-runner@111868d1fc50db0a40417ba321d865ef5c931bbd # v1.7.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
@@ -122,7 +141,7 @@ jobs:
 
             # Helm upgrade/rollout
             helm upgrade \
-              --set-string global.repository=${{ github.repository }} \
+              --set-string global.repository=${{ steps.vars.outputs.repository }} \
               --set-string global.tag=${{ steps.vars.outputs.tag }} \
               ${{ inputs.params }} \
               --install --wait '--atomic' \
