@@ -45,6 +45,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   deploy:
@@ -60,7 +61,7 @@ jobs:
         id: gate
         run: |
           if [ -z "${{ secrets.oc_token }}" ] || [ -z "${{ secrets.oc_namespace }}" ]; then
-            echo "::notice::OpenShift credentials unavailable; deploy skipped (expected on fork PRs)."
+            echo "::notice::OpenShift credentials unavailable; deploy skipped."
             echo "eligible=false" >> "$GITHUB_OUTPUT"
           else
             echo "eligible=true" >> "$GITHUB_OUTPUT"
@@ -107,10 +108,6 @@ jobs:
           release="${REPO_NAME}-${ENVIRONMENT:-${INPUT_TAG:-${PR_NUMBER}}}"
           version="1.0.0-${RUN_NUMBER}"
 
-          if [ "${EVENT_NAME}" = "pull_request" ] && [ -n "${HEAD_REPO}" ] && [ "${HEAD_REPO,,}" != "${GH_REPOSITORY,,}" ]; then
-            echo "::notice::Deploying fork images from ghcr.io/${repository} (tag ${tag}). Images must be public and published by a prior push to the fork."
-          fi
-
           echo "repository=${repository}"
           echo "tag=${tag}"
           echo "release=${release}"
@@ -123,9 +120,37 @@ jobs:
             echo "version=${version}"
           } >> "$GITHUB_OUTPUT"
 
+      - uses: actions/checkout@v7
+        if: steps.gate.outputs.eligible == 'true'
+
+      - name: Resolve images
+        id: tracker
+        if: steps.gate.outputs.eligible == 'true'
+        uses: bcgov/actions/image-tracker@main # beta: revert to release pin in #380
+        with:
+          package: frontend, rctool
+          repository: ${{ steps.vars.outputs.repository }}
+          revision: ${{ steps.vars.outputs.tag }}
+
+      - name: Deploy readiness
+        id: ready
+        if: steps.gate.outputs.eligible == 'true'
+        env:
+          DIGESTS: ${{ steps.tracker.outputs.digests }}
+        run: |
+          set -euo pipefail
+          frontend="$(printf '%s' "${DIGESTS}" | jq -r '.frontend // empty')"
+          rctool="$(printf '%s' "${DIGESTS}" | jq -r '.rctool // empty')"
+          if [ -z "${frontend}" ] || [ -z "${rctool}" ]; then
+            echo "::notice::No GHCR images resolved for this revision; deploy skipped."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+
       ### Deploy
       - name: Interrupt deployments (PR only)
-        if: steps.gate.outputs.eligible == 'true' && github.event_name == 'pull_request'
+        if: steps.ready.outputs.deploy == 'true' && github.event_name == 'pull_request'
         uses: bcgov/action-oc-runner@111868d1fc50db0a40417ba321d865ef5c931bbd # v1.7.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
@@ -143,7 +168,7 @@ jobs:
 
       - name: Deploy Helm chart
         id: deploy
-        if: steps.gate.outputs.eligible == 'true'
+        if: steps.ready.outputs.deploy == 'true'
         uses: bcgov/action-oc-runner@111868d1fc50db0a40417ba321d865ef5c931bbd # v1.7.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
@@ -178,8 +203,8 @@ jobs:
         id: finalize
         if: always()
         run: |
-          if [ "${{ steps.gate.outputs.eligible }}" != "true" ]; then
-            echo "triggered=false" >> "$GITHUB_OUTPUT"
-          else
+          if [ "${{ steps.ready.outputs.deploy }}" = "true" ]; then
             echo "triggered=${{ steps.deploy.outputs.triggered || 'true' }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "triggered=false" >> "$GITHUB_OUTPUT"
           fi
