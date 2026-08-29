@@ -38,6 +38,9 @@ jobs:
   deploys:
     name: Deploys
     needs: [builds]
+    permissions:
+      contents: read
+      packages: read
     uses: ./.github/workflows/.deployer.yml
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}

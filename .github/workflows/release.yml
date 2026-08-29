@@ -46,6 +46,7 @@ jobs:
     needs: [promote-release]
     permissions:
       contents: read
+      packages: read
     uses: ./.github/workflows/.deployer.yml
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
