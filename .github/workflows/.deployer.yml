@@ -22,7 +22,7 @@ on:
         required: false
         type: string
       tag:
-        description: Specify a tag to deploy; defaults to PR number
+        description: Specify a tag to deploy; defaults to PR head SHA on pull_request, else PR number
         required: false
         type: string
       triggers:
@@ -75,23 +75,49 @@ jobs:
 
       - name: Vars
         id: vars
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GH_REPOSITORY: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
-          # Tag defaults to PR number, but can be overridden by inputs.tag
-          tag=${{ inputs.tag || steps.pr.outputs.pr }}
+          set -euo pipefail
 
-          # Release name includes run numbers to ensure uniqueness
-          release=${{ github.event.repository.name }}-${{ inputs.environment || inputs.tag || steps.pr.outputs.pr }}
-          
-          # Version, used for non-PR releases
-          version=1.0.0-${{ github.run_number }}
-          
-          # Summary
+          # GHCR path: fork PR images live under head.repo (same as builder-ghcr publish_repository).
+          if [ "${EVENT_NAME}" = "pull_request" ] && [ -n "${HEAD_REPO}" ]; then
+            repository="${HEAD_REPO,,}"
+          else
+            repository="${GH_REPOSITORY,,}"
+          fi
+
+          # Tag: explicit input, else PR head SHA (builder always tags this), else PR number (merge/deploy).
+          if [ -n "${INPUT_TAG}" ]; then
+            tag="${INPUT_TAG}"
+          elif [ "${EVENT_NAME}" = "pull_request" ] && [ -n "${HEAD_SHA}" ]; then
+            tag="${HEAD_SHA}"
+          else
+            tag="${PR_NUMBER}"
+          fi
+
+          release="${REPO_NAME}-${ENVIRONMENT:-${INPUT_TAG:-${PR_NUMBER}}}"
+          version="1.0.0-${RUN_NUMBER}"
+
+          if [ "${EVENT_NAME}" = "pull_request" ] && [ -n "${HEAD_REPO}" ] && [ "${HEAD_REPO,,}" != "${GH_REPOSITORY,,}" ]; then
+            echo "::notice::Deploying fork images from ghcr.io/${repository} (tag ${tag}). Images must be public and published by a prior push to the fork."
+          fi
+
+          echo "repository=${repository}"
           echo "tag=${tag}"
           echo "release=${release}"
           echo "version=${version}"
 
-          # Output
           {
+            echo "repository=${repository}"
             echo "tag=${tag}"
             echo "release=${release}"
             echo "version=${version}"
@@ -133,7 +159,7 @@ jobs:
 
             # Helm upgrade/rollout
             helm upgrade \
-              --set-string global.repository=${{ github.repository }} \
+              --set-string global.repository=${{ steps.vars.outputs.repository }} \
               --set-string global.tag=${{ steps.vars.outputs.tag }} \
               ${{ inputs.params }} \
               --install --wait '--atomic' \
