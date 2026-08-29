@@ -54,14 +54,24 @@ jobs:
     outputs:
       packages: ${{ steps.vars.outputs.packages }}
       tag: ${{ steps.vars.outputs.tag }}
-      triggered: ${{ steps.deploy.outputs.triggered }}
+      triggered: ${{ steps.finalize.outputs.triggered }}
     steps:
+      - name: Deploy eligibility
+        id: gate
+        run: |
+          if [ -z "${{ secrets.oc_token }}" ] || [ -z "${{ secrets.oc_namespace }}" ]; then
+            echo "::notice::OpenShift credentials unavailable; deploy skipped (expected on fork PRs)."
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+          fi
+
       ### Triggers, tag and release
 
       # Variables
       - if: inputs.tag  == ''
         id: pr
-        uses: bcgov/actions/get-pr@0992e41cd11c5370b77f9e6066effe63efe9f8c9 # v0.4.0
+        uses: bcgov/actions/get-pr@main # beta: revert to release pin in #380
 
       - name: Vars
         id: vars
@@ -89,7 +99,7 @@ jobs:
 
       ### Deploy
       - name: Interrupt deployments (PR only)
-        if: github.event_name == 'pull_request'
+        if: steps.gate.outputs.eligible == 'true' && github.event_name == 'pull_request'
         uses: bcgov/action-oc-runner@111868d1fc50db0a40417ba321d865ef5c931bbd # v1.7.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
@@ -107,6 +117,7 @@ jobs:
 
       - name: Deploy Helm chart
         id: deploy
+        if: steps.gate.outputs.eligible == 'true'
         uses: bcgov/action-oc-runner@111868d1fc50db0a40417ba321d865ef5c931bbd # v1.7.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
@@ -136,3 +147,13 @@ jobs:
 
             # Completed pod cleanup
             oc delete po --field-selector=status.phase==Succeeded || true
+
+      - name: Finalize deploy triggered output
+        id: finalize
+        if: always()
+        run: |
+          if [ "${{ steps.gate.outputs.eligible }}" != "true" ]; then
+            echo "triggered=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "triggered=${{ steps.deploy.outputs.triggered || 'true' }}" >> "$GITHUB_OUTPUT"
+          fi
