@@ -4,13 +4,16 @@ on:
   workflow_call:
     inputs:
       ### Required
-      # Only secrets!
-
-      ### Typical / recommended
       environment:
-        description: Environment name; omit for PRs
-        required: false
+        description: 'Environment name (e.g. test, prod) or PR number for ephemeral deployments'
+        required: true
         type: string
+      tag:
+        description: 'Image tag or commit SHA to deploy'
+        required: true
+        type: string
+
+      ### Optional
       oc_server:
         default: https://api.silver.devops.gov.bc.ca:6443
         description: 'OpenShift server'
@@ -19,10 +22,6 @@ on:
       params:
         description: 'Extra parameters to pass to helm upgrade'
         default: ''
-        required: false
-        type: string
-      tag:
-        description: Specify a tag to deploy; defaults to PR head SHA, else PR number
         required: false
         type: string
       triggers:
@@ -59,29 +58,38 @@ jobs:
     steps:
       ### Triggers, tag and release
 
-      # Variables
-      - if: inputs.tag  == ''
-        id: pr
-        uses: bcgov/actions/get-pr@main # beta: revert to release pin in #380
-
       - name: Vars
         id: vars
         run: |
-          # Tag: explicit input, else PR head SHA (always tagged by builder), else PR number
-          tag=${{ inputs.tag || github.event.pull_request.head.sha || steps.pr.outputs.pr }}
-          repository=$(echo '${{ github.event.pull_request.head.repo.full_name || github.repository }}' | tr '[:upper:]' '[:lower:]')
+          if [ -z "${{ inputs.environment }}" ]; then
+            echo "❌ Error: Required input 'environment' was not provided." >&2
+            exit 1
+          fi
 
-          # Release name includes run numbers to ensure uniqueness
-          release=${{ github.event.repository.name }}-${{ inputs.environment || inputs.tag || steps.pr.outputs.pr }}
+          if [ -z "${{ inputs.tag }}" ]; then
+            echo "❌ Error: Required input 'tag' was not provided." >&2
+            exit 1
+          fi
 
-          # Version, used for non-PR releases
-          version=1.0.0-${{ github.run_number }}
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            target_repo="${{ github.event.pull_request.head.repo.full_name }}"
+            chart_version="${{ inputs.environment }}"
+          else
+            target_repo="${{ github.repository }}"
+            chart_version="1.0.0-${{ github.run_number }}"
+          fi
+
+          tag="${{ inputs.tag }}"
+          repository=$(echo "${target_repo}" | tr '[:upper:]' '[:lower:]')
+          release="${{ github.event.repository.name }}-${{ inputs.environment }}"
+          version="1.0.0-${{ github.run_number }}"
 
           # Summary
           echo "tag=${tag}"
           echo "repository=${repository}"
           echo "release=${release}"
           echo "version=${version}"
+          echo "chart_version=${chart_version}"
 
           # Output
           {
@@ -89,6 +97,7 @@ jobs:
             echo "repository=${repository}"
             echo "release=${release}"
             echo "version=${version}"
+            echo "chart_version=${chart_version}"
           } >> "$GITHUB_OUTPUT"
 
       # image-tracker needs a git checkout to resolve revision; skip on merge/release
@@ -99,7 +108,7 @@ jobs:
       - name: Resolve images
         id: tracker
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions/image-tracker@main # beta: revert to release pin in #380
+        uses: bcgov/actions/image-tracker@v0.6.0
         with:
           package: frontend, rctool
           repository: ${{ steps.vars.outputs.repository }}
@@ -137,7 +146,7 @@ jobs:
             cd charts/app
             sed -i 's/^name:.*/name: ${{ github.event.repository.name }}/' Chart.yaml
             helm package -u . --app-version="tag-${{ steps.vars.outputs.tag }}_run-${{ github.run_number }}" \
-              --version=${{ steps.pr.outputs.pr || steps.vars.outputs.version }}
+              --version=${{ steps.vars.outputs.chart_version }}
 
             # Helm upgrade/rollout
             helm upgrade \
@@ -148,7 +157,7 @@ jobs:
               ${{ steps.vars.outputs.release }} \
               --timeout 10m \
               --values values.yaml \
-              ./${{ github.event.repository.name }}-${{ steps.pr.outputs.pr || steps.vars.outputs.version }}.tgz
+              ./${{ github.event.repository.name }}-${{ steps.vars.outputs.chart_version }}.tgz
 
             # Helm release history
             helm history ${{ steps.vars.outputs.release }}

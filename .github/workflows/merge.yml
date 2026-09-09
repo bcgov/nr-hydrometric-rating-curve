@@ -12,36 +12,49 @@ concurrency:
   group: test-prod
   cancel-in-progress: false
       
-permissions:
-  packages: write
-  contents: read
+permissions: {}
 
 jobs:
   vars:
     name: Set Variables
     outputs:
-      pr: ${{ steps.pr.outputs.pr }}
+      pr: ${{ steps.tracker.outputs.pr }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 1
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      packages: read
+      pull-requests: read
     steps:
-      # Get PR number for squash merges to main
-      - name: PR Number
-        id: pr
-        uses: bcgov/actions/get-pr@main # beta: revert to release pin in #380
+      - uses: actions/checkout@v7
+
+      # Resolve PR number and images for squash merges to main
+      - name: Resolve Images & PR
+        id: tracker
+        uses: bcgov/actions/image-tracker@v0.6.0
+        with:
+          package: frontend, rctool
 
   deploy-test:
     name: Deploy (TEST)
+    needs: [vars]
+    permissions:
+      contents: read
+      packages: read
     uses: ./.github/workflows/.deployer.yml
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       environment: test
+      tag: ${{ needs.vars.outputs.pr }}
       params: --set global.autoscaling=true --set rctool.pdb.enabled=true --set frontend.pdb.enabled=true --set-string frontend.gunicorn.logLevel=debug
 
   promote-test:
     name: Promote Images
     needs: [deploy-test, vars]
+    permissions:
+      packages: write
     runs-on: ubuntu-24.04
     strategy:
       matrix:
