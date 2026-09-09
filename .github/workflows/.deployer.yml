@@ -67,10 +67,6 @@ jobs:
           fi
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            if [ -n "${{ inputs.environment }}" ]; then
-              echo "❌ Error: 'environment' must not be provided for pull request deployments." >&2
-              exit 1
-            fi
             target_repo="${{ github.event.pull_request.head.repo.full_name }}"
             chart_version="${{ github.event.number }}"
             release="${{ github.event.repository.name }}-${{ github.event.number }}"
