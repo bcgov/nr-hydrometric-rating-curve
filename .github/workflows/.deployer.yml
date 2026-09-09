@@ -4,13 +4,16 @@ on:
   workflow_call:
     inputs:
       ### Required
-      # Only secrets!
-
-      ### Typical / recommended
       environment:
-        description: Environment name; omit for PRs
-        required: false
+        description: 'Environment name (e.g. test, prod) or PR number for ephemeral deployments'
+        required: true
         type: string
+      tag:
+        description: 'Image tag or commit SHA to deploy'
+        required: true
+        type: string
+
+      ### Optional
       oc_server:
         default: https://api.silver.devops.gov.bc.ca:6443
         description: 'OpenShift server'
@@ -19,10 +22,6 @@ on:
       params:
         description: 'Extra parameters to pass to helm upgrade'
         default: ''
-        required: false
-        type: string
-      tag:
-        description: Specify a tag to deploy; defaults to PR head SHA, else PR number
         required: false
         type: string
       triggers:
@@ -62,19 +61,28 @@ jobs:
       - name: Vars
         id: vars
         run: |
-          # Tag: explicit input, else PR head SHA (always tagged by builder), else PR number
-          tag="${{ inputs.tag || github.event.pull_request.head.sha || github.event.number }}"
-          repository=$(echo '${{ github.event.pull_request.head.repo.full_name || github.repository }}' | tr '[:upper:]' '[:lower:]')
+          if [ -z "${{ inputs.environment }}" ]; then
+            echo "❌ Error: Required input 'environment' was not provided." >&2
+            exit 1
+          fi
 
-          # Release name includes run numbers to ensure uniqueness
-          release="${{ github.event.repository.name }}-${{ inputs.environment || inputs.tag || github.event.number }}"
+          if [ -z "${{ inputs.tag }}" ]; then
+            echo "❌ Error: Required input 'tag' was not provided." >&2
+            exit 1
+          fi
 
-          # Version, used for non-PR releases
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            target_repo="${{ github.event.pull_request.head.repo.full_name }}"
+            chart_version="${{ inputs.environment }}"
+          else
+            target_repo="${{ github.repository }}"
+            chart_version="1.0.0-${{ github.run_number }}"
+          fi
+
+          tag="${{ inputs.tag }}"
+          repository=$(echo "${target_repo}" | tr '[:upper:]' '[:lower:]')
+          release="${{ github.event.repository.name }}-${{ inputs.environment }}"
           version="1.0.0-${{ github.run_number }}"
-
-          # Chart version: PR number for PR builds, else input tag, else run-based version
-          chart_version="${{ github.event.number || inputs.tag || '' }}"
-          [ -z "$chart_version" ] && chart_version="${version}"
 
           # Summary
           echo "tag=${tag}"
