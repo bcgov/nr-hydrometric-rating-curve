@@ -4,16 +4,16 @@ on:
   workflow_call:
     inputs:
       ### Required
-      environment:
-        description: 'Environment name (e.g. test, prod) or PR number for ephemeral deployments'
-        required: true
-        type: string
       tag:
         description: 'Image tag or commit SHA to deploy'
         required: true
         type: string
 
       ### Optional
+      environment:
+        description: 'Environment name (e.g. test, prod); omit for ephemeral PR deployments'
+        required: false
+        type: string
       oc_server:
         default: https://api.silver.devops.gov.bc.ca:6443
         description: 'OpenShift server'
@@ -49,7 +49,7 @@ permissions:
 jobs:
   deploy:
     name: Helm
-    environment: ${{ inputs.environment }}
+    environment: ${{ (inputs.environment == 'test' || inputs.environment == 'prod') && inputs.environment || '' }}
     runs-on: ubuntu-24.04
     outputs:
       packages: ${{ steps.vars.outputs.packages }}
@@ -61,11 +61,6 @@ jobs:
       - name: Vars
         id: vars
         run: |
-          if [ -z "${{ inputs.environment }}" ]; then
-            echo "❌ Error: Required input 'environment' was not provided." >&2
-            exit 1
-          fi
-
           if [ -z "${{ inputs.tag }}" ]; then
             echo "❌ Error: Required input 'tag' was not provided." >&2
             exit 1
@@ -73,15 +68,23 @@ jobs:
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             target_repo="${{ github.event.pull_request.head.repo.full_name }}"
-            chart_version="${{ inputs.environment }}"
+            chart_version="${{ github.event.number }}"
+            release="${{ github.event.repository.name }}-${{ github.event.number }}"
           else
+            case "${{ inputs.environment }}" in
+              test|prod) ;;
+              *)
+                echo "❌ Error: Invalid input 'environment': '${{ inputs.environment }}'. Must be 'test' or 'prod'." >&2
+                exit 1
+                ;;
+            esac
             target_repo="${{ github.repository }}"
             chart_version="1.0.0-${{ github.run_number }}"
+            release="${{ github.event.repository.name }}-${{ inputs.environment }}"
           fi
 
           tag="${{ inputs.tag }}"
           repository=$(echo "${target_repo}" | tr '[:upper:]' '[:lower:]')
-          release="${{ github.event.repository.name }}-${{ inputs.environment }}"
           version="1.0.0-${{ github.run_number }}"
 
           # Summary
