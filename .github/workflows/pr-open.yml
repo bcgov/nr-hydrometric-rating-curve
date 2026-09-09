@@ -51,6 +51,22 @@ jobs:
       triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
       params: --set global.secrets.persist=false --set-string frontend.gunicorn.logLevel=debug
 
+  comment:
+    name: Deployment Links
+    needs: [deploys]
+    if: needs.deploys.outputs.triggered == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post Deploy Links
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: pr-deployment-links
+          message: |
+            ### 🚀 Deployments Available
+            - [Frontend](https://${{ github.event.repository.name }}-${{ github.event.number }}-frontend.apps.silver.devops.gov.bc.ca/)
+
   # ==========================================================================
   # WARNING: This job acts as the required merge gate for this workflow.
   # If you add a new job to this workflow, you MUST add its ID to the 'needs'
@@ -58,7 +74,7 @@ jobs:
   # ==========================================================================
   results:
     name: PR Results
-    needs: [builds, deploys]
+    needs: [builds, deploys, comment]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 1
