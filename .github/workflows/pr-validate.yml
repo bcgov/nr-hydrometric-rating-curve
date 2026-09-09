@@ -12,18 +12,12 @@ concurrency:
   
 jobs:
   validate:
-    name: Validate PR
+    name: Validate Results
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
-      pull-requests: write
-    uses: bcgov/actions/.github/workflows/.pr-validate.yml@main # beta: revert to release pin in #380
-    with:
-      markdown_links: |
-        - [Frontend](https://${{ github.event.repository.name }}-${{ github.event.number }}-frontend.apps.silver.devops.gov.bc.ca/) available
-
-  results:
-    name: Validate Results
-    needs: [validate]
-    runs-on: ubuntu-24.04
+      pull-requests: read
     steps:
-      - run: echo "Workflow completed successfully!"
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

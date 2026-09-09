@@ -26,7 +26,7 @@ jobs:
           - package: rctool
             build_file: ./frontend/Dockerfile.app
     steps:
-      - uses: bcgov/actions/builder-ghcr@main # beta: revert to release pin in #380
+      - uses: bcgov/actions/builder-ghcr@v0.6.0
         with:
           package: ${{ matrix.package }}
           build_file: ${{ matrix.build_file }}
@@ -46,8 +46,26 @@ jobs:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
+      environment: ${{ github.event.number }}
+      tag: ${{ github.event.pull_request.head.sha }}
       triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
       params: --set global.secrets.persist=false --set-string frontend.gunicorn.logLevel=debug
+
+  comment:
+    name: Deployment Links
+    needs: [deploys]
+    if: needs.deploys.outputs.triggered == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post Deploy Links
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: pr-deployment-links
+          message: |
+            ### 🚀 Deployments Available
+            - [Frontend](https://${{ github.event.repository.name }}-${{ github.event.number }}-frontend.apps.silver.devops.gov.bc.ca/)
 
   # ==========================================================================
   # WARNING: This job acts as the required merge gate for this workflow.
@@ -56,7 +74,7 @@ jobs:
   # ==========================================================================
   results:
     name: PR Results
-    needs: [builds, deploys]
+    needs: [builds, deploys, comment]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 1
