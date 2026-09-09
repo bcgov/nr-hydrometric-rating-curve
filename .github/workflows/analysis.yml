@@ -76,6 +76,60 @@ jobs:
           name: coverage-report
           path: frontend/coverage.xml
 
+  playwright:
+    name: Playwright E2E Tests
+    if: (! github.event.pull_request.draft)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      DEBUG: "False"
+      ALLOWED_HOSTS: 'localhost,'
+      CSRF_TRUSTED_ORIGINS: 'http://localhost,https://localhost'
+      SECRET_KEY: 'temporary_debug_key'
+      # rctool force-sets HOME=/tmp at import time (rctool/views.py, rctool/utils.py).
+      # Pin the browser cache path explicitly so it doesn't depend on whichever HOME
+      # happens to be in effect when Playwright resolves its install/launch location.
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.pw-browsers
+      # pytest-playwright's sync API trips Django's async-safety check during
+      # live_server's test-db setup; this is a known false positive, not a real
+      # async context, see https://github.com/microsoft/playwright-python/issues/1682
+      DJANGO_ALLOW_ASYNC_UNSAFE: "1"
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+           python-version: "3.14"
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev
+      - name: Install requirements
+        run: |
+            pip install . xhtml2pdf pytest-django pytest-cov pytest-playwright
+      - name: Get installed Playwright version
+        id: playwright-version
+        run: echo "version=$(python -c 'from importlib.metadata import version as v; print(v("playwright"))')" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: playwright-browsers-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+      # The cache only covers the downloaded browser binary, not the OS-level shared
+      # libraries (e.g. libnspr4) it needs — those come from apt on a fresh runner
+      # every time, so install-deps still has to run either way.
+      - name: Install Playwright browsers (cache miss)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: playwright install --with-deps chromium
+      - name: Install Playwright OS dependencies (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: playwright install-deps chromium
+      - name: Run Playwright tests
+        run: |
+            pytest -m playwright --no-cov
+
   # ==========================================================================
   # WARNING: This job acts as the required merge gate for this workflow.
   # If you add a new job to this workflow, you MUST add its ID to the 'needs'
@@ -83,7 +137,7 @@ jobs:
   # ==========================================================================
   results:
     name: Analysis Results
-    needs: [tests] # Restore trivy when/if it's working again
+    needs: [tests, playwright] # Restore trivy when/if it's working again
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 1
