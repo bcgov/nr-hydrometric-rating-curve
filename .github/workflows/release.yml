@@ -26,7 +26,7 @@ jobs:
 
       - name: Resolve image digest
         id: resolve
-        uses: bcgov/actions/image-tracker@main # beta: revert to release pin in #380
+        uses: bcgov/actions/image-tracker@v0.6.0
         with:
           package: ${{ matrix.package }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

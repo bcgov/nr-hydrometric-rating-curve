@@ -100,7 +100,7 @@ jobs:
       - name: Resolve images
         id: tracker
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions/image-tracker@main # beta: revert to release pin in #380
+        uses: bcgov/actions/image-tracker@v0.6.0
         with:
           package: frontend, rctool
           repository: ${{ steps.vars.outputs.repository }}
