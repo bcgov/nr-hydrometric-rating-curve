@@ -59,29 +59,29 @@ jobs:
     steps:
       ### Triggers, tag and release
 
-      # Variables
-      - if: inputs.tag  == ''
-        id: pr
-        uses: bcgov/actions/get-pr@main # beta: revert to release pin in #380
-
       - name: Vars
         id: vars
         run: |
           # Tag: explicit input, else PR head SHA (always tagged by builder), else PR number
-          tag=${{ inputs.tag || github.event.pull_request.head.sha || steps.pr.outputs.pr }}
+          tag="${{ inputs.tag || github.event.pull_request.head.sha || github.event.number }}"
           repository=$(echo '${{ github.event.pull_request.head.repo.full_name || github.repository }}' | tr '[:upper:]' '[:lower:]')
 
           # Release name includes run numbers to ensure uniqueness
-          release=${{ github.event.repository.name }}-${{ inputs.environment || inputs.tag || steps.pr.outputs.pr }}
+          release="${{ github.event.repository.name }}-${{ inputs.environment || inputs.tag || github.event.number }}"
 
           # Version, used for non-PR releases
-          version=1.0.0-${{ github.run_number }}
+          version="1.0.0-${{ github.run_number }}"
+
+          # Chart version: PR number for PR builds, else input tag, else run-based version
+          chart_version="${{ github.event.number || inputs.tag || '' }}"
+          [ -z "$chart_version" ] && chart_version="${version}"
 
           # Summary
           echo "tag=${tag}"
           echo "repository=${repository}"
           echo "release=${release}"
           echo "version=${version}"
+          echo "chart_version=${chart_version}"
 
           # Output
           {
@@ -89,6 +89,7 @@ jobs:
             echo "repository=${repository}"
             echo "release=${release}"
             echo "version=${version}"
+            echo "chart_version=${chart_version}"
           } >> "$GITHUB_OUTPUT"
 
       # image-tracker needs a git checkout to resolve revision; skip on merge/release
@@ -137,7 +138,7 @@ jobs:
             cd charts/app
             sed -i 's/^name:.*/name: ${{ github.event.repository.name }}/' Chart.yaml
             helm package -u . --app-version="tag-${{ steps.vars.outputs.tag }}_run-${{ github.run_number }}" \
-              --version=${{ steps.pr.outputs.pr || steps.vars.outputs.version }}
+              --version=${{ steps.vars.outputs.chart_version }}
 
             # Helm upgrade/rollout
             helm upgrade \
@@ -148,7 +149,7 @@ jobs:
               ${{ steps.vars.outputs.release }} \
               --timeout 10m \
               --values values.yaml \
-              ./${{ github.event.repository.name }}-${{ steps.pr.outputs.pr || steps.vars.outputs.version }}.tgz
+              ./${{ github.event.repository.name }}-${{ steps.vars.outputs.chart_version }}.tgz
 
             # Helm release history
             helm history ${{ steps.vars.outputs.release }}

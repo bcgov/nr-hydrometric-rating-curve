@@ -25,6 +25,20 @@ jobs:
   results:
     name: Validate Results
     needs: [validate]
+    if: always()
     runs-on: ubuntu-24.04
+    timeout-minutes: 1
     steps:
-      - run: echo "Workflow completed successfully!"
+      - name: Log Job Results Context
+        run: |
+          echo "=== Upstream Job Statuses ==="
+          echo '${{ toJson(needs) }}'
+
+      - name: Evaluate Overall Status
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "❌ Critical Check Failure: At least one required job has failed or was cancelled."
+          exit 1
+
+      - name: Success Message
+        run: echo "✅ All critical checks passed or were intentionally skipped!"
