@@ -12,9 +12,7 @@ concurrency:
   group: test-prod
   cancel-in-progress: false
       
-permissions:
-  packages: write
-  contents: read
+permissions: {}
 
 jobs:
   vars:
@@ -23,6 +21,10 @@ jobs:
       pr: ${{ steps.tracker.outputs.pr }}
     runs-on: ubuntu-24.04
     timeout-minutes: 2
+    permissions:
+      contents: read
+      packages: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v7
 
@@ -36,6 +38,9 @@ jobs:
   deploy-test:
     name: Deploy (TEST)
     needs: [vars]
+    permissions:
+      contents: read
+      packages: read
     uses: ./.github/workflows/.deployer.yml
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
@@ -48,6 +53,8 @@ jobs:
   promote-test:
     name: Promote Images
     needs: [deploy-test, vars]
+    permissions:
+      packages: write
     runs-on: ubuntu-24.04
     strategy:
       matrix:
