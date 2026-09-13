@@ -26,12 +26,12 @@ jobs:
 
       - name: Resolve image digest
         id: resolve
-        uses: bcgov/actions/image-tracker@v0.6.0
+        uses: bcgov/actions/image-tracker@9f9c481afcfd97314f0b994222ef602ef8fbe2bd # post-#219 main
         with:
           package: ${{ matrix.package }}
           token: ${{ secrets.GITHUB_TOKEN }}
           revision: ${{ github.sha }}
-          max_depth: 20
+          max_depth: 100
 
       - name: Tag Image as Release
         uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5

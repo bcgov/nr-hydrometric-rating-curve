@@ -104,22 +104,23 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       # image-tracker needs a git checkout to resolve revision; skip on merge/release
-      # (those deploy by PR/release tag, not commit SHA)
+      # (those deploy by PR/release tag via caller; miss fails fast — no empty-digest skip)
       - uses: actions/checkout@v7
         if: github.event_name == 'pull_request'
 
       - name: Resolve images
         id: tracker
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions/image-tracker@v0.6.0
+        uses: bcgov/actions/image-tracker@9f9c481afcfd97314f0b994222ef602ef8fbe2bd # post-#219 main
         with:
           package: frontend, rctool
           repository: ${{ steps.vars.outputs.repository }}
           revision: ${{ github.event.pull_request.head.sha }}
+          # PR path: default max_depth 1 (this SHA only)
 
       ### Deploy
       - name: Interrupt deployments (PR only)
-        if: github.event_name == 'pull_request' && steps.tracker.outputs.digest != ''
+        if: github.event_name == 'pull_request'
         uses: bcgov/action-oc-runner@111868d1fc50db0a40417ba321d865ef5c931bbd # v1.7.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
@@ -137,7 +138,7 @@ jobs:
 
       - name: Deploy Helm chart
         id: deploy
-        if: github.event_name != 'pull_request' || steps.tracker.outputs.digest != ''
+        if: github.event_name != 'pull_request' || steps.tracker.outcome == 'success'
         uses: bcgov/action-oc-runner@111868d1fc50db0a40417ba321d865ef5c931bbd # v1.7.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}

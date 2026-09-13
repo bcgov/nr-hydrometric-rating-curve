@@ -31,9 +31,10 @@ jobs:
       # Resolve PR number and images for squash merges to main
       - name: Resolve Images & PR
         id: tracker
-        uses: bcgov/actions/image-tracker@v0.6.0
+        uses: bcgov/actions/image-tracker@9f9c481afcfd97314f0b994222ef602ef8fbe2bd # post-#219 main
         with:
           package: frontend, rctool
+          max_depth: 100
 
   deploy-test:
     name: Deploy (TEST)
