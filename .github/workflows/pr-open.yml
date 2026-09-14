@@ -26,13 +26,14 @@ jobs:
           - package: rctool
             build_file: ./frontend/Dockerfile.app
     steps:
-      - uses: bcgov/actions/builder-ghcr@v0.6.0
+      - uses: bcgov/actions/builder@ac9d89eede94f5f58d3446784c94cff634d98eac # v0.6.0
         with:
           package: ${{ matrix.package }}
           build_file: ${{ matrix.build_file }}
           build_context: ./frontend
           tag_fallback: latest
-          triggers: ('frontend/')
+          triggers: |
+            frontend/
 
   # https://github.com/bcgov/quickstart-openshift-helpers
   deploys:
@@ -47,7 +48,10 @@ jobs:
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       tag: ${{ github.event.pull_request.head.sha }}
-      triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
+      triggers: |
+        frontend/
+        charts/
+        .github/workflows/.deployer.yml
       params: --set global.secrets.persist=false --set-string frontend.gunicorn.logLevel=debug
 
   comment:
