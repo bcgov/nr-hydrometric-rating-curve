@@ -116,6 +116,7 @@ jobs:
           package: frontend, rctool
           repository: ${{ steps.vars.outputs.repository }}
           revision: ${{ github.event.pull_request.head.sha }}
+          max_depth: 100
 
       ### Deploy
       - name: Interrupt deployments (PR only)
