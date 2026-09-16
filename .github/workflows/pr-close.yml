@@ -16,7 +16,7 @@ jobs:
     name: Cleanup and Images
     permissions:
       packages: write
-    uses: bcgov/actions-openshift/.github/workflows/.pr-close.yml@v0.2.0
+    uses: bcgov/actions-openshift/.github/workflows/.pr-close.yml@50414269295ed040baf0d05cb4c7f4d76c7bcd8c # v0.2.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
