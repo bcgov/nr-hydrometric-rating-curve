@@ -1,0 +1,52 @@
+name: Image Builder
+
+on:
+  workflow_call:
+    inputs:
+      ### Optional
+      tags:
+        description: 'Image tag(s); defaults to the PR number'
+        required: false
+        type: string
+      tag_fallback:
+        description: 'Tag to retag when no build is triggered'
+        default: latest
+        required: false
+        type: string
+      ref:
+        description: 'Ref to diff against for triggers; defaults to the PR base branch, or HEAD^ on push'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: ${{ matrix.package }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        package: [frontend, rctool]
+        include:
+          - package: frontend
+            build_file: ./frontend/Dockerfile.nginx
+          - package: rctool
+            build_file: ./frontend/Dockerfile.app
+    steps:
+      - uses: bcgov/actions/builder@ac9d89eede94f5f58d3446784c94cff634d98eac # v0.6.0
+        with:
+          package: ${{ matrix.package }}
+          build_file: ${{ matrix.build_file }}
+          build_context: ./frontend
+          tags: ${{ inputs.tags || github.event.number }}
+          tag_fallback: ${{ inputs.tag_fallback }}
+          # Empty ref lets diff-triggers pick its own default (PR base branch, or HEAD^ on
+          # push) instead of builder's, which is the default branch and never fires on push.
+          ref: ${{ inputs.ref }}
+          triggers: |
+            frontend/

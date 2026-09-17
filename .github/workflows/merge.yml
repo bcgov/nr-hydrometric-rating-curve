@@ -19,10 +19,8 @@ jobs:
     name: Set Variables
     outputs:
       fork: ${{ steps.source.outputs.fork }}
-      # Internal merge: the PR whose image image-tracker resolved (may be an older PR on a
-      # docs-only merge - that's the promotion-correct answer). Fork merge: the merged PR,
-      # whose number the rebuild below is tagged with.
-      pr: ${{ steps.source.outputs.fork == 'true' && steps.source.outputs.pr || steps.tracker.outputs.pr }}
+      # image-tracker's PR when it ran (internal merge), else the merged PR (fork merge)
+      pr: ${{ steps.tracker.outputs.pr || steps.source.outputs.pr }}
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     permissions:
@@ -66,38 +64,22 @@ jobs:
     name: Builds (fork merge)
     needs: [vars]
     if: needs.vars.outputs.fork == 'true'
-    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        package: [frontend, rctool]
-        include:
-          - package: frontend
-            build_file: ./frontend/Dockerfile.nginx
-          - package: rctool
-            build_file: ./frontend/Dockerfile.app
-    steps:
-      - uses: bcgov/actions/builder@ac9d89eede94f5f58d3446784c94cff634d98eac # v0.6.0
-        with:
-          package: ${{ matrix.package }}
-          build_file: ${{ matrix.build_file }}
-          build_context: ./frontend
-          tags: ${{ needs.vars.outputs.pr }}
-          tag_fallback: test
-          # Diff against main as it was before this push. builder's default ref is the
-          # default branch (diffs main against itself, never fires); HEAD^ would miss all
-          # but the last commit of a rebase merge.
-          ref: ${{ github.event.before || 'HEAD^' }}
-          triggers: |
-            frontend/
+    uses: ./.github/workflows/.builder.yml
+    with:
+      tags: ${{ needs.vars.outputs.pr }}
+      tag_fallback: test
+      # main as it was before this push; HEAD^ would miss all but the last commit of a rebase merge
+      ref: ${{ github.event.before || 'HEAD^' }}
 
   deploy-test:
     name: Deploy (TEST)
     needs: [vars, builds]
-    # builds is skipped on internal merges; don't let that skip the deploy
-    if: ${{ !cancelled() && needs.vars.result == 'success' && needs.builds.result != 'failure' }}
+    # builds is skipped on internal merges. A skipped dependency skips this job by default;
+    # !cancelled() replaces that default, and the allowlist admits success or skipped only.
+    if: ${{ !cancelled() && needs.vars.result == 'success' && (needs.builds.result == 'success' || needs.builds.result == 'skipped') }}
     permissions:
       contents: read
       packages: read

@@ -14,26 +14,10 @@ concurrency:
 jobs:
   builds:
     name: Builds
-    runs-on: ubuntu-24.04
     permissions:
+      contents: read
       packages: write
-    strategy:
-      matrix:
-        package: [frontend, rctool]
-        include:
-          - package: frontend
-            build_file: ./frontend/Dockerfile.nginx
-          - package: rctool
-            build_file: ./frontend/Dockerfile.app
-    steps:
-      - uses: bcgov/actions/builder@ac9d89eede94f5f58d3446784c94cff634d98eac # v0.6.0
-        with:
-          package: ${{ matrix.package }}
-          build_file: ${{ matrix.build_file }}
-          build_context: ./frontend
-          tag_fallback: latest
-          triggers: |
-            frontend/
+    uses: ./.github/workflows/.builder.yml
 
   # https://github.com/bcgov/quickstart-openshift-helpers
   deploys:
