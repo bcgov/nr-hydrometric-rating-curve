@@ -5,17 +5,15 @@ on:
     inputs:
       ### Optional
       tags:
-        description: 'Image tag(s); defaults to the PR number'
-        required: false
+        description: 'Image tag(s)'
+        default: ${{ github.event.number }}
         type: string
       tag_fallback:
         description: 'Tag to retag when no build is triggered'
         default: latest
-        required: false
         type: string
       ref:
-        description: 'Ref to diff against for triggers; defaults to the PR base branch, or HEAD^ on push'
-        required: false
+        description: 'Ref to diff against for triggers; empty lets diff-triggers pick its default (PR base branch, or HEAD^ on push)'
         type: string
 
 permissions:
@@ -43,10 +41,8 @@ jobs:
           package: ${{ matrix.package }}
           build_file: ${{ matrix.build_file }}
           build_context: ./frontend
-          tags: ${{ inputs.tags || github.event.number }}
+          tags: ${{ inputs.tags }}
           tag_fallback: ${{ inputs.tag_fallback }}
-          # Empty ref lets diff-triggers pick its own default (PR base branch, or HEAD^ on
-          # push) instead of builder's, which is the default branch and never fires on push.
           ref: ${{ inputs.ref }}
           triggers: |
             frontend/

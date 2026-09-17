@@ -19,8 +19,8 @@ jobs:
     name: Set Variables
     outputs:
       fork: ${{ steps.source.outputs.fork }}
-      # image-tracker's PR when it ran (internal merge), else the merged PR (fork merge)
-      pr: ${{ steps.tracker.outputs.pr || steps.source.outputs.pr }}
+      # Exactly one is set: tracker runs only on internal merges, source sets pr only on fork merges
+      pr: ${{ steps.tracker.outputs.pr }}${{ steps.source.outputs.pr }}
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     permissions:
@@ -41,11 +41,13 @@ jobs:
           pulls=$(gh api "repos/${REPO}/commits/${{ github.sha }}/pulls")
           is_fork='((.head.repo.full_name // "") | ascii_downcase) != ($repo | ascii_downcase)'
           fork=$(jq -r --arg repo "$REPO" "[.[] | ${is_fork}] | any" <<<"$pulls")
-          # Prefer the fork PR's number if several PRs share the commit (cherry-picks),
-          # so the rebuild never overwrites an internal PR's :PR# tag.
-          pr=$(jq -r --arg repo "$REPO" "(map(select(${is_fork})) + .) | .[0].number // empty" <<<"$pulls")
+          # Fork merge only: the fork PR's number, which the rebuild is tagged with
+          pr=""
+          if [ "$fork" = "true" ]; then
+            pr=$(jq -r --arg repo "$REPO" "map(select(${is_fork})) | .[0].number" <<<"$pulls")
+          fi
           {
-            echo "fork=${fork:-false}"
+            echo "fork=${fork}"
             echo "pr=${pr}"
           } | tee -a "$GITHUB_OUTPUT"
 
@@ -72,7 +74,7 @@ jobs:
       tags: ${{ needs.vars.outputs.pr }}
       tag_fallback: test
       # main as it was before this push; HEAD^ would miss all but the last commit of a rebase merge
-      ref: ${{ github.event.before || 'HEAD^' }}
+      ref: ${{ github.event.before }}
 
   deploy-test:
     name: Deploy (TEST)
