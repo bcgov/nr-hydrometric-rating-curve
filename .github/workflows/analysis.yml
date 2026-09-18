@@ -143,7 +143,7 @@ jobs:
     timeout-minutes: 1
     steps:
       - name: Analysis Results
-        uses: bcgov/actions/workflow-results@v0.7.0
+        uses: bcgov/actions/workflow-results@6763b12e9c5e7548fe0e63a63e16fe01f0f33b91 # v0.7.0
         with:
           needs: ${{ toJson(needs) }}
           title: 'Analysis Results'
