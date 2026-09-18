@@ -24,6 +24,11 @@ on:
         default: ''
         required: false
         type: string
+      repository:
+        description: 'GHCR org/repo to pull images from; PRs pass the head repo so fork PRs deploy fork images'
+        default: ${{ github.repository }}
+        required: false
+        type: string
       triggers:
         description: Paths used to trigger a deployment; e.g. ('./backend/' './frontend/'')
         required: false
@@ -67,7 +72,6 @@ jobs:
           fi
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            target_repo="${{ github.event.pull_request.head.repo.full_name }}"
             chart_version="${{ github.event.number }}"
             release="${{ github.event.repository.name }}-${{ github.event.number }}"
           else
@@ -78,13 +82,12 @@ jobs:
                 exit 1
                 ;;
             esac
-            target_repo="${{ github.repository }}"
             chart_version="1.0.0-${{ github.run_number }}"
             release="${{ github.event.repository.name }}-${{ inputs.environment }}"
           fi
 
           tag="${{ inputs.tag }}"
-          repository=$(echo "${target_repo}" | tr '[:upper:]' '[:lower:]')
+          repository=$(echo "${{ inputs.repository }}" | tr '[:upper:]' '[:lower:]')
           version="1.0.0-${{ github.run_number }}"
 
           # Summary
