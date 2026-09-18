@@ -1,9 +1,6 @@
 name: Pull Request
 
 on:
-  # Fork pushes publish images to the fork's GHCR; upstream image-tracker pulls them on the PR
-  push:
-    branches-ignore: [main]
   pull_request:
 
 permissions:
@@ -11,7 +8,7 @@ permissions:
 
 concurrency:
   # PR open and close use the same group, allowing only one at a time
-  group: ${{ github.event.number || github.ref_name }}
+  group: ${{ github.event.number }}
   cancel-in-progress: true
 
 jobs:
@@ -29,7 +26,8 @@ jobs:
   deploys:
     name: Deploys
     needs: [builds]
-    if: github.event_name == 'pull_request'
+    # Skip deployment for fork PRs targeting upstream where repository secrets are stripped
+    if: github.event.pull_request.head.repo.full_name == github.repository
     permissions:
       contents: read
       packages: read
@@ -38,7 +36,6 @@ jobs:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
-      repository: ${{ github.event.pull_request.head.repo.full_name }}
       tag: ${{ github.event.pull_request.head.sha }}
       triggers: ('frontend/' 'charts/' '.github/workflows/.deployer.yml')
       params: --set global.secrets.persist=false --set-string frontend.gunicorn.logLevel=debug

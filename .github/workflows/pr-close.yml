@@ -14,6 +14,8 @@ concurrency:
 jobs:
   cleanup:
     name: Cleanup and Images
+    # Skip cleanup for fork PRs targeting upstream where repository secrets are stripped
+    if: github.event.pull_request.head.repo.full_name == github.repository
     permissions:
       packages: write
     uses: bcgov/actions-openshift/.github/workflows/.pr-close.yml@50414269295ed040baf0d05cb4c7f4d76c7bcd8c # v0.2.0
