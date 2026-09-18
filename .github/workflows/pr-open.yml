@@ -79,16 +79,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
-      - name: Log Job Results Context
-        run: |
-          echo "=== Upstream Job Statuses ==="
-          echo '${{ toJson(needs) }}'
-
-      - name: Evaluate Overall Status
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-        run: |
-          echo "❌ Critical Check Failure: At least one required job has failed or was cancelled."
-          exit 1
-
-      - name: Success Message
-        run: echo "✅ All critical checks passed or were intentionally skipped!"
+      - name: PR Results
+        uses: bcgov/actions/workflow-results@v0.7.0
+        with:
+          needs: ${{ toJson(needs) }}
+          title: 'PR Results'
