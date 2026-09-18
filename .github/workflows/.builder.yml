@@ -10,7 +10,7 @@ on:
         type: string
       tag_fallback:
         description: 'Tag to retag when no build is triggered'
-        default: latest
+        default: test
         type: string
       triggers:
         description: 'Paths that trigger a build; omit to always build'
@@ -44,3 +44,13 @@ jobs:
           tags: ${{ inputs.tags }}
           tag_fallback: ${{ inputs.tag_fallback }}
           triggers: ${{ inputs.triggers }}
+          metadata_flavor: |
+            latest=false
+          metadata_tag_rules: |
+            type=sha,format=short
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
