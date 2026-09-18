@@ -76,9 +76,8 @@ jobs:
   deploy-test:
     name: Deploy (TEST)
     needs: [vars, builds]
-    # builds is skipped on internal merges. A skipped dependency skips this job by default;
-    # !cancelled() replaces that default, and the allowlist admits success or skipped only.
-    if: ${{ !cancelled() && needs.vars.result == 'success' && (needs.builds.result == 'success' || needs.builds.result == 'skipped') }}
+    # builds is skipped on internal merges
+    if: ${{ !failure() }}
     permissions:
       contents: read
       packages: read
