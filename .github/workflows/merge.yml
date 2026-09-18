@@ -60,8 +60,8 @@ jobs:
           package: frontend, rctool
           max_depth: 100
 
-  # Fork merge only: rebuild from reviewed main, tagged with the PR number so it
-  # looks like any other PR build and flows through deploy/promote unchanged.
+  # Fork merge only: build main, tagged with the PR number so it flows through
+  # deploy/promote like any other PR build.
   builds:
     name: Builds (fork merge)
     needs: [vars]
@@ -72,9 +72,6 @@ jobs:
     uses: ./.github/workflows/.builder.yml
     with:
       tags: ${{ needs.vars.outputs.pr }}
-      tag_fallback: test
-      # main as it was before this push; HEAD^ would miss all but the last commit of a rebase merge
-      ref: ${{ github.event.before }}
 
   deploy-test:
     name: Deploy (TEST)

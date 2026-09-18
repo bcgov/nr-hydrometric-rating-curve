@@ -12,8 +12,8 @@ on:
         description: 'Tag to retag when no build is triggered'
         default: latest
         type: string
-      ref:
-        description: 'Ref to diff against for triggers; empty lets diff-triggers pick its default (PR base branch, or HEAD^ on push)'
+      triggers:
+        description: 'Paths that trigger a build; omit to always build'
         type: string
 
 permissions:
@@ -43,6 +43,4 @@ jobs:
           build_context: ./frontend
           tags: ${{ inputs.tags }}
           tag_fallback: ${{ inputs.tag_fallback }}
-          ref: ${{ inputs.ref }}
-          triggers: |
-            frontend/
+          triggers: ${{ inputs.triggers }}

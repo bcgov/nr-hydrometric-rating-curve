@@ -18,6 +18,9 @@ jobs:
       contents: read
       packages: write
     uses: ./.github/workflows/.builder.yml
+    with:
+      triggers: |
+        frontend/
 
   # https://github.com/bcgov/quickstart-openshift-helpers
   deploys:
