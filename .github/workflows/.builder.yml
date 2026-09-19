@@ -10,7 +10,7 @@ on:
         type: string
       tag_fallback:
         description: 'Tag to retag when no build is triggered'
-        default: test
+        default: latest
         type: string
       triggers:
         description: 'Paths that trigger a build; omit to always build'
