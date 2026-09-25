@@ -55,7 +55,7 @@ jobs:
       - name: Resolve Images & PR
         if: steps.source.outputs.fork != 'true'
         id: tracker
-        uses: bcgov/actions/image-tracker@c4694d429e6c8025974ba383f6f26ff8a41f7755 # v0.7.1
+        uses: bcgov/actions/image-tracker@4026bfd276b8a5839029106099b13edfb594b2c3 # v0.8.0
         with:
           package: frontend, rctool
           max_depth: 100
