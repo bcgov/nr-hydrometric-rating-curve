@@ -17,7 +17,6 @@ PYODIDE_TIMEOUT_MS = 180_000
 
 
 @pytest.mark.playwright
-@pytest.mark.xfail(strict=True, reason="add-segment crash, removed by the fix PR")
 def test_add_segment_renders_second_segment(page, live_server):
     errors = []
     page.on("pageerror", lambda exc: errors.append(str(exc)))
