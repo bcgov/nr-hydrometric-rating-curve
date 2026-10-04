@@ -2293,7 +2293,8 @@ json.dumps({"rc": clean_dict(rc_dict), "sidepanel_message": clean_dict(sidepanel
 
     document.getElementById("rcform").addEventListener("submit", async function(event) {
         const nSeg = parseInt(document.getElementById("n-seg").value);
-        if (pyodideReady && nSeg === nSegData) {
+        // Adding/removing a segment needs the server to render the segment panels
+        if (pyodideReady && nSeg === {{ n_seg|safe }}) {
             event.preventDefault();
 
             const offset1 = parseFloat(document.getElementById("offset1").value);
