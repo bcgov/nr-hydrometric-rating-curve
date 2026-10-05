@@ -42,9 +42,38 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
 
+  changes:
+    name: Detect Changes
+    if: (! github.event.pull_request.draft)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    permissions:
+      contents: read
+    outputs:
+      triggered: ${{ steps.result.outputs.triggered }}
+    steps:
+      - name: Check triggers
+        if: github.event_name == 'pull_request'
+        uses: bcgov/actions/diff-triggers@4026bfd276b8a5839029106099b13edfb594b2c3 # v0.8.0
+        id: diff
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          triggers: |
+            frontend/
+            pytest.ini
+            .github/workflows/analysis.yml
+      - id: result
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "triggered=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "triggered=${{ steps.diff.outputs.triggered }}" >> "$GITHUB_OUTPUT"
+          fi
+
   tests:
     name: Django Tests
-    if: (! github.event.pull_request.draft)
+    needs: [changes]
+    if: (! github.event.pull_request.draft) && needs.changes.outputs.triggered == 'true'
     runs-on: ubuntu-24.04
     defaults:
       run:
@@ -78,7 +107,8 @@ jobs:
 
   playwright:
     name: Playwright E2E Tests
-    if: (! github.event.pull_request.draft)
+    needs: [changes]
+    if: (! github.event.pull_request.draft) && needs.changes.outputs.triggered == 'true'
     runs-on: ubuntu-24.04
     defaults:
       run:
@@ -137,7 +167,7 @@ jobs:
   # ==========================================================================
   results:
     name: Analysis Results
-    needs: [tests, playwright] # Restore trivy when/if it's working again
+    needs: [changes, tests, playwright] # Restore trivy when/if it's working again
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 1
