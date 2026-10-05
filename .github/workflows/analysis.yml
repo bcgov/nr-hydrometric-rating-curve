@@ -59,6 +59,7 @@ jobs:
         uses: bcgov/actions/diff-triggers@4026bfd276b8a5839029106099b13edfb594b2c3 # v0.8.0
         id: diff
         with:
+          ref: ${{ github.event.pull_request.base.sha }}
           triggers: |
             frontend/
             pytest.ini
