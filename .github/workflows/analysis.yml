@@ -52,8 +52,6 @@ jobs:
     outputs:
       triggered: ${{ steps.result.outputs.triggered }}
     steps:
-      - uses: actions/checkout@v7
-        if: github.event_name == 'pull_request'
       - name: Check triggers
         if: github.event_name == 'pull_request'
         uses: bcgov/actions/diff-triggers@4026bfd276b8a5839029106099b13edfb594b2c3 # v0.8.0
