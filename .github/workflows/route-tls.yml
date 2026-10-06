@@ -2,6 +2,15 @@ name: Route TLS
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run. True = validate only, false = apply."
+        required: true
+        type: choice
+        default: "true"
+        options:
+          - "true"
+          - "false"
 
 concurrency:
   group: prod-deploy
@@ -11,7 +20,7 @@ permissions: {}
 
 jobs:
   route-tls:
-    name: Route TLS (PROD)
+    name: Route TLS (dry_run=${{ inputs.dry_run }})
     environment: prod
     permissions:
       contents: read
@@ -28,4 +37,4 @@ jobs:
           oc_namespace: ${{ secrets.OC_NAMESPACE }}
           oc_server: https://api.silver.devops.gov.bc.ca:6443
           oc_token: ${{ secrets.OC_TOKEN }}
-          dry_run: "true"
+          dry_run: ${{ inputs.dry_run }}
