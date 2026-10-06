@@ -121,7 +121,7 @@ jobs:
       ### Deploy
       - name: Interrupt deployments (PR only)
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions-openshift/oc-runner@75454b2b33edf37135f6f167775c77a3414207f6 # v0.3.1
+        uses: bcgov/actions-openshift/oc-runner@ea9651011c0bf9d15aad22cf5aa2fae93c096edf # v0.3.2
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
           oc_token: ${{ secrets.oc_token }}
@@ -139,7 +139,7 @@ jobs:
       - name: Deploy Helm chart
         id: deploy
         if: github.event_name != 'pull_request' || steps.tracker.outcome == 'success'
-        uses: bcgov/actions-openshift/oc-runner@75454b2b33edf37135f6f167775c77a3414207f6 # v0.3.1
+        uses: bcgov/actions-openshift/oc-runner@ea9651011c0bf9d15aad22cf5aa2fae93c096edf # v0.3.2
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
           oc_token: ${{ secrets.oc_token }}
