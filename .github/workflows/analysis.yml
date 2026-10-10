@@ -54,7 +54,7 @@ jobs:
     steps:
       - name: Check triggers
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions/diff-triggers@4026bfd276b8a5839029106099b13edfb594b2c3 # v0.8.0
+        uses: bcgov/actions/diff-triggers@2a9734519fa55acdc3b278cd3930b1499b15f381 # v0.9.0
         id: diff
         with:
           ref: ${{ github.event.pull_request.base.sha }}
@@ -173,7 +173,7 @@ jobs:
     timeout-minutes: 1
     steps:
       - name: Analysis Results
-        uses: bcgov/actions/workflow-results@4026bfd276b8a5839029106099b13edfb594b2c3 # v0.8.0
+        uses: bcgov/actions/workflow-results@2a9734519fa55acdc3b278cd3930b1499b15f381 # v0.9.0
         with:
           needs: ${{ toJson(needs) }}
           title: 'Analysis Results'
