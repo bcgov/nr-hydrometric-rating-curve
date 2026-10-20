@@ -25,7 +25,7 @@ on:
         required: false
         type: string
       triggers:
-        description: Paths used to trigger a deployment; e.g. ('./backend/' './frontend/'')
+        description: Paths used to trigger a deployment; one path per line (multiline string), e.g. backend/ and frontend/ on separate lines
         required: false
         type: string
 
@@ -111,7 +111,7 @@ jobs:
       - name: Resolve images
         id: tracker
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions/image-tracker@79aefe3a7abb2d0d00b1b3ea4cfbf12727a10638 # v0.9.0
+        uses: bcgov/actions/image-tracker@122a9b1c6c082b1b1f18c300020fbdc417b6b0b2 # v0.10.0
         with:
           package: frontend, rctool
           repository: ${{ steps.vars.outputs.repository }}
