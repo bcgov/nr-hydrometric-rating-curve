@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       matrix:
         package: [frontend, rctool]
@@ -61,7 +61,7 @@ jobs:
     needs: [deploy-prod]
     permissions:
       packages: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       matrix:
         package: [frontend, rctool]

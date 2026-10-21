@@ -21,7 +21,7 @@ jobs:
       fork: ${{ steps.source.outputs.fork }}
       # Exactly one is set: tracker runs only on internal merges, source sets pr only on fork merges
       pr: ${{ steps.tracker.outputs.pr }}${{ steps.source.outputs.pr }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 2
     permissions:
       contents: read
@@ -95,7 +95,7 @@ jobs:
     needs: [deploy-test, vars]
     permissions:
       packages: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       matrix:
         package: [frontend, rctool]

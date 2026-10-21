@@ -50,7 +50,7 @@ jobs:
   deploy:
     name: Helm
     environment: ${{ (inputs.environment == 'test' || inputs.environment == 'prod') && inputs.environment || '' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       packages: ${{ steps.vars.outputs.packages }}
       tag: ${{ steps.vars.outputs.tag }}
