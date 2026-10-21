@@ -47,7 +47,7 @@ jobs:
     name: Deployment Links
     needs: [deploys]
     if: needs.deploys.outputs.triggered == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       pull-requests: write
     steps:
@@ -68,7 +68,7 @@ jobs:
     name: PR Results
     needs: [builds, deploys, comment]
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 1
     steps:
       - name: PR Results
