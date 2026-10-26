@@ -36,11 +36,11 @@ jobs:
           - package: rctool
             build_file: ./frontend/Dockerfile.app
     steps:
-      - uses: bcgov/actions/builder@122a9b1c6c082b1b1f18c300020fbdc417b6b0b2 # v0.10.0
+      - uses: bcgov/actions/builder@8843560d44aa717798dacb6831bf87161d0658ca # v0.11.0
         with:
           package: ${{ matrix.package }}
-          build_file: ${{ matrix.build_file }}
-          build_context: ./frontend
+          file: ${{ matrix.build_file }}
+          context: ./frontend
           tags: ${{ inputs.tags }}
           tag_fallback: ${{ inputs.tag_fallback }}
           triggers: ${{ inputs.triggers }}
