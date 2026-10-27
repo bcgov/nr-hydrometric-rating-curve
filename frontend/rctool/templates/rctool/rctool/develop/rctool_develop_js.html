@@ -25,6 +25,7 @@
     var rcParam = JSON.parse(document.getElementById('rc-parameters').textContent);
     var offsetData = JSON.parse(document.getElementById('offsets-data').textContent);
     var nSegData = Number(JSON.parse(document.getElementById('n-seg-data').textContent));
+    const initialNSeg = nSegData; // segment count as rendered by the server (do not mutate)
     var toggleBreakPointVal = {% if toggle_breakpoint == "true" %}true{% else %}false{% endif %};
     var toggleWeightedFitVal = {% if toggle_weighted_fit == "true" %}true{% else %}false{% endif %};
     var maxOffset = Number(JSON.parse(document.getElementById('max-offset-data').textContent));
@@ -2302,7 +2303,7 @@ json.dumps({"rc": clean_dict(rc_dict), "sidepanel_message": clean_dict(sidepanel
     document.getElementById("rcform").addEventListener("submit", async function(event) {
         const nSeg = parseInt(document.getElementById("n-seg").value);
         // Adding/removing a segment needs the server to render the segment panels
-        if (pyodideReady && nSeg === nSegData) {
+        if (pyodideReady && nSeg === initialNSeg) {
             event.preventDefault();
 
             const offset1 = parseFloat(document.getElementById("offset1").value);
