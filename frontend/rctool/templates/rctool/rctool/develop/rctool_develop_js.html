@@ -7,21 +7,29 @@
 <script src="{% static 'js/chartjs-plugin-dragdata.min.js' %}"></script>
 
 
+{{ rc.data|json_script:"rc-data" }}
+{{ rc.parameters|json_script:"rc-parameters" }}
+{{ offsets|json_script:"offsets-data" }}
+{{ n_seg|json_script:"n-seg-data" }}
+{{ max_offset|json_script:"max-offset-data" }}
+{{ fielddatacsv|json_script:"fielddatacsv-data" }}
+
 <script>
     /* -------------------------------------------------------------------------------------------------------------------------------------------
     A) INITIALIZE  & COLLECT DATA FROM VIEW
     ----------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    var residualData = {{ rc.data|safe }};
-    var rcData = {{ rc.data|safe }};
-    var rcParam = {{ rc.parameters|safe }};
-    var offsetData = {{ offsets|safe }};
-    var nSegData = {{ n_seg|safe }};
-    var toggleBreakPointVal = {{ toggle_breakpoint|safe }};
-    var toggleWeightedFitVal = {{ toggle_weighted_fit|safe }};
-    var maxOffset = {{ max_offset|safe }};
+    // Server data is passed via json_script (auto-escaped, no |safe) - see bcgov/nr-hydrometric-rating-curve#428
+    var residualData = JSON.parse(document.getElementById('rc-data').textContent);
+    var rcData = JSON.parse(document.getElementById('rc-data').textContent);
+    var rcParam = JSON.parse(document.getElementById('rc-parameters').textContent);
+    var offsetData = JSON.parse(document.getElementById('offsets-data').textContent);
+    var nSegData = Number(JSON.parse(document.getElementById('n-seg-data').textContent));
+    var toggleBreakPointVal = {% if toggle_breakpoint == "true" %}true{% else %}false{% endif %};
+    var toggleWeightedFitVal = {% if toggle_weighted_fit == "true" %}true{% else %}false{% endif %};
+    var maxOffset = Number(JSON.parse(document.getElementById('max-offset-data').textContent));
     var rcDict = {'data':rcData, 'parameters':rcParam};
-    var fielddatacsv = JSON.parse( ' {{ fielddatacsv|safe }} ' );
+    var fielddatacsv = JSON.parse(JSON.parse(document.getElementById('fielddatacsv-data').textContent));
 
     var axisFormat = 'logarithmic';
 
@@ -2294,7 +2302,7 @@ json.dumps({"rc": clean_dict(rc_dict), "sidepanel_message": clean_dict(sidepanel
     document.getElementById("rcform").addEventListener("submit", async function(event) {
         const nSeg = parseInt(document.getElementById("n-seg").value);
         // Adding/removing a segment needs the server to render the segment panels
-        if (pyodideReady && nSeg === {{ n_seg|safe }}) {
+        if (pyodideReady && nSeg === nSegData) {
             event.preventDefault();
 
             const offset1 = parseFloat(document.getElementById("offset1").value);

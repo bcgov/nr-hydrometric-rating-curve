@@ -97,7 +97,7 @@
                                 {% if messages %}
                                 {% for message in messages %}
                                 <div>
-                                    <strong class="error-text">{{message|safe}}</strong>
+                                    <strong class="error-text">{{ message }}</strong>
                                 </div>
                                 {% endfor %}
                                 {% endif %}
@@ -168,7 +168,7 @@
     // Check if tour status has been previously set
     if (sessionStorage.getItem("tourStatus") == null) {
         // Check if user selected tour
-        var tourStatusID = {{ tour_request_status_id | safe }};
+        var tourStatusID = Number("{{ tour_request_status_id|escapejs }}");
     if (tourStatusID == 1) {
         sessionStorage.setItem("tourStatus", true);
     } else {
