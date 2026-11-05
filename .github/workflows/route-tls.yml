@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
-      - uses: bcgov/actions-openshift/route-tls@46f2614322f7ba1a5ad88a7e4e1b98569c80dcf7 # v0.6.0
+      - uses: bcgov/actions-openshift/route-tls@4ad9f97c20e0e00454bfd35e54537ee8622fa166 # v0.7.0
         with:
           hostname: hydra.nrs.gov.bc.ca
           target_service: nr-hydrometric-rating-curve-prod-frontend
