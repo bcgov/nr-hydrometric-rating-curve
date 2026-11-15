@@ -1,5 +1,5 @@
 ### BUILDER IMAGE ###
-FROM python:3.14-slim AS builder
+FROM python:3.15-slim AS builder
 
 # set environment variables and /venv
 ENV LANG=C.UTF-8 \
@@ -21,7 +21,7 @@ RUN python -m venv /venv && \
 
 
 ### APP IMAGE ###
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 # Install runtime dependencies (libcairo2)
 RUN apt-get update && \
