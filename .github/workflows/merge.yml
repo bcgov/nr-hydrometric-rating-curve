@@ -60,7 +60,6 @@ jobs:
           packages: |
             frontend
             rctool
-          max_depth: 100
 
   # Fork merge only: build main, tagged with the PR number so it flows through
   # deploy/promote like any other PR build.
