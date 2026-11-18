@@ -1,4 +1,4 @@
-name: Route TLS
+name: Cert Keeper
 
 on:
   workflow_dispatch:
@@ -19,17 +19,18 @@ concurrency:
 permissions: {}
 
 jobs:
-  route-tls:
-    name: Route TLS (dry_run=${{ inputs.dry_run }})
+  cert-keeper:
+    name: Cert Keeper (dry_run=${{ inputs.dry_run }})
     environment: prod
     permissions:
       contents: read
     runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
-      - uses: bcgov/actions-openshift/route-tls@a7a039ba45f9635c0bdbcc6b4cdbd2555811e100 # v0.8.0
+      - uses: bcgov/actions-openshift/cert-keeper@510a8105fdffbb718094e8a093e638132e300975 # v0.10.0
         with:
           hostname: hydra.nrs.gov.bc.ca
+          route_name: ${{ github.event.repository.name }}-vanity-url
           target_service: nr-hydrometric-rating-curve-prod-frontend
           tls_certificate: ${{ secrets.TLS_CERTIFICATE }}
           tls_private_key: ${{ secrets.TLS_PRIVATE_KEY }}
