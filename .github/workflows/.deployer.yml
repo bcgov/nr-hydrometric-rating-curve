@@ -111,7 +111,7 @@ jobs:
       - name: Resolve images
         id: tracker
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions/image-tracker@6c8ac0469fcf0d826533bc526c90119b8f149884 # v0.13.0
+        uses: bcgov/actions/image-tracker@acc058abf85bb183dad21b839a92a40a4ff47af3 # v0.14.0
         with:
           packages: |
             frontend
@@ -122,7 +122,7 @@ jobs:
       ### Deploy
       - name: Interrupt deployments (PR only)
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions-openshift/oc-runner@510a8105fdffbb718094e8a093e638132e300975 # v0.10.0
+        uses: bcgov/actions-openshift/oc-runner@47805d2fc4e919382757c1fbeb68d39313abe64f # v0.11.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
           oc_token: ${{ secrets.oc_token }}
@@ -140,7 +140,7 @@ jobs:
       - name: Deploy Helm chart
         id: deploy
         if: github.event_name != 'pull_request' || steps.tracker.outcome == 'success'
-        uses: bcgov/actions-openshift/oc-runner@510a8105fdffbb718094e8a093e638132e300975 # v0.10.0
+        uses: bcgov/actions-openshift/oc-runner@47805d2fc4e919382757c1fbeb68d39313abe64f # v0.11.0
         with:
           oc_namespace: ${{ secrets.oc_namespace }}
           oc_token: ${{ secrets.oc_token }}

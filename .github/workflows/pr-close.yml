@@ -18,7 +18,7 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     permissions:
       packages: write
-    uses: bcgov/actions-openshift/.github/workflows/.pr-close.yml@510a8105fdffbb718094e8a093e638132e300975 # v0.10.0
+    uses: bcgov/actions-openshift/.github/workflows/.pr-close.yml@47805d2fc4e919382757c1fbeb68d39313abe64f # v0.11.0
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}
