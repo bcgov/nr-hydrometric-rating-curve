@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
-      - uses: bcgov/actions-openshift/cert-keeper@510a8105fdffbb718094e8a093e638132e300975 # v0.10.0
+      - uses: bcgov/actions-openshift/cert-keeper@47805d2fc4e919382757c1fbeb68d39313abe64f # v0.11.0
         with:
           hostname: hydra.nrs.gov.bc.ca
           route_name: ${{ github.event.repository.name }}-vanity-url
