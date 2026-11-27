@@ -111,7 +111,7 @@ jobs:
       - name: Resolve images
         id: tracker
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions/image-tracker@a25c5f02d20139f29c17c3ceaa41c314ffe92ec9 # v0.16.0
+        uses: bcgov/actions/image-tracker@01c3fa1c94c8ccea526ce718b40d8a93bb0a2279 # v0.16.0
         with:
           packages: |
             frontend
